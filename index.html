@@ -44,18 +44,29 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .pick .num{width:56px}
 .pick .stepper{display:flex;align-items:center;gap:6px}
 /* story scenes */
-.scene{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%}
-.srow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:36px}
+.scene{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;position:relative}
+.srow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:40px}
 .srow .lab{font-family:var(--display);color:var(--muted);font-size:.9rem;width:100%;text-align:center}
-.it2{width:32px;height:32px;border-radius:50%;background:var(--dot);position:relative;transition:transform .3s,opacity .4s,background .3s;transform:scale(1)}
-.it2.in{transform:scale(0)}
-.it2.new{background:var(--accent)}
-.it2.gone{opacity:.18}
-.it2.slot{background:transparent;border:3px dashed var(--line);box-sizing:border-box}
-.it2.extra{background:var(--plum)}
-.it2.hi{box-shadow:0 0 0 4px var(--sun)}
-.it2 b{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-family:var(--display);font-size:.95rem}
-.box10{display:grid;grid-template-columns:repeat(5,38px);gap:6px;padding:6px;border:3px solid var(--fg);border-radius:12px}
+.it2{width:38px;height:38px;position:relative;display:grid;place-items:center;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .4s;transform:scale(1)}
+.it2 svg{width:34px;height:34px;display:block;filter:drop-shadow(0 2px 2px rgba(0,0,0,.15))}
+.it2.in{transform:scale(0) rotate(-40deg)}
+.it2.new svg{filter:drop-shadow(0 0 6px var(--sun))}
+.it2.gone{opacity:.15;transform:scale(.6) translateY(14px) rotate(25deg)}
+.it2.slot{border:3px dashed var(--line);border-radius:50%;box-sizing:border-box}
+.it2.slot svg{display:none}
+.it2.extra svg{filter:grayscale(.6) drop-shadow(0 0 5px var(--plum))}
+.it2.extra::after{content:"";position:absolute;inset:-3px;border:3px solid var(--plum);border-radius:50%}
+.it2.hi{animation:hop .35s ease}
+.it2 b{position:absolute;right:-6px;bottom:-6px;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--sun);color:#1a1a1a;display:grid;place-items:center;font-family:var(--display);font-size:.85rem;animation:badge .3s cubic-bezier(.34,1.56,.64,1)}
+.it2.fly{transition:transform .6s cubic-bezier(.4,0,.2,1)}
+.tally{font-family:var(--display);font-size:2.4rem;color:var(--accent);font-variant-numeric:tabular-nums;min-height:1.2em;line-height:1.2}
+.tally.bump{animation:badge .3s}
+@keyframes hop{0%{transform:translateY(0)}40%{transform:translateY(-12px) scale(1.15)}100%{transform:translateY(0)}}
+@keyframes badge{0%{transform:scale(0)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.typed.shake{animation:shake .35s}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+.box10{display:grid;grid-template-columns:repeat(5,40px);gap:6px;padding:6px;border:3px solid var(--fg);border-radius:12px}
 .box10 .it2.slot{border-color:var(--line)}
 .beam,.pan{transition:transform .7s cubic-bezier(.3,1.4,.5,1)}.beam{transform-origin:200px 40px}
 .room{background:var(--card);border-radius:16px;padding:8px 4px;font-family:var(--display);font-size:.95rem;font-weight:600;border:3px solid transparent;display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -213,6 +224,10 @@ const prompt=$('#prompt'),stage=$('#stage'),msg=$('#msg'),controls=$('#controls'
 let ctx=null; // current problem context
 function say(t,good){msg.textContent=t;msg.className='msg'+(good?' good':'')}
 function cheer(){const c=pick(['Nice thinking!','You got it!','Yes!','That\'s it!','Great counting!','Clever!']);const who=S.duo&&ctx.turn===1?'Dad':S.name;return who?`${c.replace('!','')}, ${who}!`:c}
+function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;let c=document.getElementById('confetti');if(!c){c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c)}
+  const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const cols=['#ff7a59','#ffc83d','#4cae7c','#5aa9e6','#9b6bd6'];
+  const P=Array.from({length:70},()=>({x:innerWidth/2+(Math.random()-.5)*120,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*12-4,r:4+Math.random()*4,c:cols[rnd(0,4)],a:Math.random()*6,s:(Math.random()-.5)*.3}));
+  let t=0;(function f(){x.clearRect(0,0,c.width,c.height);for(const p of P){p.x+=p.vx;p.y+=p.vy;p.vy+=.45;p.vx*=.99;p.a+=p.s;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r,-p.r/2,p.r*2,p.r);x.restore()}if(++t<70)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})()}
 let ac;function ding(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const t=ac.currentTime;[523,659,784].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.0001,t+i*.09);g.gain.exponentialRampToValueAtTime(.15,t+i*.09+.02);g.gain.exponentialRampToValueAtTime(.0001,t+i*.09+.25);o.start(t+i*.09);o.stop(t+i*.09+.3)})}catch(e){}}
 function pad(max,onPick,cls){const p=el('div','pad'+(max>9?' six':'')+(cls?' '+cls:''));for(let i=0;i<=max;i++){const b=el('button','num',i);b.onclick=()=>onPick(i,b);p.appendChild(b)}return p}
 function lock(p){p.querySelectorAll('button').forEach(b=>b.disabled=true)}
@@ -220,6 +235,7 @@ function numpad(onSubmit,digits){digits=digits||2;const nm=el('div','pad');let t
   for(let i=0;i<10;i++){const k=el('button','num',i);k.onclick=()=>{if(typed.length<digits){typed+=i;show.textContent=typed}};nm.appendChild(k)}
   const clr=el('button','num','⌫');clr.onclick=()=>{typed=typed.slice(0,-1);show.textContent=typed||'_'};
   const ok=el('button','num go','That\'s it');ok.style.gridColumn='span 4';ok.onclick=()=>{if(!typed)return;const ans=+typed;typed='';show.textContent='_';onSubmit(ans,nm)};
+  nm.shake=()=>{show.classList.remove('shake');void show.offsetWidth;show.classList.add('shake')};
   nm.append(clr,ok);return nm}
 function choices(opts,onPick){const r=el('div','row');opts.forEach(o=>{const b=el('button','choice');if(typeof o==='string'||typeof o==='number')b.textContent=o;else b.appendChild(o.node);b.onclick=()=>onPick(o,b);r.appendChild(b)});return r}
 function nextBtn(){const r=el('div','row');const b=el('button','btn','Next one');b.onclick=()=>play(S.skill);r.appendChild(b);return r}
@@ -231,9 +247,9 @@ function win(text,noMastery){
   if(!noMastery){if(ctx.hints===0){m.streak++;m.low=0;if(m.streak>=3&&m.lv<MAX(S.skill)){m.lv++;m.streak=0;setTimeout(()=>say(text+' You moved up to level '+m.lv+'!',true),900)}}
     else{m.streak=0;if(ctx.hints>=2){m.low++;if(m.low>=2&&m.lv>1){m.lv--;m.low=0}}else m.low=0}}
   if(S.duo&&ctx.turn===1){S.dad++}else{S.stars++}
-  S.turn=1-S.turn;save();renderStars();ding();drawGarden();const hr=controls.querySelector('#helpRow');if(hr)hr.remove();controls.appendChild(nextBtn());renderSkills();
+  S.turn=1-S.turn;save();renderStars();ding();confetti();drawGarden();const hr=controls.querySelector('#helpRow');if(hr)hr.remove();controls.appendChild(nextBtn());renderSkills();
 }
-function miss(hint){ctx.hints++;say(hint,false)}
+function miss(hint){ctx.hints++;say(hint,false);const t=controls.querySelector('.typed');if(t){t.classList.remove('shake');void t.offsetWidth;t.classList.add('shake')}}
 /* every game declares help({clues:[...], answer, why, show}) so the Clue / Show me buttons work the same everywhere */
 function help(o){ctx.help=o;ctx.clueIdx=0}
 function helpRow(){const r=el('div','row');r.id='helpRow';const c=el('button','btn quiet','Clue'),s=el('button','btn quiet','Show me');
@@ -465,12 +481,31 @@ const STORIES={
   (k,t)=>{const a=rnd(2,4),b=a+rnd(2,5);return{text:`${k} is <b>${a}</b> years older than her cousin. Her cousin is <b>${b}</b>. In 2 years, how old will ${k} be?`,ans:a+b+2,hint:`How old is ${k} now? Then add 2.`,why:`${k} is ${a+b} now. In 2 years she'll be ${a+b+2}.`,viz:{type:'chain',a:b,steps:[a,2],label:['cousin now',`${a} older`,'2 years']}}}
  ]};
 
+
+/* little pictures for story objects */
+const ICONS={
+ strawberries:'<path d="M20 36C12 34 6 26 7 18c4-4 9-4 13-1 4-3 9-3 13 1 1 8-5 16-13 18z" fill="#e63946"/><path d="M14 12c2-5 5-7 6-9 1 2 4 4 6 9-4-2-8-2-12 0z" fill="#4cae7c"/><g fill="#ffe08a"><circle cx="14" cy="21" r="1.3"/><circle cx="20" cy="18" r="1.3"/><circle cx="26" cy="21" r="1.3"/><circle cx="17" cy="27" r="1.3"/><circle cx="23" cy="27" r="1.3"/></g>',
+ stickers:'<path d="M20 3l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="#ffc83d" stroke="#e6a800" stroke-width="1.5"/>',
+ marbles:'<circle cx="20" cy="20" r="16" fill="#5aa9e6"/><path d="M12 14q8-10 16 2" stroke="#9b6bd6" stroke-width="4" fill="none" opacity=".8"/><circle cx="14" cy="13" r="4" fill="#fff" opacity=".8"/>',
+ dinosaurs:'<path d="M8 30c0-10 6-16 14-16 6 0 8 4 12 2l2 4c-3 3-6 2-7 5 0 5-3 9-9 9H8z" fill="#4cae7c"/><circle cx="26" cy="19" r="1.5" fill="#1a1a1a"/><path d="M10 14l3-6 3 6 3-6 3 6" fill="#2e8b57"/>',
+ crayons:'<rect x="15" y="10" width="10" height="26" rx="2" fill="#ff7a59"/><path d="M15 10l5-7 5 7z" fill="#ff7a59"/><rect x="15" y="18" width="10" height="5" fill="#fff" opacity=".6"/>',
+ shells:'<path d="M20 36C8 36 4 24 6 14c6 4 10 6 14 6s8-2 14-6c2 10-2 22-14 22z" fill="#f4a261"/><path d="M20 20v16M12 19l-3 14M28 19l3 14" stroke="#c6703d" stroke-width="1.5"/>',
+ acorns:'<path d="M12 18c0 10 4 16 8 18 4-2 8-8 8-18z" fill="#b98a5b"/><path d="M9 18c2-6 7-9 11-9s9 3 11 9z" fill="#6b4a2b"/><rect x="18" y="4" width="4" height="6" rx="2" fill="#6b4a2b"/>',
+ buttons:'<circle cx="20" cy="20" r="16" fill="#9b6bd6"/><circle cx="20" cy="20" r="11" fill="none" stroke="#7a4fb3" stroke-width="2"/><g fill="#fff"><circle cx="15" cy="16" r="2"/><circle cx="25" cy="16" r="2"/><circle cx="15" cy="24" r="2"/><circle cx="25" cy="24" r="2"/></g>',
+ 'gummy bears':'<path d="M11 34V20a9 9 0 0118 0v14z" fill="#ff5c8a"/><circle cx="13" cy="12" r="4" fill="#ff5c8a"/><circle cx="27" cy="12" r="4" fill="#ff5c8a"/><circle cx="20" cy="14" r="8" fill="#ff5c8a"/><circle cx="17" cy="13" r="1.3" fill="#7a1f3d"/><circle cx="23" cy="13" r="1.3" fill="#7a1f3d"/>',
+ blueberries:'<circle cx="20" cy="22" r="14" fill="#2b4c9b"/><circle cx="15" cy="17" r="4" fill="#fff" opacity=".35"/><path d="M16 11l4 4 4-4-2-2h-4z" fill="#1a2d5e"/>'
+};
+let currentThing='strawberries';
+
 /* scene engine: draws the objects in a story and acts out what the child answered */
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-function dot(cls){const d=el('div','it2'+(cls?' '+cls:''));return d}
+function dot(cls){const d=el('div','it2'+(cls?' '+cls:''));d.innerHTML=`<svg viewBox="0 0 40 40">${ICONS[currentThing]||ICONS.marbles}</svg>`;return d}
 function row(label){const r=el('div','srow');if(label)r.appendChild(el('div','lab',label));return r}
-async function appear(items,cls,gap){for(const d of items){d.classList.add('in');await wait(0);d.classList.add(cls||'new');await wait(10);d.classList.remove('in');await wait(gap||110)}}
-async function countAlong(items,gap){let n=0;for(const d of items){if(d.classList.contains('gone')||d.classList.contains('slot'))continue;n++;d.classList.add('hi');d.appendChild(el('b','',n));await wait(gap||170);d.classList.remove('hi')}return n}
+async function appear(items,cls,gap){for(const d of items){d.classList.add('in');await wait(0);d.classList.add(cls||'new');await wait(20);d.classList.remove('in');await wait(gap||140)}}
+async function countAlong(items,gap){let n=0;const sc=items[0]&&items[0].closest('.scene');let tally=sc&&sc.querySelector('.tally');if(sc&&!tally){tally=el('div','tally','');sc.appendChild(tally)}
+  for(const d of items){if(d.classList.contains('gone')||d.classList.contains('slot'))continue;n++;d.classList.add('hi');d.appendChild(el('b','',n));if(tally){tally.textContent=n;tally.classList.remove('bump');void tally.offsetWidth;tally.classList.add('bump')}await wait(gap||260);d.classList.remove('hi')}return n}
+/* move an item to a new parent with a real flight path */
+async function flyTo(d,target){const a=d.getBoundingClientRect(),b=target.getBoundingClientRect();d.classList.add('fly');d.style.transform=`translate(${b.left-a.left}px,${b.top-a.top}px)`;await wait(620);d.classList.remove('fly');d.style.transform='';target.replaceWith(d);d.classList.add('new')}
 function buildScene(v){const sc=el('div','scene');const S={sc,rows:[]};
   const mkRow=(n,label,cls)=>{const r=row(label);const items=[];for(let i=0;i<n;i++){const d=dot(cls);items.push(d);r.appendChild(d)}sc.appendChild(r);S.rows.push(items);return items};
   if(v.type==='add'){S.a=mkRow(v.a,v.label?v.label[0]:'');S.b=mkRow(0,v.label?v.label[1]:'more')}
@@ -486,28 +521,28 @@ async function actOut(v,S,guess){ // plays the true story; returns nothing. gues
   const ans=v.ans;
   if(v.type==='add'){const r=S.b[0]?S.b[0].parentElement:S.sc.children[1];const items=[];for(let i=0;i<v.b;i++){const d=dot('in');items.push(d);r.appendChild(d)}await appear(items);S.b=items;await wait(300);await countAlong(S.a.concat(items))}
   else if(v.type==='take'){for(let i=0;i<v.b;i++){S.a[S.a.length-1-i].classList.add('gone');await wait(220)}await wait(300);await countAlong(S.a)}
-  else if(v.type==='need'){const n=guess==null?ans:guess;const empties=S.slots.filter(d=>d.classList.contains('slot'));let placed=0;const extras=[];const r=S.slots[0].parentElement;
+  else if(v.type==='need'){const n=guess==null?ans:Math.min(guess,ans+5);const empties=S.slots.filter(d=>d.classList.contains('slot'));let placed=0;const extras=[];const r=S.slots[0].parentElement;
     for(let i=0;i<n;i++){if(placed<empties.length){const d=empties[placed++];d.classList.remove('slot');d.classList.add('in');await wait(10);d.classList.add('new');await wait(10);d.classList.remove('in')}else{const d=dot('in extra');r.appendChild(d);extras.push(d);await wait(0);d.classList.remove('in')}await wait(160)}
-    await wait(300);if(guess!=null&&guess<ans){say(`You said ${guess}. ${ans-guess} ${ans-guess===1?'box is':'boxes are'} still empty. How many more would fill them?`)}else if(guess!=null&&guess>ans){say(`You said ${guess}. The purple ones don't fit, there are ${guess-ans} extra. How many did fit?`)}}
+    await wait(300);if(guess!=null&&guess<ans){say(`You said ${guess}. ${ans-guess} ${ans-guess===1?'box is':'boxes are'} still empty. How many more would fill them?`)}else if(guess!=null&&guess>ans){say(`You said ${guess}. The purple ones don't fit${guess-ans>5?' (and there would be even more)':''}, ${guess-ans} extra. How many did fit?`)}}
   else if(v.type==='compare'){for(let i=v.b;i<v.a;i++){S.a[i].classList.add('hi');await wait(180)}await wait(200);await countAlong(S.a.slice(v.b))}
   else if(v.type==='box'){const items=[];for(let i=0;i<v.b;i++){const d=dot('in');items.push(d);S.more[0]?S.more[0].parentElement.appendChild(d):S.sc.children[2].appendChild(d)}await appear(items);await wait(300);
-    const all=S.pile.concat(items);let i=0;for(const d of all){if(i<10){d.classList.add('gone');const s=S.slots[i];s.classList.remove('slot');s.classList.add('in');await wait(0);s.classList.remove('in');i++;await wait(140)}else{d.classList.add('extra');await wait(140)}}
+    const all=S.pile.concat(items);let i=0;const moved=[];for(const d of all){if(i<10){await flyTo(d,S.slots[i]);moved.push(d);i++;await wait(60)}else{d.classList.add('extra');await wait(160)}}
     await wait(300);await countAlong(all.slice(10))}
   else if(v.type==='chain'){let cur=S.a.slice();for(let i=0;i<v.steps.length;i++){const s=v.steps[i];if(s>0){const items=[];for(let j=0;j<s;j++){const d=dot('in');items.push(d);S.steps[i][0]?S.steps[i][0].parentElement.appendChild(d):S.sc.children[i+1].appendChild(d)}await appear(items);cur=cur.concat(items)}else{const live=cur.filter(d=>!d.classList.contains('gone'));for(let j=0;j<-s;j++){live[live.length-1-j].classList.add('gone');await wait(200)}}await wait(400)}await countAlong(cur)}
   else if(v.type==='groups'){let all=[];for(let i=0;i<v.rows.length;i++){const items=[];for(let j=0;j<v.rows[i];j++){const d=dot('in');items.push(d);S.sc.children[i].appendChild(d)}await appear(items,'',70);all=all.concat(items);await wait(150)}await wait(300);await countAlong(all,120)}
   else if(v.type==='share'){const A=[],B=[];for(let i=0;i<v.tot;i++){const d=dot('in');(i%2?B:A).push(d);S.sc.children[i%2].appendChild(d);await wait(0);d.classList.remove('in');await wait(90)}await wait(400);for(let i=0;i<v.eat;i++){A[A.length-1-i].classList.add('gone');await wait(220)}await wait(300);await countAlong(A)}}
 
 skill({id:'tale',room:'story',title:'Story mystery',levels:3,mount(lv){
-  let st=null;for(let i=0;i<10&&!st;i++)st=pick(STORIES[lv])(KID(),pick(THINGS));
+  const thing=pick(THINGS);currentThing=thing;let st=null;for(let i=0;i<10&&!st;i++)st=pick(STORIES[lv])(KID(),thing);
   st.viz.ans=st.ans;
   prompt.textContent='Read the story. Then solve it.';const box=el('div','story',st.text);const scene=buildScene(st.viz);stage.append(box,scene.sc);
   let fresh=true;const replay=()=>{const old=scene.sc;const s=buildScene(st.viz);Object.assign(scene,s);stage.replaceChild(s.sc,old)};
   let busy=false;
   help({clues:['Look at the picture. What do we know, and what is the question asking?',st.hint],answer:st.ans,why:st.why,show:()=>{if(!fresh)replay();fresh=false;actOut(st.viz,scene,null)}});
-  controls.appendChild(numpad(async(v,nm)=>{if(busy)return;busy=true;if(!fresh)replay();fresh=false;
+  controls.appendChild(numpad(async(v,nm)=>{if(busy)return;busy=true;nm.style.pointerEvents='none';nm.style.opacity='.6';if(!fresh)replay();fresh=false;
     if(v===st.ans){lock(nm);win(`${cheer()} ${st.why}`);await actOut(st.viz,scene,v)}
     else{miss(`You said ${v}. Watch what really happens.`);await actOut(st.viz,scene,v);if(st.viz.type!=='need')say(`You said ${v}. Now count the numbered ones, then try again.`)}
-    busy=false},3))}});
+    busy=false;nm.style.pointerEvents='';nm.style.opacity=''},3))}});
 
 skill({id:'ways',room:'story',title:'How many ways?',levels:3,mount(lv){
   const k=KID(),t=pick(THINGS);let total,parts,text,need;
