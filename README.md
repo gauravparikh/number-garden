@@ -13,15 +13,16 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 | Warm-ups | How many? · Make 10 | Subitizing, complements to 10/20/100 |
 | Add & take | Take away · Make a ten to add · Find the missing number | Place value (sticks of 10 that break), bridging through ten, missing-addend thinking |
 | Patterns | What comes next? · Rule machine | Repeating and growing patterns, function machines |
-| Puzzles | Balance it · Which one is different? · Make the money · Mini sudoku · Number riddle | Reasoning with no algorithm: the seed of competition math |
+| Puzzles | Balance it · Which one is different? · Make the money · Sudoku (shapes 4×4 → digits 4×4 → 6×6) · Number riddle · Who has what? (logic grid) | Reasoning with no algorithm: the seed of competition math |
 | Stories | Story mystery · How many ways? | Reading-level word problems in one to two steps, and open questions with several right answers |
 | Shapes & space | Mirror it · Count the shapes · Fit the hole | Spatial reasoning: reflections, shapes hidden inside shapes, matching a piece to a gap |
+| Playground | Counters and sticks · Number line walk · Balance scale | Free play with no questions: feel ten snapping into a stick, hop a sum along the line, load a scale and watch it tip |
 | Zoe makes it | You hide the number · You make the rule | She sets the puzzle and the app solves it, checking her answers and teaching when one is off |
 | Big Ideas | Even and odd · How far apart · Tens and ones · Bigger and smaller · Making ten · Double and half | Concept pages she reads herself: a short explanation, a hands-on demo, three try-it questions, then a link to the game that uses the idea |
 
 ## How a session works
 
-The home screen is the garden with eight doors. Tapping a door starts a **trail** of five stepping stones (two warm-ups, games from that door, one puzzle). Each solved stone lights up; the fifth plants a flower in the garden. Levels adapt silently and are never shown to the child.
+The home screen is the garden with nine doors. A ladybug mascot bobs on the home screen and in the corner of the play card, jumps on a right answer and tilts her head on a miss. Tapping a door starts a **trail** of five stepping stones (two warm-ups, games from that door, one puzzle). Each solved stone lights up; the fifth plants a flower in the garden. Levels adapt silently and are never shown to the child.
 
 **Zoe's Book** writes one sentence she can read for every problem she solves ("Zoe took 9 away from 23 and got 14"), a bigger entry for each level-up and finished trail, and holds the badge shelf (First Flower, Ten-Breaker, Riddle Solver, Many Ways, Balance Master, Pattern Spotter, Story Reader, Gardener).
 
@@ -53,6 +54,10 @@ In Stories and the dots warm-up she can touch each object to count it herself; t
 - "You make the pattern": she builds a pattern, the app continues it
 - More Shapes & space: symmetry completion, cube stacks with hidden blocks
 - Place value room (10 more / 10 less, build a number from sticks)
+
+## Puzzle families
+
+Sudoku and Who-has-what are generators with parameters (grid size, box shape, symbol set, number of clues), so a new variant is a level entry, not a new game. The same pattern is the way to add more: write the generator once, verify the puzzle has one solution (the logic generator brute-forces this), expose difficulty as levels.
 
 ## Adding a Big Idea
 

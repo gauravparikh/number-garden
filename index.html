@@ -51,7 +51,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .door svg{width:40px;height:40px}
 .door b{font-family:var(--display);font-size:1.15rem;font-weight:600}
 .door small{color:var(--muted);font-size:.9rem;font-weight:600}
-.door.ideas{background:var(--sun);color:#1a1a1a}.door.maker{background:var(--plum);color:#fff}.door.maker small{color:#efe6ff}.doors .door:last-child{grid-column:1/-1;flex-direction:row;align-items:center;min-height:0}.door.ideas small{color:#5a4a1a}
+.door.sand{background:var(--sky);color:#fff}.door.sand small{color:#e6f2ff}.door.ideas{background:var(--sun);color:#1a1a1a}.door.maker{background:var(--plum);color:#fff}.door.maker small{color:#efe6ff}.doors .door:last-child{grid-column:1/-1;flex-direction:row;align-items:center;min-height:0}.door.ideas small{color:#5a4a1a}
 .grownup{align-self:center;color:var(--muted);font-size:.8rem;padding:8px;opacity:.7}
 .playtop{display:flex;align-items:center;gap:10px}
 .back{width:44px;height:44px;border-radius:50%;background:var(--card);font-family:var(--display);font-size:1.8rem;line-height:1;display:grid;place-items:center;color:var(--fg);flex:none}
@@ -84,6 +84,40 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .note small{display:block;color:var(--muted);font-size:.85rem;margin-bottom:2px}
 .streak{background:var(--sun);color:#1a1a1a;border-radius:999px;padding:6px 12px;font-family:var(--display);font-size:.95rem;white-space:nowrap;animation:badge .35s}
 .cloud{font-size:.85rem;color:var(--muted)}
+/* mascot, transitions, playground */
+.view{animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.stone.lit{animation:badge .4s cubic-bezier(.34,1.56,.64,1)}
+.bug{width:56px;height:56px;display:block}
+.bug.idle{animation:bob 2.4s ease-in-out infinite}
+.bug.happy{animation:jump .7s cubic-bezier(.34,1.56,.64,1)}
+.bug.think{animation:tilt 1.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes jump{0%{transform:translateY(0) scale(1)}35%{transform:translateY(-26px) scale(1.15) rotate(-8deg)}70%{transform:translateY(0) scale(.95)}100%{transform:none}}
+@keyframes tilt{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+#cardBug{position:absolute;top:-22px;right:12px;width:44px;height:44px}
+.card{position:relative}
+.homebug{display:flex;align-items:flex-end;gap:10px}.homebug .bug{flex:none;width:56px;height:56px}
+.toys{display:flex;flex-direction:column;gap:10px}
+.toy{background:var(--card);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;box-shadow:0 6px 18px rgba(20,60,40,.08)}
+.toy b{font-family:var(--display);font-size:1.2rem;font-weight:600}.toy small{color:var(--muted);font-weight:600}
+.bignum{font-family:var(--display);font-size:3rem;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1}
+.toybtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.toybtns .num{min-width:62px;padding:0 10px}
+.target{background:var(--sun);color:#1a1a1a;border-radius:12px;padding:8px 14px;font-family:var(--display);font-size:1.05rem}
+.walk{width:100%;max-width:560px}
+.sudsym svg{width:30px;height:30px}
+.sud.six{grid-template-columns:repeat(6,1fr)}
+.sud.six .sq{width:44px;height:44px;font-size:1.3rem}
+.sud.six .sq:nth-child(2),.sud.six .sq:nth-child(6),.sud.six .sq:nth-child(10),.sud.six .sq:nth-child(14){margin-right:0}
+.sud.six .sq:nth-child(5),.sud.six .sq:nth-child(6),.sud.six .sq:nth-child(7),.sud.six .sq:nth-child(8){margin-bottom:0}
+.sud.six .sq:nth-child(6n+3){margin-right:4px}
+.sud.six .sq:nth-child(n+7):nth-child(-n+12),.sud.six .sq:nth-child(n+19):nth-child(-n+24){margin-bottom:4px}
+.logic{display:grid;gap:4px;font-family:var(--display)}
+.logic .hd{display:grid;place-items:center;font-size:.95rem;color:var(--muted);padding:4px}
+.logic .lc{width:60px;height:46px;background:var(--bg);border-radius:10px;display:grid;place-items:center;font-size:1.4rem}
+.logic .lc.yes{background:var(--leaf);color:#fff}.logic .lc.no{background:var(--line);color:var(--muted)}
+@media (max-width:430px){.sud.six .sq{width:38px;height:38px}.logic .lc{width:50px}}
 /* big ideas */
 .idealist{display:flex;flex-direction:column;gap:10px}
 .idea{background:var(--card);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;box-shadow:0 6px 18px rgba(20,60,40,.08)}
@@ -223,7 +257,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 
 <div id="home" class="view">
   <div class="hometop"><h1 id="homeTitle">Number Garden</h1><button class="pill" id="bookBtn">Zoe's Book</button></div>
-  <div class="greet" id="greet"></div>
+  <div class="homebug"><svg class="bug idle" id="homeBug" viewBox="0 0 60 60"></svg><div class="greet" id="greet"></div></div>
   <div class="note" id="noteCard" hidden></div>
   <div class="garden big"><svg id="gardenSvg" viewBox="0 0 400 150" aria-label="your garden"></svg><div class="sign" id="sign"></div></div>
   <h2 class="pickline">Pick a door</h2>
@@ -234,6 +268,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 <div id="play" class="view" hidden>
   <div class="playtop"><button class="back" id="backBtn" aria-label="back to garden">‹</button><div class="trail" id="trail"></div><div class="streak" id="streakChip" hidden></div><div class="turn" id="turn"></div></div>
   <div class="card" id="card">
+    <svg class="bug idle" id="cardBug" viewBox="0 0 60 60"></svg>
     <div class="where" id="where"></div>
     <div class="prompt" id="prompt"></div>
     <div class="stage" id="stage"></div>
@@ -257,6 +292,20 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
   <div class="pages" id="pages"></div>
 </div>
 
+<div id="playground" class="view" hidden>
+  <div class="playtop"><button class="back" id="pgBack" aria-label="back to garden">‹</button><h2>Playground</h2></div>
+  <p class="pickline">No questions here. Just play with numbers.</p>
+  <div class="toys" id="toys"></div>
+</div>
+<div id="toy" class="view" hidden>
+  <div class="playtop"><button class="back" id="toyBack" aria-label="back to playground">‹</button><h2 id="toyTitle"></h2></div>
+  <div class="card learncard">
+    <div class="target" id="toyTarget"></div>
+    <div class="stage" id="toyStage"></div>
+    <div class="msg" id="toyMsg"></div>
+    <div id="toyControls"></div>
+  </div>
+</div>
 <div id="ideas" class="view" hidden>
   <div class="playtop"><button class="back" id="ideasBack" aria-label="back to garden">‹</button><h2>Big Ideas</h2></div>
   <p class="pickline">Read one, try it, then play.</p>
@@ -326,7 +375,7 @@ function speak(text){try{if(!window.speechSynthesis)return false;speechSynthesis
 function readBtn(getText){if(!window.speechSynthesis)return el('span');const b=el('button','readbtn','🔊 Read it to me');b.onclick=()=>speak(getText());return b}
 /* ---------- shared UI ---------- */
 const prompt=$('#prompt'),stage=$('#stage'),msg=$('#msg'),controls=$('#controls'),turnEl=$('#turn');
-const DOORS={warm:['Warm-ups','Count the dots'],add:['Add & take','Sticks of ten'],pat:['Patterns','What comes next?'],puz:['Puzzles','Think hard'],story:['Stories','Read and solve'],space:['Shapes & space','Look closely'],make:['Zoe makes it','You hide, I guess']};
+const DOORS={sand:['Playground','Just play'],warm:['Warm-ups','Count the dots'],add:['Add & take','Sticks of ten'],pat:['Patterns','What comes next?'],puz:['Puzzles','Think hard'],story:['Stories','Read and solve'],space:['Shapes & space','Look closely'],make:['Zoe makes it','You hide, I guess']};
 function show(id){document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==id);window.scrollTo(0,0);const c=document.getElementById('confetti');if(c&&id!=='done'){cancelAnimationFrame(window.__cf);c.getContext('2d').clearRect(0,0,c.width,c.height)}}
 let ctx=null; // current problem context
 function say(t,good){msg.textContent=t;msg.className='msg'+(good?' good':'')}
@@ -353,7 +402,7 @@ function tellPapa(){S.tellCount=(S.tellCount||0)+1;if(S.tellCount%4!==0||!ctx||c
 
 /* mastery + reward */
 function win(text,noMastery){
-  if(ctx.done)return;ctx.done=true;say(text,true);
+  if(ctx.done)return;ctx.done=true;say(text,true);bugs('happy');
   const m=S.m[S.skill];let levelUp=false;
   if(!noMastery){if(ctx.hints===0){m.streak++;m.low=0;if(m.streak>=3&&m.lv<MAX(S.skill)){m.lv++;m.streak=0;levelUp=true}}
     else{m.streak=0;if(ctx.hints>=2){m.low++;if(m.low>=2&&m.lv>1){m.lv--;m.low=0}}else m.low=0}}
@@ -372,7 +421,7 @@ function win(text,noMastery){
 }
 function addPage(text,big){S.book.unshift({t:text,d:Date.now(),big:!!big});if(S.book.length>200)S.book.length=200}
 const KID=()=>S.name||'Zoe';
-function miss(hint){ctx.hints++;say(hint,false);if(S.streakNow){S.streakNow=0;renderStreak()}const t=controls.querySelector('.typed');if(t){t.classList.remove('shake');void t.offsetWidth;t.classList.add('shake')}}
+function miss(hint){ctx.hints++;say(hint,false);bugs('think');if(S.streakNow){S.streakNow=0;renderStreak()}const t=controls.querySelector('.typed');if(t){t.classList.remove('shake');void t.offsetWidth;t.classList.add('shake')}}
 /* every game declares help({clues:[...], answer, why, show}) so the Clue / Show me buttons work the same everywhere */
 function help(o){ctx.help=o;ctx.clueIdx=0}
 function helpRow(){const r=el('div','row');r.id='helpRow';const c=el('button','btn quiet','Clue'),s=el('button','btn quiet','Show me');
@@ -588,18 +637,23 @@ skill({id:'coins',room:'puz',title:'Make the money',levels:2,mount(lv){
   help({book:`made ${target}¢ out of coins`,clues:['Start with the biggest coin that fits. Then fill the rest with smaller ones.',`Count up as you add: ${target}¢ is the goal. Watch the number under the tray.`],why:`One way: ${way} = ${target}¢.`});
   const r=el('div','row');const b=el('button','btn','Done');b.onclick=()=>{if(sum===target){win(`${cheer()} That makes ${target}¢. Can you find another way?`)}else miss(sum<target?`You have ${sum}¢. ${target-sum}¢ more to go.`:`That's ${sum-target}¢ too much.`)};r.appendChild(b);controls.appendChild(r)}});
 
-skill({id:'sudoku',room:'puz',title:'Mini sudoku',levels:3,mount(lv){
-  const base=[[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]];const perm=shuffle([1,2,3,4]);let g=base.map(r=>r.map(v=>perm[v-1]));
-  if(Math.random()<.5)g=[g[1],g[0],g[3],g[2]];if(Math.random()<.5)g=g.map(r=>[r[1],r[0],r[3],r[2]]);if(Math.random()<.5)g=[g[2],g[3],g[0],g[1]];
-  const blanks=lv===1?5:lv===2?8:11;const idx=shuffle([...Array(16).keys()]).slice(0,blanks);
-  prompt.textContent='Every row, column and box needs 1, 2, 3, 4';const grid=el('div','sud');const cells=[];let sel=null;
-  for(let i=0;i<16;i++){const given=!idx.includes(i);const c=el('button','sq'+(given?' given':''),given?g[i>>2][i&3]:'');c.v=given?g[i>>2][i&3]:0;c.given=given;
-    if(!given)c.onclick=()=>{if(ctx.done)return;cells.forEach(x=>x.classList.remove('sel'));sel=c;c.classList.add('sel')};cells.push(c);grid.appendChild(c)}
+skill({id:'sudoku',room:'puz',title:'Sudoku',levels:3,grow:lv=>['','Now with numbers instead of shapes.','Now a bigger 6 by 6 grid.'][lv-1],mount(lv){
+  const N=lv===3?6:4,br=2,bc=lv===3?3:2;let g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;c++)g[r].push((bc*(r%br)+Math.floor(r/br)+c)%N)}
+  const perm=shuffle([...Array(N).keys()]);g=g.map(r=>r.map(v=>perm[v]));
+  const bands=shuffle([...Array(N/br).keys()]);g=bands.flatMap(b=>shuffle([...Array(br).keys()]).map(i=>g[b*br+i]));
+  const stacks=shuffle([...Array(N/bc).keys()]);const colOrder=stacks.flatMap(st=>shuffle([...Array(bc).keys()]).map(i=>st*bc+i));g=g.map(r=>colOrder.map(c=>r[c]));
+  const SYM=lv===1?[['circle','var(--accent)'],['square','var(--sky)'],['tri','var(--leaf)'],['star','var(--sun)']]:null;
+  const draw=v=>SYM?`<span class="sudsym">${svgShape(SYM[v][0],SYM[v][1]).outerHTML}</span>`:String(v+1);
+  const blanks=lv===1?6:lv===2?9:14;const idx=shuffle([...Array(N*N).keys()]).slice(0,blanks);
+  prompt.textContent=lv===1?'Every row, column and box needs each shape once':`Every row, column and box needs 1 to ${N}`;
+  const grid=el('div','sud'+(N===6?' six':''));const cells=[];let sel=null;
+  for(let i=0;i<N*N;i++){const r=Math.floor(i/N),c=i%N,given=!idx.includes(i);const cell=el('button','sq'+(given?' given':''),given?draw(g[r][c]):'');cell.v=given?g[r][c]:-1;cell.given=given;
+    if(!given)cell.onclick=()=>{if(ctx.done)return;cells.forEach(x=>x.classList.remove('sel'));sel=cell;cell.classList.add('sel')};cells.push(cell);grid.appendChild(cell)}
   stage.appendChild(grid);
-  help({book:`finished a mini sudoku`,clues:['Find a row or box that has three numbers already. Only one number is missing there.','Look at an empty box: which of 1, 2, 3, 4 is not yet in its row, its column, or its 2×2 box?'],why:'Here is the finished grid.',show:()=>cells.forEach((c,i)=>{if(!c.given){c.v=g[i>>2][i&3];c.textContent=c.v;c.classList.remove('bad');c.style.color='var(--accent)'}})});
-  const p=el('div','pad four');[1,2,3,4].forEach(n=>{const b=el('button','num',n);b.onclick=()=>{if(!sel||ctx.done)return;sel.v=n;sel.textContent=n;sel.classList.remove('bad')};p.appendChild(b)});
-  const chk=el('button','num go','Check');chk.style.gridColumn='1/-1';chk.onclick=()=>{let bad=0,empty=0;cells.forEach(c=>{if(!c.v)empty++;else if(c.v!==g[cells.indexOf(c)>>2][cells.indexOf(c)&3]&&!c.given){bad++;c.classList.add('bad')}});
-    if(!empty&&!bad){lock(p);win(`${cheer()} Every row, column and box has 1, 2, 3 and 4.`)}else miss(empty?`${empty} empty box${empty>1?'es':''} left. Which row is almost full?`:`${bad} number${bad>1?'s':''} clash with their row, column or box. They turned orange.`)};
+  help({book:lv===1?'finished a shape sudoku':`finished a ${N} by ${N} sudoku`,clues:['Find a row or box with only one empty space. Only one thing can go there.',`Pick an empty box: which of the ${N} is not yet in its row, its column, or its box?`],why:'Here is the finished grid.',show:()=>cells.forEach((cell,i)=>{if(!cell.given){const r=Math.floor(i/N),c=i%N;cell.v=g[r][c];cell.innerHTML=draw(g[r][c]);cell.classList.remove('bad');cell.style.color='var(--accent)'}})});
+  const p=el('div','pad '+(N===6?'six':'four'));for(let v=0;v<N;v++){const b=el('button','num',draw(v));b.onclick=()=>{if(!sel||ctx.done)return;sel.v=v;sel.innerHTML=draw(v);sel.classList.remove('bad')};p.appendChild(b)}
+  const chk=el('button','num go','Check');chk.style.gridColumn='1/-1';chk.onclick=()=>{let bad=0,empty=0;cells.forEach((cell,i)=>{const r=Math.floor(i/N),c=i%N;if(cell.v<0)empty++;else if(!cell.given&&cell.v!==g[r][c]){bad++;cell.classList.add('bad')}});
+    if(!empty&&!bad){lock(p);win(`${cheer()} Every row, column and box is complete.`)}else miss(empty?`${empty} empty box${empty>1?'es':''} left. Which row is almost full?`:`${bad} clash${bad>1?'es':''} with a row, column or box. They turned orange.`)};
   p.appendChild(chk);controls.appendChild(p)}});
 
 skill({id:'riddle',room:'puz',title:'Number riddle',levels:3,grow:lv=>['','Now the secret number can be up to 50.','Now the secret number can be up to 100.'][lv-1],mount(lv){
@@ -785,6 +839,58 @@ function openIdea(idea){show('learn');$('#learnTitle').textContent=idea.title;$(
 
 
 
+
+/* ================= MASCOT ================= */
+const BUG=`<ellipse cx="30" cy="34" rx="20" ry="17" fill="#e63946"/><path d="M30 17v34" stroke="#1a1a1a" stroke-width="2.5"/><circle cx="30" cy="16" r="9" fill="#1a1a1a"/><circle cx="26" cy="14" r="2.2" fill="#fff"/><circle cx="34" cy="14" r="2.2" fill="#fff"/><circle cx="26.6" cy="14.4" r="1" fill="#1a1a1a"/><circle cx="34.6" cy="14.4" r="1" fill="#1a1a1a"/><g fill="#1a1a1a"><circle cx="20" cy="30" r="3"/><circle cx="40" cy="30" r="3"/><circle cx="23" cy="42" r="2.6"/><circle cx="37" cy="42" r="2.6"/><circle cx="30" cy="48" r="2"/></g><path d="M22 10l-5-6M38 10l5-6" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>`;
+function bugs(cls){document.querySelectorAll('.bug').forEach(b=>{b.innerHTML=BUG;b.className.baseVal='bug '+cls});if(cls!=='idle')setTimeout(()=>document.querySelectorAll('.bug').forEach(b=>b.className.baseVal='bug idle'),cls==='happy'?800:2500)}
+
+/* ================= PLAYGROUND ================= */
+const TOYS=[
+ {id:'sticks',title:'Counters and sticks',line:'Ten counters snap into a stick',
+  mount(stage,ctl,target,msg){let n=0,goal=rnd(11,45);target.textContent=`Can you build ${goal}?`;const big=el('div','bignum','0'),rods=el('div','rods'),ones=el('div','ones');stage.append(big,rods,ones);
+    const draw=()=>{big.textContent=n;rods.innerHTML='';ones.innerHTML='';for(let i=0;i<Math.floor(n/10);i++){const r=el('div','rod solid');for(let j=0;j<10;j++)r.appendChild(el('span','u'));rods.appendChild(r)}for(let i=0;i<n%10;i++)ones.appendChild(el('div','one'));
+      msg.textContent=n===goal?`Yes! ${Math.floor(n/10)} sticks and ${n%10} ones make ${goal}.`:n%10===0&&n>0?`${n/10} full sticks. No loose ones.`:'';if(n===goal){bugs('happy');playNote(goal);setTimeout(()=>{goal=rnd(11,60);target.textContent=`Now build ${goal}!`;msg.textContent=''},1800)}};
+    const b=el('div','toybtns');[['+1',1],['+10',10],['−1',-1],['−10',-10]].forEach(([t,v])=>{const k=el('button','num',t);k.onclick=()=>{const was=n;n=Math.max(0,Math.min(99,n+v));draw();if(v===1&&was%10===9&&n%10===0){msg.textContent='Ten loose ones became a stick!';const r=rods.lastChild;if(r){r.classList.add('pop')}}};b.appendChild(k)});ctl.appendChild(b);draw();
+    return ()=>`built numbers with sticks and ones in the playground`}},
+ {id:'walk',title:'Number line walk',line:'Hop along the line and watch the sum',
+  mount(stage,ctl,target,msg){let pos=rnd(2,8),goal=rnd(10,20),steps=[];const start=pos;target.textContent=`Start at ${pos}. Can you land on ${goal}?`;const line=el('div','walk');stage.appendChild(line);const eq=el('div','eq');eq.style.fontSize='1.5rem';stage.appendChild(eq);
+    const draw=()=>{line.innerHTML=walkSvg(pos);eq.textContent=steps.length?`${start} ${steps.map(x=>(x>0?'+ ':'− ')+Math.abs(x)).join(' ')} = ${pos}`:`${start}`;if(pos===goal){msg.textContent=`Landed on ${goal}!`;bugs('happy');playNote(goal);setTimeout(()=>{goal=rnd(0,20);target.textContent=`Now get to ${goal}.`;steps.length=0;msg.textContent='';},1800)}};
+    const b=el('div','toybtns');[1,2,5,-1,-2,-5].forEach(v=>{const k=el('button','num',(v>0?'+':'−')+Math.abs(v));k.onclick=()=>{if(pos+v<0||pos+v>20)return;pos+=v;steps.push(v);draw()};b.appendChild(k)});const r=el('button','num','start over');r.onclick=()=>{pos=start;steps.length=0;msg.textContent='';draw()};b.appendChild(r);ctl.appendChild(b);draw();
+    return ()=>`walked the number line in the playground`}},
+ {id:'scale',title:'Balance scale',line:'Load both sides and watch it tip',
+  mount(stage,ctl,target,msg){let L=0,R=0;target.textContent='Make both sides the same.';const sc=el('div','scale');stage.appendChild(sc);
+    const draw=()=>{const t=L===R?0:(L>R?-8:8),dy=t?19.5:0;sc.innerHTML=`<svg viewBox="0 0 400 160"><path d="M200 140V30M120 140h160" stroke="var(--fg)" stroke-width="4"/><g class="beam"><path d="M60 40h280" stroke="var(--fg)" stroke-width="4"/></g><g class="pan pl"><path d="M60 40v10" stroke="var(--fg)" stroke-width="3"/><rect x="25" y="50" width="70" height="60" rx="8" fill="var(--bg)" stroke="var(--line)" stroke-width="2"/><text x="60" y="90" text-anchor="middle" font-size="26" font-family="var(--display)" fill="var(--fg)">${L}</text></g><g class="pan pr"><path d="M340 40v10" stroke="var(--fg)" stroke-width="3"/><rect x="305" y="50" width="70" height="60" rx="8" fill="var(--bg)" stroke="var(--line)" stroke-width="2"/><text x="340" y="90" text-anchor="middle" font-size="26" font-family="var(--display)" fill="var(--fg)">${R}</text></g></svg>`;
+      const beam=sc.querySelector('.beam'),pl=sc.querySelector('.pl'),pr=sc.querySelector('.pr');void beam.getBoundingClientRect();beam.style.transform=`rotate(${t}deg)`;pl.style.transform=`translateY(${t<0?dy:-dy}px)`;pr.style.transform=`translateY(${t<0?-dy:dy}px)`;
+      msg.textContent=L+R===0?'':L===R?`Balanced! ${L} = ${R}.`:L>R?`Left is heavier by ${L-R}.`:`Right is heavier by ${R-L}.`;if(L===R&&L>0)bugs('happy')};
+    const b=el('div','toybtns');[['left +1',()=>L++],['left +5',()=>L+=5],['right +1',()=>R++],['right +5',()=>R+=5],['clear',()=>{L=0;R=0}]].forEach(([t,f])=>{const k=el('button','num',t);k.style.fontSize='1rem';k.onclick=()=>{f();draw()};b.appendChild(k)});ctl.appendChild(b);draw();
+    return ()=>`played with the balance scale in the playground`}}
+];
+function walkSvg(pos){const w=560,pad=20,step=(w-2*pad)/20;let h=`<svg viewBox="0 0 ${w} 90"><line x1="${pad}" y1="60" x2="${w-pad}" y2="60" stroke="var(--fg)" stroke-width="3"/>`;for(let i=0;i<=20;i++){const x=pad+i*step;h+=`<line x1="${x}" y1="52" x2="${x}" y2="68" stroke="var(--fg)" stroke-width="2"/><text x="${x}" y="84" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--display)">${i}</text>`}
+  h+=`<g transform="translate(${pad+pos*step-14},18) scale(.47)" style="transition:transform .5s cubic-bezier(.34,1.56,.64,1)">${BUG}</g></svg>`;return h}
+let ac2;function playNote(n){try{ac2=ac2||new (window.AudioContext||window.webkitAudioContext)();const t=ac2.currentTime,o=ac2.createOscillator(),g=ac2.createGain();o.frequency.value=330+n*12;o.connect(g);g.connect(ac2.destination);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.12,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.5);o.start(t);o.stop(t+.55)}catch(e){}}
+function renderToys(){const t=$('#toys');t.innerHTML='';TOYS.forEach(x=>{const b=el('button','toy',`<b>${x.title}</b><small>${x.line}</small>`);b.onclick=()=>openToy(x);t.appendChild(b)})}
+function openToy(toy){show('toy');$('#toyTitle').textContent=toy.title;const st=$('#toyStage'),ct=$('#toyControls'),tg=$('#toyTarget'),m=$('#toyMsg');st.innerHTML='';ct.innerHTML='';m.textContent='';
+  const line=toy.mount(st,ct,tg,m);$('#toyBack').onclick=()=>{addPage(`${KID()} ${line()}.`,false);S.counts['toy_'+toy.id]=(S.counts['toy_'+toy.id]||0)+1;save();renderToys();show('playground')}}
+
+/* ================= LOGIC: who has what ================= */
+const KIDS=['Zoe','Max','Lily','Sam'],PETS=[['cat','🐱'],['dog','🐶'],['fish','🐟'],['bird','🐦']];
+skill({id:'logic',room:'puz',title:'Who has what?',levels:2,mount(lv){
+  const n=lv===1?3:4;const kids=KIDS.slice(0,n).map(k=>k==='Zoe'?KID():k),pets=PETS.slice(0,n);
+  const perms=a=>a.length<=1?[a]:a.flatMap((x,i)=>perms(a.filter((_,j)=>j!==i)).map(p=>[x].concat(p)));const all=perms([...Array(n).keys()]);
+  let sol,clues;for(let tries=0;tries<60;tries++){sol=pick(all);clues=[];let cands=all.slice();
+    const pool=shuffle([...Array(n).keys()].flatMap(k=>[...Array(n).keys()].map(q=>({k,q}))));
+    for(const {k,q} of pool){if(cands.length===1)break;const yes=sol[k]===q;if(yes&&Math.random()<.4){const c={t:`${kids[k]} has the ${pets[q][0]}.`,f:p=>p[k]===q};const next=cands.filter(c.f);if(next.length<cands.length){cands=next;clues.push(c)}}
+      else if(!yes){const c={t:`${kids[k]} does not have the ${pets[q][0]}.`,f:p=>p[k]!==q};const next=cands.filter(c.f);if(next.length<cands.length&&clues.length<(lv===1?3:5)){cands=next;clues.push(c)}}}
+    if(cands.length===1&&clues.length>=2)break}
+  prompt.textContent='Read the clues. Who has which pet?';const ul=el('ul','clues');clues.forEach(c=>ul.appendChild(el('li','',c.t)));
+  const g=el('div','logic');g.style.gridTemplateColumns=`70px repeat(${n},1fr)`;g.appendChild(el('div','hd',''));pets.forEach(p=>g.appendChild(el('div','hd',`<span style="font-size:1.4rem">${p[1]}</span>`)));
+  const marks=Array.from({length:n},()=>Array(n).fill(0));const cells=[];
+  kids.forEach((k,i)=>{g.appendChild(el('div','hd',k));pets.forEach((p,j)=>{const c=el('button','lc','');c.onclick=()=>{if(ctx.done)return;marks[i][j]=(marks[i][j]+1)%3;c.textContent=['','✓','✗'][marks[i][j]];c.className='lc'+(marks[i][j]===1?' yes':marks[i][j]===2?' no':'')};cells.push(c);g.appendChild(c)})});
+  stage.append(ul,readBtn(()=>clues.map(c=>c.t).join(' ')),g);
+  help({book:`solved a who-has-what puzzle with ${n} friends`,clues:['Start with a clue that says who HAS something. Put a ✓ there, then ✗ in the rest of that row and column.','Find a row with only one empty box left. That must be the ✓.'],why:kids.map((k,i)=>`${k} has the ${pets[sol[i]][0]}`).join(', ')+'.',show:()=>cells.forEach((c,idx)=>{const i=Math.floor(idx/n),j=idx%n;c.className='lc'+(sol[i]===j?' yes':' no');c.textContent=sol[i]===j?'✓':'✗'})});
+  const r=el('div','row');const b=el('button','btn','Check');b.onclick=()=>{let ok=true,empty=0;kids.forEach((k,i)=>{const ticks=marks[i].map((m,j)=>m===1?j:-1).filter(j=>j>=0);if(ticks.length!==1)empty++;else if(ticks[0]!==sol[i])ok=false});
+    if(ok&&!empty){lock(r);win(`${cheer()} ${kids.map((k,i)=>`${k}: ${pets[sol[i]][1]}`).join('  ')}`)}else miss(empty?`${empty} friend${empty>1?'s':''} still need${empty>1?'':'s'} exactly one ✓.`:'One ✓ is in the wrong place. Check each clue again.')};r.appendChild(b);controls.appendChild(r)}});
+
 /* ================= SHAPES & SPACE ================= */
 const PIECES={L:[[1,0],[1,0],[1,1]],T:[[1,1,1],[0,1,0]],Z:[[1,1,0],[0,1,1]],I:[[1,1,1]],O:[[1,1],[1,1]],P:[[1,1],[1,1],[1,0]],C:[[1,1],[1,0],[1,1]]};
 function cellsSvg(grid,col,size,gap){const h=[];grid.forEach((row,y)=>row.forEach((v,x)=>{if(v)h.push(`<rect x="${x*(size+gap)}" y="${y*(size+gap)}" width="${size}" height="${size}" rx="3" fill="${col}"/>`)}));return h.join('')}
@@ -875,6 +981,7 @@ function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';con
   const m=S.m[id]||(S.m[id]={lv:1,streak:0,low:0});SK[id].mount(m.lv);if(ctx.help)controls.appendChild(helpRow());renderTrail()}
 function renderSkills(){}
 function renderDoors(){const d=$('#doors');d.innerHTML='';ROOMS.forEach(rm=>{const b=el('button','door'+(rm.id==='make'?' maker':''),`<svg viewBox="0 0 24 24">${rm.icon}</svg><b>${rm.id==='make'?KID()+' makes it':DOORS[rm.id][0]}</b><small>${DOORS[rm.id][1]}</small>`);b.onclick=()=>startTrail(rm.id);d.appendChild(b)});
+  const pgd=el('button','door sand',`<svg viewBox="0 0 24 24"><rect x="3" y="14" width="18" height="6" rx="2" fill="var(--soil)"/><circle cx="8" cy="9" r="3" fill="var(--sky)"/><rect x="13" y="6" width="6" height="6" fill="var(--accent)"/></svg><b>Playground</b><small>Just play</small>`);pgd.onclick=()=>{renderToys();show('playground')};d.appendChild(pgd);
   const i=el('button','door ideas',`<svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z" fill="#fff"/><rect x="9" y="18" width="6" height="3" rx="1" fill="#1a1a1a"/></svg><b>Big Ideas</b><small>Read and understand</small>`);i.onclick=()=>{renderIdeas();show('ideas')};d.appendChild(i)}
 function renderPapa(){const P=$('#papa');const played=Object.values(SK).filter(k=>S.counts[k.id]);const strong=played.slice().sort((a,b)=>(S.m[b.id]?S.m[b.id].lv:1)*10+(S.counts[b.id]||0)-((S.m[a.id]?S.m[a.id].lv:1)*10+(S.counts[a.id]||0))).slice(0,3);
   const stuck=Object.values(SK).map(k=>({k,low:S.m[k.id]?S.m[k.id].low:0,streak:S.m[k.id]?S.m[k.id].streak:0})).filter(x=>x.low>0).sort((a,b)=>b.low-a.low)[0];
@@ -893,7 +1000,7 @@ function greeting(){const h=new Date().getHours();const hi=h<12?'Good morning':h
   else if(last===today)line=`${hi}, <em>${k}</em>! Last thing you did: ${big.t.replace(k,'you').replace(/\bshe\b/g,'you')}`;
   else{const n=S.days.length;line=`${hi}, <em>${k}</em>! Welcome back. ${big?big.t.replace(k,'You').replace(/\bshe\b/g,'you')+' ':''}You have played on ${inWords(n)} different day${n===1?'':'s'}.`}
   return line+' <br><span style="color:var(--muted)">'+MOTTOS[today%MOTTOS.length]+'</span>'}
-function renderHome(){$('#homeTitle').textContent='Number Garden';$('#bookBtn').textContent=`${KID()}'s Book`;$('#greet').innerHTML=greeting();const gb=$('#greetRead');if(gb)gb.remove();const rb=readBtn(()=>$('#greet').textContent+(S.note?' A note from Papa: '+S.note:''));rb.id='greetRead';$('#greet').after(rb);const nc=$('#noteCard');nc.hidden=!S.note;if(S.note)nc.innerHTML=`<small>A note from Papa</small>${S.note.replace(/</g,'&lt;')}`;drawGarden();renderDoors()}
+function renderHome(){$('#homeTitle').textContent='Number Garden';$('#bookBtn').textContent=`${KID()}'s Book`;$('#greet').innerHTML=greeting();const gb=$('#greetRead');if(gb)gb.remove();const rb=readBtn(()=>$('#greet').textContent+(S.note?' A note from Papa: '+S.note:''));rb.id='greetRead';document.querySelector('.homebug').after(rb);const nc=$('#noteCard');nc.hidden=!S.note;if(S.note)nc.innerHTML=`<small>A note from Papa</small>${S.note.replace(/</g,'&lt;')}`;drawGarden();renderDoors()}
 
 /* ---------- wiring ---------- */
 $('#gearBtn').onclick=()=>{renderLevels();show('sheet')};
@@ -902,6 +1009,8 @@ $('#backBtn').onclick=()=>{show('home');renderHome()};
 $('#bookBtn').onclick=()=>{renderBook();show('book')};
 $('#bookBack').onclick=()=>{show('home')};
 $('#ideasBack').onclick=()=>{renderHome();show('home')};
+$('#pgBack').onclick=()=>{renderHome();show('home')};
+bugs('idle');
 $('#learnBack').onclick=()=>{renderIdeas();show('ideas')};
 $('#name').value=S.name;$('#name').oninput=e=>{S.name=e.target.value.trim();save()};
 $('#duo').checked=S.duo;$('#duo').onchange=e=>{S.duo=e.target.checked;save()};
