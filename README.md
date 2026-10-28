@@ -14,17 +14,27 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 | Puzzles | Balance it · Which one is different? · Make the money · Mini sudoku · Number riddle | Reasoning with no algorithm: the seed of competition math |
 | Stories | Story mystery · How many ways? | Reading-level word problems in one to two steps, and open questions with several right answers |
 
+## How a session works
+
+The home screen is the garden with five doors. Tapping a door starts a **trail** of five stepping stones (two warm-ups, games from that door, one puzzle). Each solved stone lights up; the fifth plants a flower in the garden. Levels adapt silently and are never shown to the child.
+
+**Zoe's Book** writes one sentence she can read for every problem she solves ("Zoe took 9 away from 23 and got 14"), a bigger entry for each level-up and finished trail, and holds the badge shelf (First Flower, Ten-Breaker, Riddle Solver, Many Ways, Balance Master, Pattern Spotter, Story Reader, Gardener).
+
+The grown-up settings are behind the faint "for grown-ups" link at the bottom of the home screen.
+
 ## Design rules
 
+- One thing on screen at a time. No tabs, no counters, no level tags visible to her.
 - No timers anywhere. Speed is never rewarded.
 - A star is earned for finishing a problem, not for a first-try answer.
 - Wrong answers get a hint that points at the structure, never an X.
 - Levels adapt on their own: three clean problems in a row moves up, two hint-heavy problems moves down. The gear menu lets a grown-up nudge any level.
 - "Me & Dad" mode alternates turns on the same games so the child watches an adult think out loud.
-- Every two stars plants a flower in the garden strip at the top.
+- Every finished trail plants a flower. Confetti is reserved for flowers and level-ups.
 
 ## Ideas queued
 
+- Let her tap objects to count them herself before typing
 - "You make the rule": Zoe invents the rule machine and the app guesses
 - "You hide the number": Zoe picks the secret and answers the app's clue questions
 - Shapes & space room (tangram fits, counting squares, symmetry)
@@ -32,7 +42,7 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 
 ## Adding a game
 
-Each game is a `skill({...})` call in `index.html` with an `id`, a `room`, a `title`, a number of `levels`, and a `mount(level)` function that draws into `stage` and `controls` and calls `win(message)` or `miss(hint)`. Shared helpers: `pad`, `numpad`, `choices`, `tenFrame`, `numberLine`. Mastery, stars, turns and the garden are handled for you.
+Each game is a `skill({...})` call in `index.html` with an `id`, a `room`, a `title`, a number of `levels`, and a `mount(level)` function that draws into `stage` and `controls` and calls `win(message)` or `miss(hint)`. Each game calls `help({book, clues, answer, why, show})`: `book` is the sentence written in her book, `clues` feed the Clue button, `show` draws the answer. Shared helpers: `pad`, `numpad`, `choices`, `tenFrame`, `numberLine`. Mastery, stars, turns and the garden are handled for you.
 
 ## Wrapping as a desktop app
 
