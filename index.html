@@ -130,6 +130,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .beam,.pan{transition:transform .7s cubic-bezier(.3,1.4,.5,1)}.beam{transform-origin:200px 40px}
 
 .card{background:var(--card);border-radius:26px;padding:18px 14px;flex:1 1 auto;display:flex;flex-direction:column;gap:14px;min-height:0;box-sizing:border-box;box-shadow:0 8px 24px rgba(20,60,40,.08)}
+.where{font-family:var(--display);color:var(--muted);font-size:.85rem;text-align:center;letter-spacing:.02em}
 .turn{font-family:var(--display);color:var(--plum);font-size:.95rem;white-space:nowrap}
 .prompt{font-family:var(--display);font-size:1.5rem;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
 .stage{display:flex;justify-content:center;align-items:center;flex:1 0 auto;min-height:150px;flex-wrap:wrap;gap:16px}
@@ -233,6 +234,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 <div id="play" class="view" hidden>
   <div class="playtop"><button class="back" id="backBtn" aria-label="back to garden">‹</button><div class="trail" id="trail"></div><div class="streak" id="streakChip" hidden></div><div class="turn" id="turn"></div></div>
   <div class="card" id="card">
+    <div class="where" id="where"></div>
     <div class="prompt" id="prompt"></div>
     <div class="stage" id="stage"></div>
     <div class="msg" id="msg"></div>
@@ -397,7 +399,10 @@ function drawGarden(){const svg=$('#gardenSvg');const fl=S.flowers.slice(-40);le
 /* ---------- trails ---------- */
 function makeTrail(door){const room=r=>shuffle(Object.values(SK).filter(k=>k.room===r).map(k=>k.id));const w=room('warm'),d=room(door),z=room('puz');
   const day=Math.floor(Date.now()/864e5);S.last=S.last||{};const stale=Object.values(SK).filter(k=>k.room!=='make'&&S.counts[k.id]&&day-(S.last[k.id]||0)>=3).sort((a,b)=>(S.last[a.id]||0)-(S.last[b.id]||0))[0];if(stale)z[0]=stale.id;
-  let steps;if(door==='make')steps=['hide','rulemaker','hide','rulemaker','hide'];else if(door==='warm')steps=[w[0],w[1],room('pat')[0],w[0],z[0]];else if(door==='puz')steps=[w[0],d[0],d[1],d[2],d[3]||d[0]];else steps=[w[0],d[0],d[1%d.length],z[0],d[0]];
+  let steps;if(door==='make')steps=['hide','rulemaker','hide','rulemaker','hide'];
+  else if(door==='warm')steps=[w[0],room('pat')[0],w[1],z[0],w[0]];
+  else if(door==='puz')steps=[d[0],w[0],d[1],d[2],d[3]||d[0]];
+  else steps=[d[0],w[0],d[1%d.length],z[0],d[(2)%d.length]];
   S.trail={door,steps,i:0,lit:[false,false,false,false,false]};save()}
 function renderStreak(){const c=$('#streakChip');if(!c)return;c.hidden=S.streakNow<2;c.textContent=`${S.streakNow} in a row`}
 function renderTrail(){const t=$('#trail');t.innerHTML='';if(!S.trail)return;S.trail.steps.forEach((_,i)=>{const st=el('div','stone'+(S.trail.lit[i]?' lit':'')+(i===S.trail.i?' now':''));t.appendChild(st)})}
@@ -864,7 +869,7 @@ skill({id:'rulemaker',room:'make',title:'You make the rule',levels:1,mount(){
   help({clues:['Pick a rule, then do that rule to each number I give you.','If you forget, the rule is shown only to you at the top: look at the choice you made.'],why:'You choose the rule; I give inputs and guess it.'})}});
 
 /* ---------- play loop ---------- */
-function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');
+function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');$('#where').textContent=`${DOORS[SK[id].room][0]} · ${SK[id].title}`;
   ctx={hints:0,done:false,turn:S.duo?S.turn:0};
   turnEl.textContent=S.duo?(ctx.turn===1?"Dad's turn":`${KID()}'s turn`):'';
   const m=S.m[id]||(S.m[id]={lv:1,streak:0,low:0});SK[id].mount(m.lv);if(ctx.help)controls.appendChild(helpRow());renderTrail()}
