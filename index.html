@@ -1,0 +1,406 @@
+<title>Number Garden</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700&display=swap">
+<style>
+/* Layout: garden strip on top, room tabs, one big play card. Everything is a tap target a 5-year-old can hit. */
+:root{
+  --bg:#eaf4ee; --card:#ffffff; --fg:#223a32; --muted:#5e7a6e;
+  --accent:#ff7a59; --accent-ink:#ffffff; --sun:#ffc83d; --leaf:#4cae7c; --sky:#5aa9e6; --plum:#9b6bd6;
+  --line:#cfe3d7; --dot:#2b6cb0; --dot-gone:#d8e7df; --soil:#b98a5b;
+  --display:"Fredoka","Nunito",system-ui,sans-serif; --body:"Nunito",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#15241e; --card:#1f3129; --fg:#eef6f1; --muted:#9fb8ac; --accent:#ff8a6a; --accent-ink:#1a1a1a;
+  --sun:#ffd25a; --leaf:#5fc08f; --sky:#7cbcf0; --plum:#b48ae8; --line:#2f463b; --dot:#8dc3ff; --dot-gone:#2a3d34; --soil:#8a6442; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#15241e; --card:#1f3129; --fg:#eef6f1; --muted:#9fb8ac; --accent:#ff8a6a; --accent-ink:#1a1a1a;
+  --sun:#ffd25a; --leaf:#5fc08f; --sky:#7cbcf0; --plum:#b48ae8; --line:#2f463b; --dot:#8dc3ff; --dot-gone:#2a3d34; --soil:#8a6442; color-scheme:dark }
+
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-weight:700;
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:10px;max-width:760px;margin-inline:auto;box-sizing:border-box;-webkit-user-select:none;user-select:none}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;background:none;padding:0}
+button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
+[hidden]{display:none!important}
+
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.top h1{font-size:1.45rem;font-weight:700;flex:1 1 auto}
+.jar{display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px 12px;font-family:var(--display);font-size:1.1rem;font-variant-numeric:tabular-nums}
+.jar svg{width:20px;height:20px}
+.jar.dad{color:var(--muted)}
+.gear{background:var(--card);border-radius:999px;width:40px;height:40px;display:grid;place-items:center;color:var(--muted)}
+
+.garden{background:var(--card);border-radius:18px;padding:6px 10px 0;height:84px;overflow:hidden}
+.garden svg{width:100%;height:100%;display:block}
+
+.rooms{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.room{background:var(--card);border-radius:16px;padding:8px 4px;font-family:var(--display);font-size:.95rem;font-weight:600;border:3px solid transparent;display:flex;flex-direction:column;align-items:center;gap:2px}
+.room svg{width:30px;height:30px}
+.room[aria-selected="true"]{border-color:var(--accent)}
+.skills{display:flex;gap:6px;flex-wrap:wrap}
+.skill{background:var(--card);border-radius:999px;padding:7px 14px;font-family:var(--display);font-weight:600;font-size:.95rem;border:3px solid transparent;display:flex;align-items:center;gap:6px}
+.skill[aria-selected="true"]{border-color:var(--leaf)}
+.skill small{font-family:var(--body);color:var(--muted);font-size:.75rem}
+
+.card{background:var(--card);border-radius:26px;padding:18px 14px;flex:1 1 auto;display:flex;flex-direction:column;gap:14px;min-height:0;box-sizing:border-box;box-shadow:0 8px 24px rgba(20,60,40,.08)}
+.turn{text-align:center;font-family:var(--display);color:var(--plum);font-size:1rem;min-height:1.2em}
+.prompt{font-family:var(--display);font-size:1.5rem;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+.stage{display:flex;justify-content:center;align-items:center;flex:1 1 auto;min-height:150px;flex-wrap:wrap;gap:16px}
+.msg{min-height:1.8em;text-align:center;font-size:1.1rem;color:var(--muted)}
+.msg.good{color:var(--leaf)}
+
+.pad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.pad.six{grid-template-columns:repeat(6,1fr)}
+.pad.four{grid-template-columns:repeat(4,1fr)}
+.num{background:var(--bg);border-radius:16px;height:56px;font-family:var(--display);font-size:1.5rem;font-weight:600;font-variant-numeric:tabular-nums;display:grid;place-items:center}
+.num:active{transform:scale(.95)}
+.num[disabled]{opacity:.45;cursor:default}
+.num.hit{background:var(--sun);color:#1a1a1a}
+.num.miss{background:var(--line)}
+.num.go{background:var(--accent);color:var(--accent-ink)}
+.typed{grid-column:1/-1;text-align:center;font-family:var(--display);font-size:2rem;min-height:1.2em;font-variant-numeric:tabular-nums}
+
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:13px 24px;font-family:var(--display);font-size:1.15rem;font-weight:600}
+.btn.quiet{background:var(--bg);color:var(--fg)}
+.choice{background:var(--bg);border-radius:16px;padding:12px 18px;font-family:var(--display);font-size:1.3rem;font-weight:600;min-width:64px}
+.choice.hit{background:var(--sun);color:#1a1a1a}.choice.miss{background:var(--line)}
+
+.dots{display:grid;gap:10px;justify-content:center}
+.dot{width:34px;height:34px;border-radius:50%;background:var(--dot)}
+.dot.ghost{visibility:hidden}.dot.a{background:var(--leaf)}.dot.b{background:var(--accent)}
+.frame{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;border:3px solid var(--fg);border-radius:10px;padding:5px;background:var(--card)}
+.cell{width:46px;height:46px;border:2px solid var(--line);border-radius:8px;display:grid;place-items:center}
+.cell i{width:32px;height:32px;border-radius:50%;background:var(--dot);display:block;transition:transform .25s,background .25s}
+.cell i.new{background:var(--accent)}.cell i.empty{transform:scale(0)}
+.frames{display:flex;flex-direction:column;gap:8px;align-items:center}
+.plus{font-family:var(--display);font-size:1.6rem}
+
+.ta{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+.counts{display:flex;gap:28px;font-family:var(--display);font-size:1rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.counts b{color:var(--fg);font-size:1.5rem;display:block;text-align:center}
+.rods{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.rod{display:grid;grid-template-rows:repeat(5,1fr);grid-auto-flow:column;gap:3px;padding:5px;border-radius:10px;background:var(--bg);border:2px dashed var(--line)}
+.rod.solid{border-style:solid;cursor:default}
+.rod .u{width:16px;height:16px;border-radius:50%;background:var(--dot)}
+.ones{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.one{width:32px;height:32px;border-radius:50%;background:var(--dot)}
+.one.gone{background:var(--dot-gone)}
+.hint{font-size:.95rem;color:var(--muted);text-align:center;max-width:36ch}
+
+.nline{width:100%;max-width:520px}
+.eq{font-family:var(--display);font-size:2rem;display:flex;gap:10px;align-items:center;font-variant-numeric:tabular-nums}
+.eq .box{width:56px;height:56px;border:3px dashed var(--accent);border-radius:12px;display:grid;place-items:center;color:var(--accent)}
+
+.seq{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+.seq .it{width:48px;height:48px;display:grid;place-items:center;font-family:var(--display);font-size:1.4rem;font-variant-numeric:tabular-nums}
+.seq .q{border:3px dashed var(--accent);border-radius:12px;color:var(--accent)}
+.shape{width:40px;height:40px}
+.machine{display:flex;flex-direction:column;gap:6px;align-items:center;font-family:var(--display);font-size:1.3rem;font-variant-numeric:tabular-nums}
+.machine .io{display:grid;grid-template-columns:70px 40px 70px;gap:4px;text-align:center}
+.machine .mbox{background:var(--plum);color:#fff;border-radius:14px;padding:6px 18px}
+
+.scale{width:100%;max-width:420px}
+.coins{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.coin{border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:700;color:#3a2a10;border:3px solid rgba(0,0,0,.15)}
+.tray{min-height:64px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;border:3px dashed var(--line);border-radius:16px;padding:8px;width:100%;max-width:420px;box-sizing:border-box}
+.total{font-family:var(--display);font-size:1.4rem;font-variant-numeric:tabular-nums}
+
+.sud{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--fg);padding:4px;border-radius:12px}
+.sq{width:54px;height:54px;background:var(--card);display:grid;place-items:center;font-family:var(--display);font-size:1.6rem;font-variant-numeric:tabular-nums;border-radius:6px}
+.sq.given{background:var(--bg);color:var(--muted)}
+.sq.sel{outline:4px solid var(--accent);outline-offset:-4px}
+.sq.bad{color:var(--accent)}
+.sq:nth-child(2),.sq:nth-child(6),.sq:nth-child(10),.sq:nth-child(14){margin-right:4px}
+.sq:nth-child(5),.sq:nth-child(6),.sq:nth-child(7),.sq:nth-child(8){margin-bottom:4px}
+
+.wodb{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wodb .choice{height:72px;font-size:1.8rem;display:grid;place-items:center}
+.clues{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;font-size:1.15rem;text-align:center}
+
+.sheet{background:var(--card);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.sheet label{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sheet select,.sheet input{font:inherit;padding:8px 10px;border-radius:10px;border:2px solid var(--line);background:var(--bg);color:var(--fg)}
+.sheet p{margin:0;color:var(--muted);font-weight:500;line-height:1.45}
+.sheet table{width:100%;border-collapse:collapse;font-size:.95rem;font-variant-numeric:tabular-nums}
+.sheet td{padding:6px 4px;border-bottom:1px solid var(--line)}
+.sheet td:last-child{text-align:right}
+.lvl{display:inline-flex;gap:4px}.lvl button{width:30px;height:30px;border-radius:8px;background:var(--bg);font-family:var(--display)}
+
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
+.pop{animation:pop .4s ease}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:430px){.cell{width:40px;height:40px}.cell i{width:28px;height:28px}.dot{width:30px;height:30px}.num{height:52px;font-size:1.35rem}.room{font-size:.85rem}.sq{width:48px;height:48px}}
+</style>
+
+<div class="top">
+  <h1>Number Garden</h1>
+  <div class="jar" id="jarKid"><svg viewBox="0 0 24 24"><path fill="var(--sun)" d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg><span id="kidName">Stars</span> <span id="stars">0</span></div>
+  <div class="jar dad" id="jarDad" hidden><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.3l7.1-.7z"/></svg>Dad <span id="dadStars">0</span></div>
+  <button class="gear" id="gearBtn" aria-label="grown-up settings"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M19.4 13a7.4 7.4 0 000-2l2.1-1.6-2-3.5-2.5 1a7.6 7.6 0 00-1.7-1L15 3H9l-.3 2.9a7.6 7.6 0 00-1.7 1l-2.5-1-2 3.5L4.6 11a7.4 7.4 0 000 2l-2.1 1.6 2 3.5 2.5-1a7.6 7.6 0 001.7 1L9 21h6l.3-2.9a7.6 7.6 0 001.7-1l2.5 1 2-3.5zM12 15.5A3.5 3.5 0 1112 8.5a3.5 3.5 0 010 7z"/></svg></button>
+</div>
+
+<div class="garden"><svg id="gardenSvg" viewBox="0 0 400 70" aria-label="your garden"></svg></div>
+
+<div class="rooms" role="tablist" id="rooms"></div>
+<div class="skills" id="skills"></div>
+
+<div class="sheet" id="sheet" hidden>
+  <h2 style="font-size:1.2rem">For grown-ups</h2>
+  <label>Her name <input id="name" placeholder="optional" maxlength="20"></label>
+  <label>Me &amp; Dad mode (take turns) <input type="checkbox" id="duo"></label>
+  <p>Levels move by themselves: three problems in a row with no hints goes up a level, two problems that needed hints goes down. Nudge a level here if she's bored or stuck. A star is for finishing, never for being fast.</p>
+  <table id="levels"></table>
+  <div class="row"><button class="btn quiet" id="resetAll">Start over (clears stars and levels)</button><button class="btn" id="closeSheet">Back to playing</button></div>
+</div>
+
+<div class="card" id="card">
+  <div class="turn" id="turn"></div>
+  <div class="prompt" id="prompt"></div>
+  <div class="stage" id="stage"></div>
+  <div class="msg" id="msg"></div>
+  <div id="controls"></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s), el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1)), pick=a=>a[rnd(0,a.length-1)], shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const S=Object.assign({stars:0,dad:0,name:'',duo:false,m:{},room:'add',skill:null,turn:0},store.get('ng2',{}));
+const save=()=>store.set('ng2',S);
+
+/* ---------- rooms & skills ---------- */
+const ROOMS=[
+ {id:'warm',title:'Warm-ups',icon:'<circle cx="7" cy="7" r="3" fill="var(--dot)"/><circle cx="17" cy="7" r="3" fill="var(--dot)"/><circle cx="7" cy="17" r="3" fill="var(--dot)"/><circle cx="17" cy="17" r="3" fill="var(--accent)"/>'},
+ {id:'add',title:'Add & take',icon:'<rect x="3" y="4" width="6" height="16" rx="2" fill="var(--dot)"/><circle cx="15" cy="8" r="2.4" fill="var(--dot)"/><circle cx="15" cy="16" r="2.4" fill="var(--dot-gone)"/><circle cx="20" cy="8" r="2.4" fill="var(--dot)"/>'},
+ {id:'pat',title:'Patterns',icon:'<circle cx="5" cy="12" r="3" fill="var(--accent)"/><rect x="10" y="9" width="6" height="6" fill="var(--leaf)"/><circle cx="21" cy="12" r="3" fill="var(--accent)"/>'},
+ {id:'puz',title:'Puzzles',icon:'<path d="M4 18h16M12 18V6M6 6h12" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="6" cy="10" r="3" fill="var(--sun)"/><circle cx="18" cy="10" r="3" fill="var(--plum)"/>'}
+];
+const SK={};
+function skill(def){SK[def.id]=def}
+const MAX=id=>SK[id].levels;
+const lvl=id=>{const m=S.m[id]||(S.m[id]={lv:1,streak:0,low:0});return m.lv};
+
+/* ---------- shared UI ---------- */
+const prompt=$('#prompt'),stage=$('#stage'),msg=$('#msg'),controls=$('#controls'),turnEl=$('#turn');
+let ctx=null; // current problem context
+function say(t,good){msg.textContent=t;msg.className='msg'+(good?' good':'')}
+function cheer(){const c=pick(['Nice thinking!','You got it!','Yes!','That\'s it!','Great counting!','Clever!']);const who=S.duo&&ctx.turn===1?'Dad':S.name;return who?`${c.replace('!','')}, ${who}!`:c}
+let ac;function ding(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const t=ac.currentTime;[523,659,784].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.0001,t+i*.09);g.gain.exponentialRampToValueAtTime(.15,t+i*.09+.02);g.gain.exponentialRampToValueAtTime(.0001,t+i*.09+.25);o.start(t+i*.09);o.stop(t+i*.09+.3)})}catch(e){}}
+function pad(max,onPick,cls){const p=el('div','pad'+(max>9?' six':'')+(cls?' '+cls:''));for(let i=0;i<=max;i++){const b=el('button','num',i);b.onclick=()=>onPick(i,b);p.appendChild(b)}return p}
+function lock(p){p.querySelectorAll('button').forEach(b=>b.disabled=true)}
+function numpad(onSubmit,digits){digits=digits||2;const nm=el('div','pad');let typed='';const show=el('div','typed','_');nm.appendChild(show);
+  for(let i=0;i<10;i++){const k=el('button','num',i);k.onclick=()=>{if(typed.length<digits){typed+=i;show.textContent=typed}};nm.appendChild(k)}
+  const clr=el('button','num','⌫');clr.onclick=()=>{typed=typed.slice(0,-1);show.textContent=typed||'_'};
+  const ok=el('button','num go','That\'s it');ok.style.gridColumn='span 4';ok.onclick=()=>{if(!typed)return;const ans=+typed;typed='';show.textContent='_';onSubmit(ans,nm)};
+  nm.append(clr,ok);return nm}
+function choices(opts,onPick){const r=el('div','row');opts.forEach(o=>{const b=el('button','choice');if(typeof o==='string'||typeof o==='number')b.textContent=o;else b.appendChild(o.node);b.onclick=()=>onPick(o,b);r.appendChild(b)});return r}
+function nextBtn(){const r=el('div','row');const b=el('button','btn','Next one');b.onclick=()=>play(S.skill);r.appendChild(b);return r}
+
+/* mastery + reward */
+function win(text,noMastery){
+  if(ctx.done)return;ctx.done=true;say(text,true);
+  const m=S.m[S.skill];
+  if(!noMastery){if(ctx.hints===0){m.streak++;m.low=0;if(m.streak>=3&&m.lv<MAX(S.skill)){m.lv++;m.streak=0;setTimeout(()=>say(text+' You moved up to level '+m.lv+'!',true),900)}}
+    else{m.streak=0;if(ctx.hints>=2){m.low++;if(m.low>=2&&m.lv>1){m.lv--;m.low=0}}else m.low=0}}
+  if(S.duo&&ctx.turn===1){S.dad++}else{S.stars++}
+  S.turn=1-S.turn;save();renderStars();ding();drawGarden();controls.appendChild(nextBtn());renderSkills();
+}
+function miss(hint){ctx.hints++;say(hint,false)}
+function renderStars(){$('#stars').textContent=S.stars;$('#dadStars').textContent=S.dad;$('#kidName').textContent=S.name||'Stars';$('#jarDad').hidden=!S.duo;const s=$('#jarKid');s.classList.remove('pop');void s.offsetWidth;s.classList.add('pop')}
+
+/* ---------- garden ---------- */
+function drawGarden(){const svg=$('#gardenSvg');const n=Math.min(24,Math.floor(S.stars/2));const part=S.stars%2;let h=`<rect x="0" y="58" width="400" height="12" fill="var(--soil)" rx="4"/>`;
+  for(let i=0;i<n;i++){const x=12+i*16,ht=22+((i*7)%14),col=['var(--accent)','var(--sun)','var(--plum)','var(--sky)'][i%4];
+    h+=`<line x1="${x}" y1="58" x2="${x}" y2="${58-ht}" stroke="var(--leaf)" stroke-width="2.5"/><ellipse cx="${x-5}" cy="${58-ht/2}" rx="5" ry="2.5" fill="var(--leaf)" transform="rotate(-30 ${x-5} ${58-ht/2})"/>`;
+    for(let p=0;p<5;p++){const a=p*72*Math.PI/180;h+=`<circle cx="${x+Math.cos(a)*5}" cy="${58-ht+Math.sin(a)*5}" r="3.6" fill="${col}"/>`}h+=`<circle cx="${x}" cy="${58-ht}" r="2.6" fill="var(--sun)"/>`}
+  if(part&&n<24){const x=12+n*16;h+=`<line x1="${x}" y1="58" x2="${x}" y2="48" stroke="var(--leaf)" stroke-width="2.5"/><ellipse cx="${x+4}" cy="50" rx="4" ry="2" fill="var(--leaf)"/>`}
+  if(S.stars===0)h+=`<text x="200" y="40" text-anchor="middle" fill="var(--muted)" font-family="var(--display)" font-size="13">Every 2 stars plants a flower</text>`;
+  svg.innerHTML=h}
+
+/* ---------- visuals ---------- */
+const shapes={circle:c=>`<circle cx="20" cy="20" r="16" fill="${c}"/>`,square:c=>`<rect x="5" y="5" width="30" height="30" rx="4" fill="${c}"/>`,tri:c=>`<path d="M20 4L37 35H3z" fill="${c}"/>`,star:c=>`<path d="M20 3l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="${c}"/>`};
+const svgShape=(s,c)=>{const e=el('div');e.innerHTML=`<svg class="shape" viewBox="0 0 40 40">${shapes[s](c)}</svg>`;return e.firstChild};
+function tenFrame(k,cls){const f=el('div','frame'+(cls?' '+cls:''));f.cells=[];for(let i=0;i<10;i++){const c=el('div','cell');const d=el('i');if(i>=k)d.className='empty';c.appendChild(d);f.appendChild(c);f.cells.push(d)}return f}
+
+/* ================= WARM-UPS ================= */
+skill({id:'dots',room:'warm',title:'How many?',levels:3,mount(lv){
+  let n,grid=el('div','dots');
+  if(lv===1){n=rnd(1,6);grid.style.gridTemplateColumns='repeat(3,34px)';const m={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]}[n];for(let i=0;i<9;i++)grid.appendChild(el('div','dot'+(m.includes(i)?'':' ghost')))}
+  else if(lv===2){n=rnd(3,10);grid.style.gridTemplateColumns='repeat(5,34px)';for(let i=0;i<10;i++)grid.appendChild(el('div','dot'+(i<n?'':' ghost')))}
+  else{n=rnd(11,20);grid.style.gridTemplateColumns='repeat(5,34px)';for(let i=0;i<20;i++)grid.appendChild(el('div','dot'+(i<n?'':' ghost')+(i>=10?' a':'')))}
+  prompt.textContent='How many dots?';stage.appendChild(grid);
+  const p=pad(lv===3?20:10,(v,b)=>{if(v===n){b.classList.add('hit');lock(p);const d=grid.querySelectorAll('.dot:not(.ghost)');
+      if(lv===2&&n>5){d.forEach((x,i)=>x.classList.add(i<5?'a':'b'));win(`${cheer()} 5 and ${n-5} make ${n}.`)}
+      else if(lv===3){win(`${cheer()} 10 and ${n-10} make ${n}.`)}else win(cheer())}
+    else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?'Hmm, touch each dot as you count.':'Count a row at a time.')}});
+  controls.appendChild(p)}});
+
+skill({id:'make',room:'warm',title:'Make 10',levels:3,mount(lv){
+  if(lv<3){const T=lv===1?10:20,k=lv===1?rnd(1,9):rnd(11,19);prompt.textContent=`${k} in the frame. How many more make ${T}?`;
+    const fs=el('div','frames');const f1=tenFrame(Math.min(10,k)),f2=lv===2?tenFrame(k-10):null;fs.appendChild(f1);if(f2)fs.appendChild(f2);stage.appendChild(fs);
+    const p=pad(10,(v,b)=>{if(v===T-k){b.classList.add('hit');lock(p);const cells=(f2||f1).cells;cells.slice(T===10?k:k-10).forEach((d,i)=>setTimeout(()=>d.className='new',120*i));win(`${cheer()} ${k} and ${T-k} make ${T}.`)}
+      else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?'Count the empty boxes.':`There are ${T-k} empty boxes.`)}});controls.appendChild(p)}
+  else{const k=rnd(1,9)*10;prompt.textContent=`${k}. How many more make 100?`;const rods=el('div','rods');for(let i=0;i<10;i++){const r=el('div','rod solid');if(i>=k/10)r.style.opacity='.25';for(let j=0;j<10;j++)r.appendChild(el('span','u'));rods.appendChild(r)}stage.appendChild(rods);
+    const opts=shuffle([10,20,30,40,50,60,70,80,90]);const c=choices(opts,(o,b)=>{if(o===100-k){b.classList.add('hit');lock(c);rods.querySelectorAll('.rod').forEach(r=>r.style.opacity='1');win(`${cheer()} ${k} and ${100-k} make 100.`)}else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?'Count the faded sticks. Each one is 10.':`There are ${(100-k)/10} faded sticks.`)}});controls.appendChild(c)}}});
+
+/* ================= ADD & TAKE ================= */
+skill({id:'take',room:'add',title:'Take away',levels:4,mount(lv){
+  let a,b;if(lv===1){a=rnd(11,20);b=rnd(1,9)}else if(lv===2){a=rnd(11,50);b=rnd(1,9)}else if(lv===3){a=rnd(21,50);b=rnd(11,29)}else{a=rnd(41,99);b=rnd(11,49)}
+  if(b>=a)b=a-rnd(1,5);
+  const tens=Math.floor(a/10),ones=a%10;prompt.textContent=`${a} take away ${b}`;
+  const wrap=el('div','ta'),counts=el('div','counts',`<div>here<b id="here">${a}</b></div><div>taken<b id="taken">0</b></div>`),rods=el('div','rods'),onesBox=el('div','ones'),hint=el('div','hint','Tap dots to take them away. Tap a stick of 10 to break it open.');
+  wrap.append(counts,rods,onesBox,hint);stage.appendChild(wrap);
+  let taken=0,asked=false;
+  const update=()=>{counts.querySelector('#here').textContent=a-taken;counts.querySelector('#taken').textContent=taken;
+    if(taken===b&&!asked){asked=true;hint.textContent='';ask()}else if(taken>b)hint.textContent='One too many. Tap a grey dot to put it back.';else if(!asked)hint.textContent=`${b-taken} more to take.`};
+  const addOne=()=>{const o=el('button','one');o.setAttribute('aria-label','dot');o.onclick=()=>{if(asked)return;if(o.classList.contains('gone')){o.classList.remove('gone');taken--}else{o.classList.add('gone');taken++}update()};onesBox.appendChild(o)};
+  for(let i=0;i<tens;i++){const r=el('button','rod');r.setAttribute('aria-label','stick of ten');for(let j=0;j<10;j++)r.appendChild(el('span','u'));
+    r.onclick=()=>{if(asked)return;if(lv>=3&&b-taken>=10&&!r.whole){r.classList.add('gone');r.style.opacity='.2';r.whole=true;taken+=10;hint.textContent='Took a whole stick. That\'s 10.';update();return}
+      if(r.whole){r.style.opacity='1';r.whole=false;taken-=10;update();return}r.remove();for(let j=0;j<10;j++)addOne();hint.textContent='One stick became 10 dots.'};rods.appendChild(r)}
+  for(let i=0;i<ones;i++)addOne();update();
+  if(lv>=3)hint.textContent='Tap a stick to take all 10 at once, or break it into dots.';
+  function ask(){say('How many are left? Count the blue sticks as 10 each, then the dots.');
+    controls.appendChild(numpad((v,nm)=>{if(v===a-b){lock(nm);win(`${cheer()} ${a} take away ${b} is ${a-b}.`)}else miss(ctx.hints===0?'Count once more, slowly.':`Blue sticks first: each is 10. Then the blue dots.`)}))}}});
+
+skill({id:'bridge',room:'add',title:'Make a ten to add',levels:2,mount(lv){
+  let a,b;if(lv===1){a=rnd(6,9);b=rnd(2,9);if(a+b<=10)b=11-a+rnd(0,2)}else{a=rnd(15,38);b=rnd(3,9);if(a%10+b<=10)b=11-(a%10)+rnd(0,2);if(a%10===0)a++}
+  const ans=a+b;prompt.textContent=`${a} + ${b} = ?`;
+  const fs=el('div','frames');const row=el('div','row');row.style.alignItems='center';
+  const fa=tenFrame(a%10||10);const fb=tenFrame(b);
+  if(lv===2){const rods=el('div','rods');for(let i=0;i<Math.floor(a/10);i++){const r=el('div','rod solid');for(let j=0;j<10;j++)r.appendChild(el('span','u'));rods.appendChild(r)}row.appendChild(rods)}
+  row.append(fa,el('div','plus','+'),fb);fs.appendChild(row);stage.appendChild(fs);
+  const need=10-(a%10);
+  controls.appendChild(numpad((v,nm)=>{if(v===ans){lock(nm);
+      fb.cells.slice(0,need).forEach(d=>d.className='empty');fa.cells.slice(a%10).forEach((d,i)=>setTimeout(()=>d.className='new',120*i));
+      win(`${cheer()} Move ${need} over to fill the ten: ${a} + ${need} = ${a+need}, then ${b-need} more is ${ans}.`)}
+    else miss(ctx.hints===0?`How many dots fill up the first frame? Take those from the second one.`:`${a} needs ${need} to make a ten. Then add what's left.`)}))}});
+
+skill({id:'missing',room:'add',title:'Find the missing number',levels:4,mount(lv){
+  let a,b,form,max;if(lv===1){max=10;a=rnd(1,8);b=rnd(a+1,10);form='a+?=b'}else if(lv===2){max=20;a=rnd(3,15);b=rnd(a+1,20);form=pick(['a+?=b','?+a=b'])}else if(lv===3){max=20;b=rnd(2,18);a=rnd(b+1,20);form='a-?=b'}else{max=50;if(Math.random()<.5){a=rnd(5,40);b=rnd(a+1,50);form='?+a=b'}else{b=rnd(5,40);a=rnd(b+1,50);form='a-?=b'}}
+  const ans=form==='a-?=b'?a-b:b-a;
+  const eq=el('div','eq');const box='<span class="box">?</span>';eq.innerHTML=form==='a+?=b'?`${a} + ${box} = ${b}`:form==='?+a=b'?`${box} + ${a} = ${b}`:`${a} − ${box} = ${b}`;
+  prompt.textContent='What goes in the box?';
+  const lo=form==='a-?=b'?b:a,hi=form==='a-?=b'?a:b;
+  const nl=el('div','nline');nl.innerHTML=numberLine(max,lo,hi);stage.append(eq,nl);
+  controls.appendChild(numpad((v,nm)=>{if(v===ans){lock(nm);win(`${cheer()} From ${lo} to ${hi} is a jump of ${ans}.`)}
+    else miss(ctx.hints===0?`Find ${lo} on the line. How many hops to ${hi}?`:`Count the hops from ${lo} up to ${hi}, one at a time.`)}))}});
+function numberLine(max,lo,hi){const w=500,pad=14,step=(w-2*pad)/max;let h=`<svg viewBox="0 0 ${w} 60"><line x1="${pad}" y1="36" x2="${w-pad}" y2="36" stroke="var(--fg)" stroke-width="2"/>`;
+  const every=max>20?5:1;for(let i=0;i<=max;i++){const x=pad+i*step;const big=i%every===0;h+=`<line x1="${x}" y1="${big?28:32}" x2="${x}" y2="${big?44:40}" stroke="var(--fg)" stroke-width="1.5"/>`;if(big&&(max<=20||i%10===0))h+=`<text x="${x}" y="58" text-anchor="middle" font-size="12" fill="var(--muted)" font-family="var(--display)">${i}</text>`}
+  const xl=pad+lo*step,xh=pad+hi*step;h+=`<path d="M${xl} 34 Q${(xl+xh)/2} ${34-Math.min(26,(hi-lo)*3)} ${xh} 34" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="4 3"/><circle cx="${xl}" cy="36" r="5" fill="var(--leaf)"/><circle cx="${xh}" cy="36" r="5" fill="var(--accent)"/></svg>`;return h}
+
+/* ================= PATTERNS ================= */
+skill({id:'cont',room:'pat',title:'What comes next?',levels:3,mount(lv){
+  prompt.textContent='What comes next?';const seq=el('div','seq');
+  if(lv===1){const cols=['var(--accent)','var(--leaf)','var(--sky)','var(--plum)'],sh=Object.keys(shapes);const core=pick([2,3]);const units=[];for(let i=0;i<core;i++){let u;do{u={s:pick(sh),c:pick(cols)}}while(units.some(x=>x.s===u.s&&x.c===u.c));units.push(u)}
+    const rule=pick(['AB','ABB','ABC'].filter(r=>new Set(r).size===core));const seqUnits=[];for(let i=0;i<8;i++)seqUnits.push(units[rule.charCodeAt(i%rule.length)-65]);
+    seqUnits.slice(0,7).forEach(u=>{const it=el('div','it');it.appendChild(svgShape(u.s,u.c));seq.appendChild(it)});seq.appendChild(el('div','it q','?'));stage.appendChild(seq);
+    const ans=seqUnits[7];const opts=shuffle(units.concat(units.length<3?[{s:pick(sh.filter(s=>!units.some(u=>u.s===s))),c:pick(cols)}]:[])).map(u=>({u,node:svgShape(u.s,u.c)}));
+    const c=choices(opts,(o,b)=>{if(o.u===ans){b.classList.add('hit');lock(c);win(`${cheer()} The pattern is ${rule.split('').join(' ')}, over and over.`)}else{b.classList.add('miss');b.disabled=true;miss('Say the pattern out loud from the start. What repeats?')}});controls.appendChild(c)}
+  else{let start,d,terms=[];if(lv===2){d=pick([2,5,10]);start=d===10?rnd(1,9)*(pick([1,10])):rnd(1,20);for(let i=0;i<5;i++)terms.push(start+i*d)}
+    else{const kind=pick(['grow','double']);if(kind==='grow'){start=rnd(1,5);let t=start,step=rnd(1,3);for(let i=0;i<5;i++){terms.push(t);t+=step;step++}}else{start=rnd(1,3);for(let i=0;i<5;i++)terms.push(start*Math.pow(2,i))}}
+    terms.slice(0,4).forEach(t=>seq.appendChild(el('div','it',t)));seq.appendChild(el('div','it q','?'));stage.appendChild(seq);const ans=terms[4];
+    if(lv===2){const opts=shuffle([ans,ans+d,ans-1,ans+1].filter((v,i,a)=>a.indexOf(v)===i));const c=choices(opts,(o,b)=>{if(o===ans){b.classList.add('hit');lock(c);win(`${cheer()} It goes up by ${d} each time.`)}else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?'How much does it go up each time? Check two numbers next to each other.':`It goes up by ${d}. What is ${terms[3]} + ${d}?`)}});controls.appendChild(c)}
+    else controls.appendChild(numpad((v,nm)=>{if(v===ans){lock(nm);win(`${cheer()} ${terms[3]} to ${ans}. Did you see how the jumps change?`)}else miss(ctx.hints===0?'Write down how much it jumps each time. Do the jumps change?':`The jumps are ${terms.slice(1).map((t,i)=>t-terms[i]).slice(0,3).join(', ')}... what's the next jump?`)},3))}}});
+
+skill({id:'machine',room:'pat',title:'Rule machine',levels:3,mount(lv){
+  const rules=lv===1?[1,2,3,4,5].map(n=>({t:'+'+n,f:x=>x+n})):[1,2,3,4,5].map(n=>({t:'+'+n,f:x=>x+n})).concat([1,2,3].map(n=>({t:'−'+n,f:x=>x-n})),[{t:'double',f:x=>x*2}]);
+  const rule=pick(rules);const ins=shuffle(lv===1?[1,2,3,4,5,6,7,8]:[2,3,4,5,6,7,8,9,10]).slice(0,lv===3?2:3);
+  const m=el('div','machine');ins.forEach(x=>m.appendChild(el('div','io',`<span>${x}</span><span>→</span><span>${rule.f(x)}</span>`)));
+  if(lv<3){m.appendChild(el('div','mbox','rule?'));prompt.textContent='What is the machine doing?';stage.appendChild(m);
+    const opts=shuffle(rules).slice(0,4);if(!opts.includes(rule))opts[rnd(0,3)]=rule;
+    const c=choices(opts.map(r=>r.t),(o,b)=>{if(o===rule.t){b.classList.add('hit');lock(c);win(`${cheer()} Every number goes in and comes out ${rule.t}.`)}else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?`Try your rule on the first one: ${ins[0]} goes in, what comes out?`:`Look at ${ins[0]} → ${rule.f(ins[0])}. What happened to it?`)}});controls.appendChild(c)}
+  else{const q=pick([11,12,13,14,15,20]);m.appendChild(el('div','io',`<span>${q}</span><span>→</span><span class="q" style="color:var(--accent)">?</span>`));prompt.textContent='Find the rule, then answer the last one.';stage.appendChild(m);
+    controls.appendChild(numpad((v,nm)=>{if(v===rule.f(q)){lock(nm);win(`${cheer()} The rule was ${rule.t}, so ${q} becomes ${rule.f(q)}.`)}else miss(ctx.hints===0?'First find the rule from the top rows. Then use it on the last number.':`The rule is ${rule.t}. Do that to ${q}.`)},3))}}});
+
+/* ================= PUZZLES ================= */
+skill({id:'balance',room:'puz',title:'Balance it',levels:3,mount(lv){
+  const A={s:'circle',c:'var(--accent)',n:'apples'},B={s:'tri',c:'var(--leaf)',n:'pears'};
+  let left,right,ans,text,explain;
+  if(lv===1){const r=rnd(2,3),k=rnd(2,3);left=[[A,1]];right=[[B,r]];ans=k*r;text=`If 1 apple weighs the same as ${r} pears, how many pears balance ${k} apples?`;explain=`${k} apples is ${k} groups of ${r} pears: ${ans}.`}
+  else if(lv===2){const r=rnd(2,4),k=rnd(2,3);left=[[A,k]];right=[[B,k*r]];ans=r;text=`${k} apples balance ${k*r} pears. How many pears balance 1 apple?`;explain=`Share ${k*r} pears among ${k} apples: ${r} each.`}
+  else{const x=rnd(3,9),y=rnd(2,9),z=rnd(1,x+y-1);ans=x+y-z;left=[[A,x],[B,y]];right=[[A,z],[B,'?']];text=`Left side: ${x} + ${y}. Right side: ${z} + ?. What makes it balance?`;explain=`Both sides must be ${x+y}. ${z} + ${ans} = ${x+y}.`}
+  prompt.textContent='Balance it';const sc=el('div','scale');sc.innerHTML=`<svg viewBox="0 0 400 150"><path d="M200 130V30M120 130h160" stroke="var(--fg)" stroke-width="4"/><path d="M60 40h280" stroke="var(--fg)" stroke-width="4"/><path d="M60 40v10M340 40v10" stroke="var(--fg)" stroke-width="3"/><rect x="25" y="50" width="70" height="60" rx="8" fill="var(--bg)" stroke="var(--line)" stroke-width="2"/><rect x="305" y="50" width="70" height="60" rx="8" fill="var(--bg)" stroke="var(--line)" stroke-width="2"/>${pan(left,40)}${pan(right,320)}</svg>`;
+  stage.append(sc,el('div','hint',text));
+  controls.appendChild(numpad((v,nm)=>{if(v===ans){lock(nm);win(`${cheer()} ${explain}`)}else miss(ctx.hints===0?'Both sides must weigh the same. Think about what one apple is worth.':explain.split(':')[0]+'.')}))
+  function pan(items,x0){let h='',x=x0;items.forEach(([it,n])=>{h+=`<g transform="translate(${x},62) scale(.9)">${shapes[it.s](it.c)}</g><text x="${x+18}" y="100" text-anchor="middle" font-size="20" font-family="var(--display)" fill="var(--fg)">${n}</text>`;x+=36});return h}}});
+
+const WODB=[
+ {items:[4,9,16,20],why:['4 is the smallest','9 is the only odd number','16 is the only one bigger than 10 and a square','20 is the only one that ends in 0']},
+ {items:[2,7,10,15],why:['2 is the only one you can make with two 1s','7 is the only odd number under 10','10 is the only one with two digits that ends in 0','15 is the only one bigger than 12']},
+ {items:[3,6,9,11],why:['3 is the smallest','6 is the only even number','9 is 3 threes, the biggest one-digit','11 is the only two-digit number']},
+ {items:[5,10,15,22],why:['5 is the only one-digit number','10 is the only one that ends in 0','15 is the only odd two-digit number','22 is the only one that does not count by 5s']},
+ {items:[1,2,4,8],why:['1 is the only odd number','2 is the only one that is not a double of another here','4 is the only one with four sides on a square','8 is the biggest']},
+ {items:[12,21,13,31],why:['12 is the only even number','21 is 12 backwards and the only one that is 3 sevens','13 is the only one with a 3 at the end','31 is the biggest']},
+ {items:[6,8,10,7],why:['6 is the smallest','8 is the only one that is a double of another number here','10 is the only two-digit number','7 is the only odd number']},
+ {items:[0,5,50,55],why:['0 is the only one with nothing in it','5 is the only one-digit number','50 is the only one that ends in 0','55 is the only one with two of the same digit']}
+];
+skill({id:'wodb',room:'puz',title:'Which one is different?',levels:1,mount(){
+  const set=pick(WODB);prompt.textContent='Pick one that is different. Then tell a grown-up why.';
+  const g=el('div','wodb');set.items.forEach((it,i)=>{const b=el('button','choice',it);b.onclick=()=>{b.classList.add('hit');lock(g);
+    const ul=el('ul','clues');set.why.forEach((w,j)=>ul.appendChild(el('li','',j===i?`<b>${w}</b>`:w)));stage.appendChild(ul);win('Good eye! Every one can be the odd one out. Here is one reason for each.',true)};g.appendChild(b)});stage.appendChild(g)}});
+
+skill({id:'coins',room:'puz',title:'Make the money',levels:2,mount(lv){
+  const coins=lv===1?[1,5,10]:[1,5,10,25];const target=lv===1?rnd(6,30):rnd(26,60);prompt.textContent=`Make ${target}¢ with coins`;
+  const tray=el('div','tray'),total=el('div','total','0¢'),bar=el('div','coins');let sum=0;const spec={1:['1¢','#c98a5a',40],5:['5¢','#bfc5c9',44],10:['10¢','#cfd3d6',38],25:['25¢','#d6d9db',52]};
+  const mk=v=>{const c=el('button','coin',spec[v][0]);c.style.background=spec[v][1];c.style.width=c.style.height=spec[v][2]+'px';c.style.fontSize=v===1?'.75rem':'.85rem';return c};
+  coins.forEach(v=>{const c=mk(v);c.onclick=()=>{if(ctx.done)return;const t=mk(v);t.onclick=()=>{if(ctx.done)return;t.remove();sum-=v;total.textContent=sum+'¢'};tray.appendChild(t);sum+=v;total.textContent=sum+'¢';if(sum>target)say('Too much now. Tap a coin in the tray to take it back.');else say('')};bar.appendChild(c)});
+  stage.append(bar,tray,total);
+  const r=el('div','row');const b=el('button','btn','Done');b.onclick=()=>{if(sum===target){win(`${cheer()} That makes ${target}¢. Can you find another way?`)}else miss(sum<target?`You have ${sum}¢. ${target-sum}¢ more to go.`:`That's ${sum-target}¢ too much.`)};r.appendChild(b);controls.appendChild(r)}});
+
+skill({id:'sudoku',room:'puz',title:'Mini sudoku',levels:3,mount(lv){
+  const base=[[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]];const perm=shuffle([1,2,3,4]);let g=base.map(r=>r.map(v=>perm[v-1]));
+  if(Math.random()<.5)g=[g[1],g[0],g[3],g[2]];if(Math.random()<.5)g=g.map(r=>[r[1],r[0],r[3],r[2]]);if(Math.random()<.5)g=[g[2],g[3],g[0],g[1]];
+  const blanks=lv===1?5:lv===2?8:11;const idx=shuffle([...Array(16).keys()]).slice(0,blanks);
+  prompt.textContent='Every row, column and box needs 1, 2, 3, 4';const grid=el('div','sud');const cells=[];let sel=null;
+  for(let i=0;i<16;i++){const given=!idx.includes(i);const c=el('button','sq'+(given?' given':''),given?g[i>>2][i&3]:'');c.v=given?g[i>>2][i&3]:0;c.given=given;
+    if(!given)c.onclick=()=>{if(ctx.done)return;cells.forEach(x=>x.classList.remove('sel'));sel=c;c.classList.add('sel')};cells.push(c);grid.appendChild(c)}
+  stage.appendChild(grid);
+  const p=el('div','pad four');[1,2,3,4].forEach(n=>{const b=el('button','num',n);b.onclick=()=>{if(!sel||ctx.done)return;sel.v=n;sel.textContent=n;sel.classList.remove('bad')};p.appendChild(b)});
+  const chk=el('button','num go','Check');chk.style.gridColumn='1/-1';chk.onclick=()=>{let bad=0,empty=0;cells.forEach(c=>{if(!c.v)empty++;else if(c.v!==g[cells.indexOf(c)>>2][cells.indexOf(c)&3]&&!c.given){bad++;c.classList.add('bad')}});
+    if(!empty&&!bad){lock(p);win(`${cheer()} Every row, column and box has 1, 2, 3 and 4.`)}else miss(empty?`${empty} empty box${empty>1?'es':''} left. Which row is almost full?`:`${bad} number${bad>1?'s':''} clash with their row, column or box. They turned orange.`)};
+  p.appendChild(chk);controls.appendChild(p)}});
+
+skill({id:'riddle',room:'puz',title:'Number riddle',levels:3,mount(lv){
+  const max=lv===1?20:lv===2?50:100;let target,clues,cands;const digsum=n=>String(n).split('').reduce((a,b)=>a+ +b,0);
+  for(let tries=0;tries<30;tries++){target=rnd(1,max);cands=[...Array(max).keys()].map(i=>i+1);clues=[];
+    const pool=shuffle([
+      {t:`I am bigger than ${Math.max(1,target-rnd(2,6))}`,f:n=>n>Math.max(1,target-rnd(2,6))},
+      {t:`I am smaller than ${Math.min(max,target+rnd(2,6))}`,f:n=>n<Math.min(max,target+rnd(2,6))},
+      {t:`I am an ${target%2?'odd':'even'} number`,f:n=>n%2===target%2},
+      {t:`My digits add up to ${digsum(target)}`,f:n=>digsum(n)===digsum(target)},
+      {t:`I have a ${String(target).slice(-1)} in me`,f:n=>String(n).includes(String(target).slice(-1))},
+      {t:`I am ${target%5?'not ':''}a number you say when counting by 5s`,f:n=>(n%5===0)===(target%5===0)}
+    ]);
+    pool.forEach(c=>{if(cands.length>1&&clues.length<4){const m=c.t.match(/(bigger|smaller) than (\d+)/);const fn=m?(m[1]==='bigger'?n=>n>+m[2]:n=>n<+m[2]):c.f;const next=cands.filter(fn);if(next.includes(target)&&next.length<cands.length){cands=next;clues.push(c.t)}}});
+    if(cands.length===1)break}
+  if(cands.length!==1){target=cands[0]}
+  prompt.textContent='I am thinking of a number…';const ul=el('ul','clues');clues.forEach(c=>ul.appendChild(el('li','',c)));stage.appendChild(ul);
+  controls.appendChild(numpad((v,nm)=>{if(v===target){lock(nm);win(`${cheer()} Only ${target} fits all the clues.`)}else{const broken=clues.find((c,i)=>{const m=c.match(/(bigger|smaller) than (\d+)/);if(m)return m[1]==='bigger'?!(v>+m[2]):!(v<+m[2]);if(c.includes('odd'))return v%2===0;if(c.includes('even'))return v%2!==0;if(c.startsWith('My digits'))return digsum(v)!==digsum(target);if(c.startsWith('I have a'))return !String(v).includes(String(target).slice(-1));if(c.includes('counting by 5s'))return (v%5===0)!==(target%5===0);return false});
+    miss(broken?`${v} breaks this clue: "${broken}".`:'Check each clue against your number.')}},3))}});
+
+/* ---------- play loop ---------- */
+function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');
+  ctx={hints:0,done:false,turn:S.duo?S.turn:0};
+  turnEl.textContent=S.duo?(ctx.turn===1?"Dad's turn":`${S.name||'Your'} turn`):'';
+  const m=S.m[id]||(S.m[id]={lv:1,streak:0,low:0});SK[id].mount(m.lv);renderSkills()}
+function renderRooms(){const r=$('#rooms');r.innerHTML='';ROOMS.forEach(rm=>{const b=el('button','room',`<svg viewBox="0 0 24 24">${rm.icon}</svg>${rm.title}`);b.setAttribute('role','tab');b.setAttribute('aria-selected',S.room===rm.id);b.onclick=()=>{S.room=rm.id;const first=Object.values(SK).find(s=>s.room===rm.id).id;renderRooms();play(first)};r.appendChild(b)})}
+function renderSkills(){const s=$('#skills');s.innerHTML='';Object.values(SK).filter(k=>k.room===S.room).forEach(k=>{const b=el('button','skill',`${k.title}<small>${k.levels>1?'lv '+lvl(k.id):''}</small>`);b.setAttribute('aria-selected',S.skill===k.id);b.onclick=()=>play(k.id);s.appendChild(b)})}
+function renderLevels(){const t=$('#levels');t.innerHTML='';Object.values(SK).forEach(k=>{const tr=el('tr');tr.innerHTML=`<td>${ROOMS.find(r=>r.id===k.room).title} · ${k.title}</td>`;const td=el('td');const box=el('div','lvl');const dn=el('button','','−'),sp=el('span','',` ${lvl(k.id)} / ${k.levels} `),up=el('button','','+');
+  dn.onclick=()=>{const m=S.m[k.id];if(m.lv>1){m.lv--;m.streak=0;m.low=0;save();renderLevels()}};up.onclick=()=>{const m=S.m[k.id];if(m.lv<k.levels){m.lv++;m.streak=0;m.low=0;save();renderLevels()}};box.append(dn,sp,up);td.appendChild(box);tr.appendChild(td);t.appendChild(tr)})}
+
+/* ---------- wiring ---------- */
+$('#gearBtn').onclick=()=>{const open=$('#sheet').hidden;$('#sheet').hidden=!open;$('#card').hidden=open;if(open)renderLevels()};
+$('#closeSheet').onclick=()=>{$('#sheet').hidden=true;$('#card').hidden=false;renderSkills();play(S.skill)};
+$('#name').value=S.name;$('#name').oninput=e=>{S.name=e.target.value.trim();save();renderStars()};
+$('#duo').checked=S.duo;$('#duo').onchange=e=>{S.duo=e.target.checked;save();renderStars()};
+$('#resetAll').onclick=()=>{S.stars=0;S.dad=0;S.m={};S.turn=0;save();renderStars();drawGarden();renderLevels()};
+renderStars();drawGarden();renderRooms();
+if(!S.skill||!SK[S.skill]||SK[S.skill].room!==S.room)S.skill=Object.values(SK).find(s=>s.room===S.room).id;
+play(S.skill);
+})();
+</script>
