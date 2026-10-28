@@ -13,6 +13,7 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 | Patterns | What comes next? · Rule machine | Repeating and growing patterns, function machines |
 | Puzzles | Balance it · Which one is different? · Make the money · Mini sudoku · Number riddle | Reasoning with no algorithm: the seed of competition math |
 | Stories | Story mystery · How many ways? | Reading-level word problems in one to two steps, and open questions with several right answers |
+| Big Ideas | Even and odd · How far apart · Tens and ones · Bigger and smaller · Making ten · Double and half | Concept pages she reads herself: a short explanation, a hands-on demo, three try-it questions, then a link to the game that uses the idea |
 
 ## How a session works
 
@@ -39,6 +40,10 @@ The grown-up settings are behind the faint "for grown-ups" link at the bottom of
 - "You hide the number": Zoe picks the secret and answers the app's clue questions
 - Shapes & space room (tangram fits, counting squares, symmetry)
 - Place value room (10 more / 10 less, build a number from sticks)
+
+## Adding a Big Idea
+
+Each idea is an entry in `IDEAS`: `title`, one-line `line`, `words` (the explanation, reading level, with `<em>` on the key terms), `demo(box, btns)` that draws something she can poke, `tries()` returning `{q, kind:'choice'|'num', opts?, ans, draw, explain, show?}`, the `door` to play afterwards, and the `book` sentence.
 
 ## Adding a game
 

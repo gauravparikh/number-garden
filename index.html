@@ -51,7 +51,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .door svg{width:40px;height:40px}
 .door b{font-family:var(--display);font-size:1.15rem;font-weight:600}
 .door small{color:var(--muted);font-size:.9rem;font-weight:600}
-.door:nth-child(5){grid-column:1/-1;flex-direction:row;align-items:center;min-height:0}
+.door.ideas{background:var(--sun);color:#1a1a1a}.door.ideas small{color:#5a4a1a}
 .grownup{align-self:center;color:var(--muted);font-size:.8rem;padding:8px;opacity:.7}
 .playtop{display:flex;align-items:center;gap:10px}
 .back{width:44px;height:44px;border-radius:50%;background:var(--card);font-family:var(--display);font-size:1.8rem;line-height:1;display:grid;place-items:center;color:var(--fg);flex:none}
@@ -73,6 +73,21 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .page.big{border:3px solid var(--sun)}
 .page small{display:block;color:var(--muted);font-size:.8rem;font-weight:600;margin-top:4px}
 .sheet label{display:flex;justify-content:space-between;align-items:center;gap:12px}
+/* big ideas */
+.idealist{display:flex;flex-direction:column;gap:10px}
+.idea{background:var(--card);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;box-shadow:0 6px 18px rgba(20,60,40,.08)}
+.idea b{font-family:var(--display);font-size:1.2rem;font-weight:600}.idea small{color:var(--muted);font-size:.95rem;font-weight:600}
+.idea.done b::after{content:" ✓";color:var(--leaf)}
+.learncard{flex:0 0 auto}
+.words{font-size:1.25rem;line-height:1.55;max-width:40ch;font-weight:700}
+.words em{font-style:normal;color:var(--accent)}
+.demo{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:14px;min-height:90px}
+.pairs{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,1fr);gap:8px}
+.pairs .it2{width:34px;height:34px}
+.pairs .it2.alone{box-shadow:0 0 0 4px var(--accent);border-radius:50%}
+.bigpick{display:flex;gap:16px;justify-content:center}
+.bigpick .choice{font-size:2rem;min-width:90px;padding:16px}
+.tryline{font-family:var(--display);color:var(--muted);font-size:.95rem;text-align:center}
 /* story scenes */
 .scene{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;position:relative}
 .srow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:40px}
@@ -222,6 +237,27 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
   <div class="playtop"><button class="back" id="bookBack" aria-label="back to garden">‹</button><h2 id="bookTitle">Zoe's Book</h2></div>
   <div class="shelf" id="shelf"></div>
   <div class="pages" id="pages"></div>
+</div>
+
+<div id="ideas" class="view" hidden>
+  <div class="playtop"><button class="back" id="ideasBack" aria-label="back to garden">‹</button><h2>Big Ideas</h2></div>
+  <p class="pickline">Read one, try it, then play.</p>
+  <div class="idealist" id="idealist"></div>
+</div>
+
+<div id="learn" class="view" hidden>
+  <div class="playtop"><button class="back" id="learnBack" aria-label="back to ideas">‹</button><h2 id="learnTitle"></h2></div>
+  <div class="card learncard">
+    <div class="words" id="learnWords"></div>
+    <div class="demo" id="learnDemo"></div>
+    <div class="row" id="learnDemoBtns"></div>
+  </div>
+  <div class="card learncard" id="tryCard">
+    <div class="prompt" id="tryPrompt"></div>
+    <div class="stage" id="tryStage"></div>
+    <div class="msg" id="tryMsg"></div>
+    <div id="tryControls"></div>
+  </div>
 </div>
 
 <div class="sheet view" id="sheet" hidden>
@@ -530,7 +566,7 @@ skill({id:'riddle',room:'puz',title:'Number riddle',levels:3,grow:lv=>['','Now t
     if(cands.length===1)break}
   if(cands.length!==1){target=cands[0]}
   prompt.textContent='I am thinking of a number…';const ul=el('ul','clues');clues.forEach(c=>ul.appendChild(el('li','',c)));stage.appendChild(ul);
-  help({book:`solved a riddle: the secret number was ${target}`,clues:[`Start with the clue that cuts out the most numbers. Write down a few that fit it.`,`Now check your few numbers against the other clues, one at a time. Cross out any that fail.`],answer:target,why:`Only ${target} fits every clue.`});
+  help({book:`solved a riddle: the secret number was ${target}`,clues:[`Start with the clue that cuts out the most numbers. Write down a few that fit it.${clues.some(c=>c.includes('odd')||c.includes('even'))?' Even numbers end in 0, 2, 4, 6 or 8. Odd ones end in 1, 3, 5, 7 or 9.':''}`,`Now check your few numbers against the other clues, one at a time. Cross out any that fail.`],answer:target,why:`Only ${target} fits every clue.`});
   controls.appendChild(numpad((v,nm)=>{if(v===target){lock(nm);win(`${cheer()} Only ${target} fits all the clues.`)}else{const broken=clues.find((c,i)=>{const m=c.match(/(bigger|smaller) than (\d+)/);if(m)return m[1]==='bigger'?!(v>+m[2]):!(v<+m[2]);if(c.includes('odd'))return v%2===0;if(c.includes('even'))return v%2!==0;if(c.startsWith('My digits'))return digsum(v)!==digsum(target);if(c.startsWith('I have a'))return !String(v).includes(String(target).slice(-1));if(c.includes('counting by 5s'))return (v%5===0)!==(target%5===0);return false});
     miss(broken?`${v} breaks this clue: "${broken}".`:'Check each clue against your number.')}},3))}});
 
@@ -639,13 +675,71 @@ skill({id:'ways',room:'story',title:'How many ways?',levels:3,mount(lv){
     if(found.length>=need){lock(pk);go.disabled=true;win(`${cheer()} ${need} ways, and there are even more. Can you say how many ways there are in all?`)}else say(`That works! ${need-found.length} more.`,true)};
   const r=el('div','row');r.appendChild(go);controls.append(pk,r)}});
 
+
+/* ================= BIG IDEAS ================= */
+function dotsRow(n,cls){const r=el('div','srow');const a=[];for(let i=0;i<n;i++){const d=el('div','it2'+(cls?' '+cls:''));d.innerHTML='<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="var(--dot)"/></svg>';a.push(d);r.appendChild(d)}r.items=a;return r}
+function pairUp(n){const g=el('div','pairs');for(let i=0;i<n;i++){const d=el('div','it2'+(i===n-1&&n%2?' alone':''));d.innerHTML='<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="var(--dot)"/></svg>';g.appendChild(d)}return g}
+const IDEAS=[
+ {id:'evenodd',title:'Even and odd',line:'Can they all find a partner?',door:'puz',
+  words:`Take some things and put them in <em>pairs</em>, two and two. If every one has a partner, the number is <em>even</em>. If one is left all alone, the number is <em>odd</em>. 6 is even. 7 is odd. The ones digit tells you: 0, 2, 4, 6, 8 are even. 1, 3, 5, 7, 9 are odd.`,
+  demo(box,btns){let n=7;const draw=()=>{box.innerHTML='';box.appendChild(dotsRow(n));box.appendChild(el('div','tryline',`${n} things. Tap "Pair them up".`))};draw();
+    const b=el('button','btn','Pair them up');b.onclick=()=>{box.innerHTML='';box.appendChild(pairUp(n));box.appendChild(el('div','tryline',n%2?`One is alone, so ${n} is odd.`:`Everyone has a partner, so ${n} is even.`))};
+    const c=el('button','btn quiet','Try another number');c.onclick=()=>{n=rnd(3,12);draw()};btns.append(b,c)},
+  tries:()=>{const n=rnd(2,20);return{q:`Is ${n} even or odd?`,kind:'choice',opts:['Even','Odd'],ans:n%2?'Odd':'Even',draw:st=>st.appendChild(dotsRow(n)),explain:n%2?`Pair them up and one is left over, so ${n} is odd.`:`They all pair up, so ${n} is even.`,show:st=>{st.innerHTML='';st.appendChild(pairUp(n))}}},
+  book:'learned what even and odd mean'},
+ {id:'diff',title:'How far apart',line:'The difference between two numbers',door:'add',
+  words:`The <em>difference</em> between two numbers is how far apart they are. Line them up: the extra ones that stick out are the difference. 9 and 6 are 3 apart, because 6 + 3 = 9. You can also hop on a number line from the small one to the big one and count the hops.`,
+  demo(box,btns){let a=9,b=6;const draw=()=>{box.innerHTML='';const r1=dotsRow(a),r2=dotsRow(b);r1.style.justifyContent=r2.style.justifyContent='flex-start';r1.items.slice(b).forEach(d=>d.classList.add('hi'));box.append(r1,r2,el('div','tryline',`${a} and ${b}. The ${a-b} with a glow are the difference.`))};draw();
+    const c=el('button','btn quiet','Try other numbers');c.onclick=()=>{a=rnd(6,12);b=rnd(1,a-1);draw()};btns.append(c)},
+  tries:()=>{const a=rnd(5,15),b=rnd(1,a-1);return{q:`How far apart are ${a} and ${b}?`,kind:'num',ans:a-b,draw:st=>{const r1=dotsRow(a),r2=dotsRow(b);r1.style.justifyContent=r2.style.justifyContent='flex-start';st.append(r1,r2)},explain:`${b} + ${a-b} = ${a}, so they are ${a-b} apart.`,show:st=>{st.querySelector('.srow').items.slice(b).forEach(d=>d.classList.add('hi'))}}},
+  book:'learned what the difference between two numbers is'},
+ {id:'tens',title:'Tens and ones',line:'Why 23 is 2 sticks and 3 dots',door:'add',
+  words:`Big numbers are made of <em>tens</em> and <em>ones</em>. In 23, the 2 means two sticks of ten, and the 3 means three loose ones. 20 + 3 = 23. When you take away and run out of ones, you can break a stick of ten into ten ones.`,
+  demo(box,btns){let n=23;const draw=()=>{box.innerHTML='';const rods=el('div','rods');for(let i=0;i<Math.floor(n/10);i++){const r=el('div','rod solid');for(let j=0;j<10;j++)r.appendChild(el('span','u'));rods.appendChild(r)}box.append(rods,dotsRow(n%10),el('div','tryline',`${Math.floor(n/10)} tens and ${n%10} ones make ${n}.`))};draw();
+    const c=el('button','btn quiet','Another number');c.onclick=()=>{n=rnd(11,59);draw()};btns.append(c)},
+  tries:()=>{const n=rnd(11,59);return{q:`What number is this?`,kind:'num',ans:n,draw:st=>{const rods=el('div','rods');for(let i=0;i<Math.floor(n/10);i++){const r=el('div','rod solid');for(let j=0;j<10;j++)r.appendChild(el('span','u'));rods.appendChild(r)}st.append(rods,dotsRow(n%10))},explain:`${Math.floor(n/10)} tens is ${Math.floor(n/10)*10}, and ${n%10} more is ${n}.`}},
+  book:'learned how tens and ones make a number'},
+ {id:'compare',title:'Bigger and smaller',line:'Which number is more?',door:'warm',
+  words:`A number is <em>bigger</em> when it has more things in it. 12 is bigger than 9. When two numbers both have tens, look at the tens first: 31 is bigger than 28 because 3 tens beat 2 tens. If the tens are the same, look at the ones.`,
+  demo(box,btns){let a=12,b=9;const draw=()=>{box.innerHTML='';const r1=dotsRow(a),r2=dotsRow(b);box.append(el('div','tryline',`${a}`),r1,el('div','tryline',`${b}`),r2,el('div','tryline',`${Math.max(a,b)} is bigger. It has ${Math.abs(a-b)} more.`))};draw();
+    const c=el('button','btn quiet','Other numbers');c.onclick=()=>{a=rnd(3,15);b=rnd(3,15);if(a===b)b++;draw()};btns.append(c)},
+  tries:()=>{const a=rnd(5,60),b=rnd(5,60);if(a===b)return null;return{q:`Which is bigger?`,kind:'choice',opts:[a,b],ans:Math.max(a,b),draw:()=>{},explain:Math.floor(a/10)!==Math.floor(b/10)?`${Math.max(a,b)} has more tens.`:`Same tens, so look at the ones: ${Math.max(a,b)} wins.`}},
+  book:'learned how to tell which number is bigger'},
+ {id:'ten',title:'Making ten',line:'The pairs that make 10',door:'warm',
+  words:`Ten is a special number. Some pairs always make 10: 1 and 9, 2 and 8, 3 and 7, 4 and 6, 5 and 5. Knowing them makes adding fast: 8 + 5 is the same as 8 + 2 + 3, which is 10 + 3 = 13.`,
+  demo(box,btns){let k=7;const draw=()=>{box.innerHTML='';const f=tenFrame(k);f.cells.slice(k).forEach(d=>{d.className='new';d.style.opacity='.35'});box.append(f,el('div','tryline',`${k} blue and ${10-k} orange make 10.`))};draw();
+    const c=el('button','btn quiet','Another pair');c.onclick=()=>{k=rnd(1,9);draw()};btns.append(c)},
+  tries:()=>{const k=rnd(1,9);return{q:`${k} and what make 10?`,kind:'num',ans:10-k,draw:st=>st.appendChild(tenFrame(k)),explain:`${k} + ${10-k} = 10.`,show:st=>{st.querySelector('.frame').cells.slice(k).forEach(d=>d.className='new')}}},
+  book:'learned the pairs that make ten'},
+ {id:'double',title:'Double and half',line:'Twice as many, and sharing in two',door:'pat',
+  words:`<em>Double</em> means the same again: double 4 is 4 + 4 = 8. <em>Half</em> is the opposite: share it into two equal piles. Half of 8 is 4. Even numbers can be shared in half with nothing left over. Odd numbers can't.`,
+  demo(box,btns){let n=4;const draw=()=>{box.innerHTML='';box.append(dotsRow(n),el('div','tryline',`${n}`))};draw();
+    const d=el('button','btn','Double it');d.onclick=()=>{box.innerHTML='';const r=dotsRow(2*n);r.items.slice(n).forEach(x=>x.classList.add('new'));box.append(r,el('div','tryline',`Double ${n} is ${2*n}.`))};
+    const h=el('button','btn quiet','Half of it');h.onclick=()=>{box.innerHTML='';const r=dotsRow(n);r.items.slice(Math.ceil(n/2)).forEach(x=>x.classList.add('gone'));box.append(r,el('div','tryline',n%2?`${n} is odd, so half leaves one split in the middle. Half of ${n-1} is ${(n-1)/2}.`:`Half of ${n} is ${n/2}.`))};
+    const c=el('button','btn quiet','New number');c.onclick=()=>{n=rnd(2,10);draw()};btns.append(d,h,c)},
+  tries:()=>{if(Math.random()<.5){const n=rnd(1,10);return{q:`What is double ${n}?`,kind:'num',ans:2*n,draw:st=>st.appendChild(dotsRow(n)),explain:`${n} + ${n} = ${2*n}.`}}else{const n=rnd(1,10)*2;return{q:`What is half of ${n}?`,kind:'num',ans:n/2,draw:st=>st.appendChild(dotsRow(n)),explain:`Share ${n} into two piles of ${n/2}.`}}},
+  book:'learned about doubles and halves'}
+];
+function renderIdeas(){const l=$('#idealist');l.innerHTML='';IDEAS.forEach(i=>{const b=el('button','idea'+(S.counts['idea_'+i.id]?' done':''),`<b>${i.title}</b><small>${i.line}</small>`);b.onclick=()=>openIdea(i);l.appendChild(b)})}
+function openIdea(idea){show('learn');$('#learnTitle').textContent=idea.title;$('#learnWords').innerHTML=idea.words;const demo=$('#learnDemo'),btns=$('#learnDemoBtns');demo.innerHTML='';btns.innerHTML='';idea.demo(demo,btns);
+  let got=0,asked=0;const P=$('#tryPrompt'),ST=$('#tryStage'),M=$('#tryMsg'),C=$('#tryControls');
+  function next(){if(asked>=3){P.textContent=got===3?`Three out of three. ${KID()} gets it!`:`${got} out of 3. ${KID()} is getting it.`;ST.innerHTML='';M.textContent='';C.innerHTML='';
+      S.counts['idea_'+idea.id]=(S.counts['idea_'+idea.id]||0)+1;addPage(`${KID()} ${idea.book}${got===3?' and got every try-it right':''}.`,got===3);save();
+      const r=el('div','row');const g=el('button','btn',`Play ${DOORS[idea.door][0]}`);g.onclick=()=>startTrail(idea.door);const a=el('button','btn quiet','Try again');a.onclick=()=>{got=0;asked=0;next()};const o=el('button','btn quiet','Other ideas');o.onclick=()=>{renderIdeas();show('ideas')};r.append(g,a,o);C.appendChild(r);if(got===3)confetti();return}
+    let t=null;for(let i=0;i<10&&!t;i++)t=idea.tries();asked++;P.textContent=`Try it (${asked} of 3): ${t.q}`;ST.innerHTML='';M.textContent='';M.className='msg';C.innerHTML='';t.draw(ST);let first=true;
+    const finish=(ok)=>{if(ok&&first)got++;M.textContent=(ok?'Yes! ':'')+t.explain;M.className='msg'+(ok?' good':'');if(t.show)try{t.show(ST)}catch(e){}C.querySelectorAll('button').forEach(b=>b.disabled=true);const r=el('div','row');const n=el('button','btn','Next');n.onclick=next;r.appendChild(n);C.appendChild(r)};
+    if(t.kind==='choice'){const c=choices(t.opts,(o,b)=>{if(o===t.ans){b.classList.add('hit');finish(true)}else{b.classList.add('miss');b.disabled=true;if(first){first=false;M.textContent='Not that one. Look again and try the other.'}else finish(false)}});c.classList.add('bigpick');C.appendChild(c)}
+    else C.appendChild(numpad((v,nm)=>{if(v===t.ans)finish(true);else if(first){first=false;M.textContent=`Not ${v}. Try once more.`}else finish(false)},3))}
+  next()}
+
 /* ---------- play loop ---------- */
 function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');
   ctx={hints:0,done:false,turn:S.duo?S.turn:0};
   turnEl.textContent=S.duo?(ctx.turn===1?"Dad's turn":`${KID()}'s turn`):'';
   const m=S.m[id]||(S.m[id]={lv:1,streak:0,low:0});SK[id].mount(m.lv);if(ctx.help)controls.appendChild(helpRow());renderTrail()}
 function renderSkills(){}
-function renderDoors(){const d=$('#doors');d.innerHTML='';ROOMS.forEach(rm=>{const b=el('button','door',`<svg viewBox="0 0 24 24">${rm.icon}</svg><b>${DOORS[rm.id][0]}</b><small>${DOORS[rm.id][1]}</small>`);b.onclick=()=>startTrail(rm.id);d.appendChild(b)})}
+function renderDoors(){const d=$('#doors');d.innerHTML='';ROOMS.forEach(rm=>{const b=el('button','door',`<svg viewBox="0 0 24 24">${rm.icon}</svg><b>${DOORS[rm.id][0]}</b><small>${DOORS[rm.id][1]}</small>`);b.onclick=()=>startTrail(rm.id);d.appendChild(b)});
+  const i=el('button','door ideas',`<svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z" fill="#fff"/><rect x="9" y="18" width="6" height="3" rx="1" fill="#1a1a1a"/></svg><b>Big Ideas</b><small>Read and understand</small>`);i.onclick=()=>{renderIdeas();show('ideas')};d.appendChild(i)}
 function renderLevels(){const t=$('#levels');t.innerHTML='';Object.values(SK).forEach(k=>{const tr=el('tr');tr.innerHTML=`<td>${DOORS[k.room][0]} · ${k.title}</td>`;const td=el('td');const box=el('div','lvl');const dn=el('button','','−'),sp=el('span','',` ${lvl(k.id)} / ${k.levels} `),up=el('button','','+');
   dn.onclick=()=>{const m=S.m[k.id];if(m.lv>1){m.lv--;m.streak=0;m.low=0;save();renderLevels()}};up.onclick=()=>{const m=S.m[k.id];if(m.lv<k.levels){m.lv++;m.streak=0;m.low=0;save();renderLevels()}};box.append(dn,sp,up);td.appendChild(box);tr.appendChild(td);t.appendChild(tr)})}
 function renderHome(){$('#homeTitle').textContent='Number Garden';$('#bookBtn').textContent=`${KID()}'s Book`;drawGarden();renderDoors()}
@@ -656,6 +750,8 @@ $('#closeSheet').onclick=()=>{renderHome();show('home')};
 $('#backBtn').onclick=()=>{show('home');renderHome()};
 $('#bookBtn').onclick=()=>{renderBook();show('book')};
 $('#bookBack').onclick=()=>{show('home')};
+$('#ideasBack').onclick=()=>{renderHome();show('home')};
+$('#learnBack').onclick=()=>{renderIdeas();show('ideas')};
 $('#name').value=S.name;$('#name').oninput=e=>{S.name=e.target.value.trim();save()};
 $('#duo').checked=S.duo;$('#duo').onchange=e=>{S.duo=e.target.checked;save()};
 $('#resetAll').onclick=()=>{S.stars=0;S.dad=0;S.m={};S.turn=0;S.book=[];S.flowers=[];S.badges={};S.counts={};S.trail=null;save();renderLevels()};
