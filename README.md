@@ -14,7 +14,7 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 | Add & take | Take away · Make a ten to add · Find the missing number | Place value (sticks of 10 that break), bridging through ten, missing-addend thinking |
 | Patterns | What comes next? · Rule machine | Repeating and growing patterns, function machines |
 | Puzzles | Balance it · Which one is different? · Make the money · Sudoku (shapes 4×4 → digits 4×4 → 6×6) · Number riddle · Who has what? (logic grid) · Sort by two things · If this, then that | Reasoning with no algorithm: the seed of competition math |
-| Stories | Story mystery · How many ways? | Reading-level word problems in one to two steps, and open questions with several right answers |
+| Stories | Story mystery · How many ways? | Reading-level word problems in one to two steps, and open questions with several right answers, up to finding every split and counting the ways |
 | Shapes & space | Mirror it · Count the shapes · Fit the hole · Finish the mirror · Count the cubes | Spatial reasoning: reflections, shapes hidden inside shapes, matching a piece to a gap, completing a symmetric picture, counting cubes you cannot see |
 | Playground | Counters and sticks · Number line walk · Balance scale | Free play with no questions: feel ten snapping into a stick, hop a sum along the line, load a scale and watch it tip |
 | Time | What time is it? · How long until…? · Days and months | Reading the clock to five minutes, elapsed time by counting on, the week and the year going round |

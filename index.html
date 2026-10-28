@@ -871,11 +871,12 @@ skill({id:'tale',room:'story',title:'Story mystery',levels:3,grow:lv=>['','Now t
     else{miss(`You said ${v}. Watch what really happens.`);await actOut(st.viz,scene,v);if(st.viz.type!=='need')say(`You said ${v}. Now count the numbered ones, then try again.`)}
     busy=false;nm.style.pointerEvents='';nm.style.opacity=''},3))}});
 
-skill({id:'ways',room:'story',title:'How many ways?',levels:3,grow:lv=>['','Now find three ways.','Now with three colors.'][lv-1],mount(lv){
+skill({id:'ways',room:'story',title:'How many ways?',levels:4,grow:lv=>['','Now find three ways.','Now find every way there is.','Now she also says how many ways there are in all.'][lv-1],mount(lv){
   /* she colors the beads herself by tapping; every split that uses every color is a right answer, and she needs a few different ones */
   const k=KID();const COL={red:'var(--accent)',blue:'var(--sky)',green:'var(--leaf)'};let total,parts,need;
-  if(lv===1){total=rnd(4,6);parts=['red','blue'];need=2}else if(lv===2){total=rnd(6,9);parts=['red','blue'];need=3}else{total=rnd(6,8);parts=['red','blue','green'];need=3}
-  const text=`${k} has <b>${total}</b> beads to paint. Some <b>${parts.slice(0,-1).join('</b>, some <b>')}</b> and some <b>${parts[parts.length-1]}</b>, at least one of each. Find <b>${need}</b> different ways.`;
+  const all=lv>=3; /* levels 3 and 4: every split of n beads into two colors, at least one of each: n-1 ways */
+  if(lv===1){total=rnd(4,6);parts=['red','blue'];need=2}else if(lv===2){total=rnd(6,9);parts=['red','blue'];need=3}else{total=lv===3?rnd(4,6):rnd(5,7);parts=['red','blue'];need=total-1}
+  const text=`${k} has <b>${total}</b> beads to paint. Some <b>red</b> and some <b>blue</b>, at least one of each. ${all?'Find <b>every</b> way there is.':`Find <b>${need}</b> different ways.`}`;
   prompt.textContent='Many right answers!';const wtext=el('div','story',text);stage.append(wtext,readBtn(()=>wtext.textContent));
   /* either order works: tap a bead then a pot, or pick a pot then tap beads */
   let brush=-1,picked=null;const pots=el('div','pots');const beads=[],row=el('div','beads');
@@ -888,13 +889,19 @@ skill({id:'ways',room:'story',title:'How many ways?',levels:3,grow:lv=>['','Now 
   const ex=parts.length===2?[[1,total-1],[2,total-2],[3,total-3]]:[[1,1,total-2],[1,2,total-3],[2,1,total-3]];
   const paint=c=>{let i=0;c.forEach((n,ci)=>{for(let j=0;j<n;j++){beads[i].ci=ci;beads[i].style.background=COL[parts[ci]];beads[i].classList.add('on');i++}})};
   const miniRow=c=>{const w=el('span','way');c.forEach((n,ci)=>{for(let j=0;j<n;j++){const d=el('i');d.style.background=COL[parts[ci]];w.appendChild(d)}});w.appendChild(el('b','',c.map((n,ci)=>`${n} ${parts[ci]}`).join(' + ')));return w};
-  help({book:`found ${need} different ways to split ${total} beads`,clues:[`Paint just one bead ${parts[0]} and all the rest ${parts[1]}. That is one way.`,`Now change one bead: one more ${parts[0]}, one fewer ${parts[1]}. That is a new way.`],why:`Some ways: ${ex.map(c=>c.map((n,ci)=>`${n} ${parts[ci]}`).join(' + ')).join('; ')}.`,show:()=>{ex.forEach(c=>list.appendChild(miniRow(c)));paint(ex[0])}});
+  const every=Array.from({length:total-1},(_,i)=>[i+1,total-1-i]);
+  help({book:all?`found every way to split ${total} beads into two colors: ${need} ways`:`found ${need} different ways to split ${total} beads`,clues:[`Paint just one bead ${parts[0]} and all the rest ${parts[1]}. That is one way.`,all?`Go in order: 1 red, then 2 red, then 3 red… When every bead but one is red, you have found them all.`:`Now change one bead: one more ${parts[0]}, one fewer ${parts[1]}. That is a new way.`],why:all?`Go in order, 1 red up to ${total-1} red: ${need} ways in all.`:`Some ways: ${ex.map(c=>c.map((n,ci)=>`${n} ${parts[ci]}`).join(' + ')).join('; ')}.`,show:()=>{(all?every:ex).forEach(c=>list.appendChild(miniRow(c)));paint((all?every:ex)[0])}});
   const go=el('button','btn','That\'s a way');go.onclick=()=>{if(ctx.done)return;const c=counts();const blank=beads.filter(b=>b.ci<0).length;
     if(blank)return miss(`${blank} bead${blank>1?'s are':' is'} still plain. Paint every bead.`);
     const missing=parts.filter((_,ci)=>c[ci]===0);if(missing.length)return miss(`There is no ${missing[0]} bead. She needs at least one of each color.`);
     const key=c.join('+');if(found.includes(key))return miss('You already found that one. Change a bead to make a different way.');
     found.push(key);list.appendChild(miniRow(c));
-    if(found.length>=need){lock(row);go.disabled=true;win(`${cheer()} ${need} ways, and there are even more. Can you say how many ways there are in all?`)}else{say(`That works! ${need-found.length} more. Change a bead for a new way.`,true)}};
+    if(found.length>=need){lock(row);go.disabled=true;
+      if(!all)win(`${cheer()} ${need} ways, and there are even more.`);
+      else if(lv===3)win(`${cheer()} That is every way: ${need} ways, and there are no more. 1 red up to ${total-1} red.`);
+      else{ /* level 4: now the real question */ say(`That is all of them! Now: how many ways did you find in all?`,true);prompt.textContent='How many ways are there in all?';
+        const nm=numpad((v,n2)=>{if(v===need){lock(n2);win(`${cheer()} ${total} beads, ${need} ways: one for each place the color can change, from 1 red up to ${total-1} red.`)}else miss(ctx.hints===0?'Count the little rows you found.':`There are ${need} rows. Count them one by one.`)},2);controls.insertBefore(nm,r)}}
+    else{say(`That works! ${need-found.length} more. ${all?'Try one more red.':'Change a bead for a new way.'}`,true)}};
   const r=el('div','row');r.appendChild(go);controls.append(r)}});
 
 /* ================= BIG IDEAS ================= */
@@ -1219,14 +1226,14 @@ skill({id:'logic',room:'puz',title:'Who has what?',levels:2,mount(lv){
     for(const {k,q} of pool){if(cands.length===1)break;const yes=sol[k]===q;if(yes&&Math.random()<.4){const c={t:`${kids[k]} has the ${pets[q][0]}.`,f:p=>p[k]===q};const next=cands.filter(c.f);if(next.length<cands.length){cands=next;clues.push(c)}}
       else if(!yes){const c={t:`${kids[k]} does not have the ${pets[q][0]}.`,f:p=>p[k]!==q};const next=cands.filter(c.f);if(next.length<cands.length&&clues.length<(lv===1?3:5)){cands=next;clues.push(c)}}}
     if(cands.length===1&&clues.length>=2)break}
-  prompt.textContent='Read the clues. Who has which pet?';const ul=el('ul','clues');clues.forEach(c=>ul.appendChild(el('li','',c.t)));
+  prompt.textContent='Read the clues. Who has which pet?';const rule=el('div','hint',`${n} friends, ${n} pets. Every friend has exactly one pet, and no two friends share. Put a ✓ in one box for each friend.`);const ul=el('ul','clues');clues.forEach(c=>ul.appendChild(el('li','',c.t)));
   const g=el('div','logic');g.style.gridTemplateColumns=`70px repeat(${n},1fr)`;g.appendChild(el('div','hd',''));pets.forEach(p=>g.appendChild(el('div','hd',`<span style="font-size:1.4rem">${p[1]}</span>`)));
   const marks=Array.from({length:n},()=>Array(n).fill(0));const cells=[];
   kids.forEach((k,i)=>{g.appendChild(el('div','hd',k));pets.forEach((p,j)=>{const c=el('button','lc','');c.onclick=()=>{if(ctx.done)return;marks[i][j]=(marks[i][j]+1)%3;c.textContent=['','✓','✗'][marks[i][j]];c.className='lc'+(marks[i][j]===1?' yes':marks[i][j]===2?' no':'')};cells.push(c);g.appendChild(c)})});
-  stage.append(ul,readBtn(()=>clues.map(c=>c.t).join(' ')),g);
+  stage.append(rule,ul,readBtn(()=>rule.textContent+' '+clues.map(c=>c.t).join(' ')),g);
   help({book:`solved a who-has-what puzzle with ${n} friends`,clues:['Start with a clue that says who HAS something. Put a ✓ there, then ✗ in the rest of that row and column.','Find a row with only one empty box left. That must be the ✓.'],why:kids.map((k,i)=>`${k} has the ${pets[sol[i]][0]}`).join(', ')+'.',show:()=>cells.forEach((c,idx)=>{const i=Math.floor(idx/n),j=idx%n;c.className='lc'+(sol[i]===j?' yes':' no');c.textContent=sol[i]===j?'✓':'✗'})});
   const r=el('div','row');const b=el('button','btn','Check');b.onclick=()=>{let ok=true,empty=0;kids.forEach((k,i)=>{const ticks=marks[i].map((m,j)=>m===1?j:-1).filter(j=>j>=0);if(ticks.length!==1)empty++;else if(ticks[0]!==sol[i])ok=false});
-    if(ok&&!empty){lock(r);win(`${cheer()} ${kids.map((k,i)=>`${k}: ${pets[sol[i]][1]}`).join('  ')}`)}else miss(empty?`${empty} friend${empty>1?'s':''} still need${empty>1?'':'s'} exactly one ✓.`:'One ✓ is in the wrong place. Check each clue again.')};r.appendChild(b);controls.appendChild(r)}});
+    if(ok&&!empty){lock(r);win(`${cheer()} ${kids.map((k,i)=>`${k}: ${pets[sol[i]][1]}`).join('  ')}`)}else miss(empty?`${empty} friend${empty>1?'s':''} still need${empty>1?'':'s'} a pet: one ✓ in ${empty>1?'each of their rows':'that row'}, and only one.`:'One ✓ is in the wrong place. Check each clue again.')};r.appendChild(b);controls.appendChild(r)}});
 
 /* ================= SHAPES & SPACE ================= */
 const PIECES={L:[[1,0],[1,0],[1,1]],T:[[1,1,1],[0,1,0]],Z:[[1,1,0],[0,1,1]],I:[[1,1,1]],O:[[1,1],[1,1]],P:[[1,1],[1,1],[1,0]],C:[[1,1],[1,0],[1,1]]};
