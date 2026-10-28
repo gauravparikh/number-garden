@@ -82,7 +82,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .greet em{font-style:normal;color:var(--accent)}
 .note{background:var(--card);border-left:6px solid var(--accent);border-radius:14px;padding:12px 14px;font-size:1.1rem;line-height:1.5;font-weight:700}
 .note small{display:block;color:var(--muted);font-size:.85rem;margin-bottom:2px}
-.streak{background:var(--sun);color:#1a1a1a;border-radius:999px;padding:6px 12px;font-family:var(--display);font-size:.95rem;white-space:nowrap;animation:badge .35s}
+.streak{background:var(--sun);color:#1a1a1a;border-radius:999px;padding:6px 12px;font-family:var(--display);font-size:.95rem;white-space:nowrap;animation:badge .35s;margin-right:48px}
 .cloud{font-size:.85rem;color:var(--muted)}
 /* mascot, transitions, playground */
 .view{animation:fadein .25s ease}
@@ -275,6 +275,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .scale{width:100%;max-width:420px}
 .coins{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .coin{border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:700;color:#3a2a10;border:3px solid rgba(0,0,0,.15)}
+.coin[disabled]{opacity:1;cursor:default}
 .tray{min-height:64px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;border:3px dashed var(--line);border-radius:16px;padding:8px;width:100%;max-width:420px;box-sizing:border-box}
 .total{font-family:var(--display);font-size:1.4rem;font-variant-numeric:tabular-nums}
 
@@ -685,15 +686,29 @@ skill({id:'wodb',room:'puz',title:'Which one is different?',levels:1,mount(){
   const g=el('div','wodb');set.items.forEach((it,i)=>{const b=el('button','choice',it);b.onclick=()=>{b.classList.add('hit');lock(g);
     const ul=el('ul','clues');set.why.forEach((w,j)=>ul.appendChild(el('li','',j===i?`<b>${w}</b>`:w)));stage.appendChild(ul);win('Good eye! Every one can be the odd one out. Here is one reason for each.',true)};g.appendChild(b)});stage.appendChild(g)}});
 
-skill({id:'coins',room:'puz',title:'Make the money',levels:2,mount(lv){
-  const coins=lv===1?[1,5,10]:[1,5,10,25];const target=lv===1?rnd(6,30):rnd(26,60);prompt.textContent=`Make ${target}¢ with coins`;
-  const tray=el('div','tray'),total=el('div','total','0¢'),bar=el('div','coins');let sum=0;const spec={1:['1¢','#c98a5a',40],5:['5¢','#bfc5c9',44],10:['10¢','#cfd3d6',38],25:['25¢','#d6d9db',52]};
-  const mk=v=>{const c=el('button','coin',spec[v][0]);c.style.background=spec[v][1];c.style.width=c.style.height=spec[v][2]+'px';c.style.fontSize=v===1?'.75rem':'.85rem';return c};
-  coins.forEach(v=>{const c=mk(v);c.onclick=()=>{if(ctx.done)return;const t=mk(v);t.onclick=()=>{if(ctx.done)return;t.remove();sum-=v;total.textContent=sum+'¢'};tray.appendChild(t);sum+=v;total.textContent=sum+'¢';if(sum>target)say('Too much now. Tap a coin in the tray to take it back.');else say('')};bar.appendChild(c)});
-  stage.append(bar,tray,total);
-  const way=(()=>{let left=target,parts=[];for(const c of coins.slice().reverse()){const n=Math.floor(left/c);if(n){parts.push(`${n} × ${c}¢`);left-=n*c}}return parts.join(' + ')})();
-  help({book:`made ${target}¢ out of coins`,clues:['Start with the biggest coin that fits. Then fill the rest with smaller ones.',`Count up as you add: ${target}¢ is the goal. Watch the number under the tray.`],why:`One way: ${way} = ${target}¢.`});
-  const r=el('div','row');const b=el('button','btn','Done');b.onclick=()=>{if(sum===target){win(`${cheer()} That makes ${target}¢. Can you find another way?`)}else miss(sum<target?`You have ${sum}¢. ${target-sum}¢ more to go.`:`That's ${sum-target}¢ too much.`)};r.appendChild(b);controls.appendChild(r)}});
+/* US coins, drawn close to their real sizes: the dime really is the smallest, which is the trap */
+const COINS=[{v:1,name:'penny',col:'#c98a5a',ink:'#4a2a10',px:40,say:'A penny is 1 cent. It is brown.'},{v:5,name:'nickel',col:'#c9ced2',ink:'#2a2a2a',px:46,say:'A nickel is 5 cents. It is the thick silver one.'},{v:10,name:'dime',col:'#dde1e4',ink:'#2a2a2a',px:38,say:'A dime is 10 cents. It is the smallest coin, but it is worth more than a nickel!'},{v:25,name:'quarter',col:'#d6d9db',ink:'#2a2a2a',px:54,say:'A quarter is 25 cents. Four quarters make a dollar, like four quarters of a pizza.'}];
+function coinBtn(c,withName){const b=el('button','coin',`${c.v}¢`);b.style.cssText=`background:${c.col};color:${c.ink};width:${c.px}px;height:${c.px}px;font-size:${c.v===1?'.75rem':'.85rem'}`;if(!withName)return b;const w=el('div');w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:2px';const n=el('small','',c.name);n.style.cssText='font-family:var(--display);color:var(--muted)';w.append(b,n);w.btn=b;return w}
+skill({id:'coins',room:'puz',title:'Make the money',levels:3,grow:lv=>['','Now make amounts with pennies, nickels and dimes.','Now with quarters too.'][lv-1],mount(lv){
+  const intro=el('div','story',`<b>¢</b> means <b>cents</b>. 100 cents make one dollar. Every coin is worth some cents, and the number is written on it.`);intro.style.maxWidth='none';
+  if(lv===1){ /* learn the coins: which coin is this, and how much is a small handful */
+    const kind=Math.random()<.5?'name':'count';stage.appendChild(intro);
+    if(kind==='name'){const c=pick(COINS.slice(0,3));prompt.textContent='Which coin is this?';const big=coinBtn(c);big.style.transform='scale(1.8)';big.style.margin='26px';big.disabled=true;stage.appendChild(big);
+      help({book:`learned that a ${c.name} is ${c.v}¢`,clues:['Read the number on the coin. That is how many cents it is worth.',c.say],answer:`a ${c.name}`,why:c.say});
+      const ch=choices(COINS.slice(0,3).map(x=>`${x.name}, ${x.v}¢`),(o,b)=>{if(o.startsWith(c.name)){b.classList.add('hit');lock(ch);win(`${cheer()} ${c.say}`)}else{b.classList.add('miss');b.disabled=true;miss(`Read the number on it: ${c.v}. Which coin is ${c.v}¢?`)}});controls.appendChild(ch)}
+    else{const cs=[pick(COINS.slice(0,3))];cs.push(pick([COINS[0],COINS[0],COINS[1]]));if(Math.random()<.5)cs.push(COINS[0]);cs.sort((x,y)=>y.v-x.v);const total=cs.reduce((t,c)=>t+c.v,0);prompt.textContent='How many cents is this?';
+      const r=el('div','coins');cs.forEach(c=>{const w=coinBtn(c,true);w.btn.disabled=true;r.appendChild(w)});stage.appendChild(r);
+      const counting=[];let run=0;cs.forEach(c=>{run+=c.v;counting.push(run)});
+      help({book:`counted ${total}¢ in coins`,clues:['Start with the biggest coin and count on. Say the numbers out loud.',`${cs.map(c=>c.v).join(', then ')}: ${counting.join(', ')}.`],answer:total,why:`${cs.map(c=>c.name).join(' + ')}: ${counting.join(', ')}. That is ${total}¢.`});
+      controls.appendChild(numpad((v,nm)=>{if(v===total){lock(nm);win(`${cheer()} ${ctx.help.why}`)}else miss(ctx.hints===0?`Start with the ${cs[0].name}: ${cs[0].v}. Then count on the rest.`:`${counting.join(', ')}.`)},2))}}
+  else{const coins=lv===2?COINS.slice(0,3):COINS;const target=lv===2?rnd(6,30):rnd(26,60);prompt.textContent=`Make ${target}¢ with coins`;
+    const bar=el('div','coins'),tray=el('div','tray'),total=el('div','total','0¢'),said=el('div','hint','Tap coins to put them in the tray. Tap a coin in the tray to take it back out.');let sum=0,picked=[];
+    const narrate=()=>{let run=0;const seq=picked.map(v=>run+=v);total.textContent=sum+'¢';said.textContent=picked.length?`${seq.join(', ')}`:'Tap coins to put them in the tray. Tap a coin in the tray to take it back out.';if(sum>target)say(`${sum}¢ is too much. Tap a coin in the tray to take it back.`);else if(sum===target)say(`${target}¢! Tap Done.`,true);else say(sum?`${target-sum}¢ more to go.`:'')};
+    coins.forEach(c=>{const w=coinBtn(c,true);w.btn.onclick=()=>{if(ctx.done)return;const t=coinBtn(c);t.onclick=()=>{if(ctx.done)return;t.remove();sum-=c.v;picked.splice(picked.lastIndexOf(c.v),1);narrate()};tray.appendChild(t);sum+=c.v;picked.push(c.v);narrate()};bar.appendChild(w)});
+    stage.append(bar,tray,total,said);
+    const way=(()=>{let left=target,parts=[];for(const c of coins.slice().reverse()){const n=Math.floor(left/c.v);if(n){parts.push(`${n} ${c.name}${n>1?(c.name==='penny'?' pennies':'s'):''}`);left-=n*c.v}}return parts.join(' + ')})();
+    help({book:`made ${target}¢ out of coins`,clues:['Start with the biggest coin that fits. Then fill the rest with smaller ones.',`Count up as you add. One way: ${way}.`],why:`One way: ${way} = ${target}¢.`});
+    const r=el('div','row');const b=el('button','btn','Done');b.onclick=()=>{if(ctx.done)return;if(sum===target){lock(r);win(`${cheer()} That makes ${target}¢: ${said.textContent}.`)}else miss(sum<target?`You have ${sum}¢. ${target-sum}¢ more to go.`:`That's ${sum-target}¢ too much. Take one back.`)};r.appendChild(b);controls.appendChild(r)}}});
 
 skill({id:'sudoku',room:'puz',title:'Sudoku',levels:3,grow:lv=>['','Now with numbers instead of shapes.','Now a bigger 6 by 6 grid.'][lv-1],mount(lv){
   const N=lv===3?6:4,br=2,bc=lv===3?3:2;let g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;c++)g[r].push((bc*(r%br)+Math.floor(r/br)+c)%N)}
