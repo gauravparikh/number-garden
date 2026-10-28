@@ -36,6 +36,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .pots{display:flex;gap:14px;justify-content:center}
 .pot{width:64px;height:54px;border-radius:12px 12px 18px 18px;border:4px solid transparent;color:#fff;font-family:var(--display);font-size:.85rem;display:grid;place-items:end center;padding-bottom:4px;box-shadow:inset 0 10px 0 rgba(255,255,255,.25)}
 .pot.sel{border-color:var(--fg);transform:translateY(-4px)}
+.bead.picked{border:4px solid var(--fg);transform:scale(1.15)}
 .bead{width:46px;height:46px;border-radius:50%;background:var(--card);border:3px dashed var(--line);box-sizing:border-box;transition:background .2s}
 .bead.on{border-style:solid;border-color:rgba(0,0,0,.12)}.bead[disabled]{opacity:1}
 .pick{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;font-family:var(--display);font-size:1.2rem}
@@ -875,10 +876,13 @@ skill({id:'ways',room:'story',title:'How many ways?',levels:3,grow:lv=>['','Now 
   if(lv===1){total=rnd(4,6);parts=['red','blue'];need=2}else if(lv===2){total=rnd(6,9);parts=['red','blue'];need=3}else{total=rnd(6,8);parts=['red','blue','green'];need=3}
   const text=`${k} has <b>${total}</b> beads to paint. Some <b>${parts.slice(0,-1).join('</b>, some <b>')}</b> and some <b>${parts[parts.length-1]}</b>, at least one of each. Find <b>${need}</b> different ways.`;
   prompt.textContent='Many right answers!';const wtext=el('div','story',text);stage.append(wtext,readBtn(()=>wtext.textContent));
-  /* paint pots: pick a color, then tap beads to paint them with it */
-  let brush=0;const pots=el('div','pots');const potEls=parts.map((c,ci)=>{const pt=el('button','pot');pt.style.background=COL[c];pt.setAttribute('aria-label',c+' paint');pt.appendChild(el('span','',c));pt.onclick=()=>{brush=ci;potEls.forEach((x,j)=>x.classList.toggle('sel',j===ci))};pots.appendChild(pt);return pt});potEls[0].classList.add('sel');
-  const beads=[],row=el('div','beads');for(let i=0;i<total;i++){const b=el('button','bead');b.ci=-1;b.onclick=()=>{if(ctx.done)return;b.ci=brush;b.style.background=COL[parts[brush]];b.classList.add('on');say('')};beads.push(b);row.appendChild(b)}
-  const legend=el('div','hint','Pick a paint pot, then tap the beads to paint them.');const found=[],list=el('div','ways');stage.append(pots,row,legend,list);
+  /* either order works: tap a bead then a pot, or pick a pot then tap beads */
+  let brush=-1,picked=null;const pots=el('div','pots');const beads=[],row=el('div','beads');
+  const paintBead=(b,ci)=>{b.ci=ci;b.style.background=COL[parts[ci]];b.classList.add('on');b.classList.remove('picked');say('')};
+  const potEls=parts.map((c,ci)=>{const pt=el('button','pot');pt.style.background=COL[c];pt.setAttribute('aria-label',c+' paint');pt.appendChild(el('span','',c));
+    pt.onclick=()=>{if(ctx.done)return;if(picked){paintBead(picked,ci);picked=null;return}brush=ci;potEls.forEach((x,j)=>x.classList.toggle('sel',j===ci))};pots.appendChild(pt);return pt});
+  for(let i=0;i<total;i++){const b=el('button','bead');b.ci=-1;b.onclick=()=>{if(ctx.done)return;if(brush>=0){paintBead(b,brush);return}if(picked)picked.classList.remove('picked');picked=b;b.classList.add('picked')};beads.push(b);row.appendChild(b)}
+  const legend=el('div','hint','Tap a bead, then tap a paint pot.');const found=[],list=el('div','ways');stage.append(pots,row,legend,list);
   const counts=()=>parts.map((_,ci)=>beads.filter(b=>b.ci===ci).length);
   const ex=parts.length===2?[[1,total-1],[2,total-2],[3,total-3]]:[[1,1,total-2],[1,2,total-3],[2,1,total-3]];
   const paint=c=>{let i=0;c.forEach((n,ci)=>{for(let j=0;j<n;j++){beads[i].ci=ci;beads[i].style.background=COL[parts[ci]];beads[i].classList.add('on');i++}})};
