@@ -16,7 +16,7 @@
   --bg:#15241e; --card:#1f3129; --fg:#eef6f1; --muted:#9fb8ac; --accent:#ff8a6a; --accent-ink:#1a1a1a;
   --sun:#ffd25a; --leaf:#5fc08f; --sky:#7cbcf0; --plum:#b48ae8; --line:#2f463b; --dot:#8dc3ff; --dot-gone:#2a3d34; --soil:#8a6442; color-scheme:dark }
 
-html,body{height:100%}
+html,body{min-height:100%}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-weight:700;
   padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   display:flex;flex-direction:column;gap:10px;max-width:760px;margin-inline:auto;box-sizing:border-box;-webkit-user-select:none;user-select:none}
@@ -43,6 +43,21 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .pick{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;font-family:var(--display);font-size:1.2rem}
 .pick .num{width:56px}
 .pick .stepper{display:flex;align-items:center;gap:6px}
+/* story scenes */
+.scene{display:flex;flex-direction:column;gap:10px;align-items:center;width:100%}
+.srow{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;min-height:36px}
+.srow .lab{font-family:var(--display);color:var(--muted);font-size:.9rem;width:100%;text-align:center}
+.it2{width:32px;height:32px;border-radius:50%;background:var(--dot);position:relative;transition:transform .3s,opacity .4s,background .3s;transform:scale(1)}
+.it2.in{transform:scale(0)}
+.it2.new{background:var(--accent)}
+.it2.gone{opacity:.18}
+.it2.slot{background:transparent;border:3px dashed var(--line);box-sizing:border-box}
+.it2.extra{background:var(--plum)}
+.it2.hi{box-shadow:0 0 0 4px var(--sun)}
+.it2 b{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-family:var(--display);font-size:.95rem}
+.box10{display:grid;grid-template-columns:repeat(5,38px);gap:6px;padding:6px;border:3px solid var(--fg);border-radius:12px}
+.box10 .it2.slot{border-color:var(--line)}
+.beam,.pan{transition:transform .7s cubic-bezier(.3,1.4,.5,1)}.beam{transform-origin:200px 40px}
 .room{background:var(--card);border-radius:16px;padding:8px 4px;font-family:var(--display);font-size:.95rem;font-weight:600;border:3px solid transparent;display:flex;flex-direction:column;align-items:center;gap:2px}
 .room svg{width:30px;height:30px}
 .room[aria-selected="true"]{border-color:var(--accent)}
@@ -55,7 +70,6 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .turn{text-align:center;font-family:var(--display);color:var(--plum);font-size:1rem;min-height:1.2em}
 .prompt{font-family:var(--display);font-size:1.5rem;font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
 .stage{display:flex;justify-content:center;align-items:center;flex:1 0 auto;min-height:150px;flex-wrap:wrap;gap:16px}
-.card{overflow-y:auto}
 .msg{min-height:1.8em;text-align:center;font-size:1.1rem;color:var(--muted)}
 .msg.good{color:var(--leaf)}
 
@@ -351,15 +365,21 @@ skill({id:'machine',room:'pat',title:'Rule machine',levels:3,mount(lv){
 
 /* ================= PUZZLES ================= */
 skill({id:'balance',room:'puz',title:'Balance it',levels:3,mount(lv){
-  const A={s:'circle',c:'var(--accent)',n:'apples'},B={s:'tri',c:'var(--leaf)',n:'pears'};
-  let left,right,ans,text,explain;
-  if(lv===1){const r=rnd(2,3),k=rnd(2,3);left=[[A,1]];right=[[B,r]];ans=k*r;text=`If 1 apple weighs the same as ${r} pears, how many pears balance ${k} apples?`;explain=`${k} apples is ${k} groups of ${r} pears: ${ans}.`}
-  else if(lv===2){const r=rnd(2,4),k=rnd(2,3);left=[[A,k]];right=[[B,k*r]];ans=r;text=`${k} apples balance ${k*r} pears. How many pears balance 1 apple?`;explain=`Share ${k*r} pears among ${k} apples: ${r} each.`}
-  else{const x=rnd(3,9),y=rnd(2,9),z=rnd(1,x+y-1);ans=x+y-z;left=[[A,x],[B,y]];right=[[A,z],[B,'?']];text=`Left side: ${x} + ${y}. Right side: ${z} + ?. What makes it balance?`;explain=`Both sides must be ${x+y}. ${z} + ${ans} = ${x+y}.`}
-  prompt.textContent='Balance it';const sc=el('div','scale');sc.innerHTML=`<svg viewBox="0 0 400 150"><path d="M200 130V30M120 130h160" stroke="var(--fg)" stroke-width="4"/><path d="M60 40h280" stroke="var(--fg)" stroke-width="4"/><path d="M60 40v10M340 40v10" stroke="var(--fg)" stroke-width="3"/><rect x="25" y="50" width="70" height="60" rx="8" fill="var(--bg)" stroke="var(--line)" stroke-width="2"/><rect x="305" y="50" width="70" height="60" rx="8" fill="var(--bg)" stroke="var(--line)" stroke-width="2"/>${pan(left,40)}${pan(right,320)}</svg>`;
+  const A={s:'circle',c:'var(--accent)'},B={s:'tri',c:'var(--leaf)'};
+  let given,qL,qR,ans,text,explain,weigh,unit=' pears';
+  if(lv===1){const r=rnd(2,3),k=rnd(2,3);given=`1 apple weighs the same as ${r} pears.`;qL=[[A,k]];qR=[[B,'?']];ans=k*r;text=`${given} How many pears balance ${k} apples?`;explain=`${k} apples is ${k} groups of ${r} pears: ${ans}.`;weigh=v=>[k*r,v]}
+  else if(lv===2){const r=rnd(2,4),k=rnd(2,3);given=`${k} apples balance ${k*r} pears.`;qL=[[A,1]];qR=[[B,'?']];ans=r;text=`${given} How many pears balance 1 apple?`;explain=`Share ${k*r} pears among ${k} apples: ${r} each.`;weigh=v=>[r,v]}
+  else{const x=rnd(3,9),y=rnd(2,9),z=rnd(1,x+y-1);ans=x+y-z;qL=[[A,x],[B,y]];qR=[[A,z],[B,'?']];text=`Left side: ${x} + ${y}. Right side: ${z} + ?. What makes it balance?`;explain=`Both sides must be ${x+y}. ${z} + ${ans} = ${x+y}.`;weigh=v=>[x+y,z+v];unit=''}
+  prompt.textContent='Balance it';const sc=el('div','scale');
+  const draw=r=>{sc.innerHTML=`<svg viewBox="0 0 400 160"><path d="M200 140V30M120 140h160" stroke="var(--fg)" stroke-width="4"/><g class="beam"><path d="M60 40h280" stroke="var(--fg)" stroke-width="4"/></g><g class="pan pl"><path d="M60 40v10" stroke="var(--fg)" stroke-width="3"/><rect x="25" y="50" width="70" height="60" rx="8" fill="var(--bg)" stroke="var(--line)" stroke-width="2"/>${pan(qL,40)}</g><g class="pan pr"><path d="M340 40v10" stroke="var(--fg)" stroke-width="3"/><rect x="305" y="50" width="70" height="60" rx="8" fill="var(--bg)" stroke="var(--line)" stroke-width="2"/>${pan(r,320)}</g></svg>`};
+  draw(qR);
+  const tip=v=>{const [L,R]=weigh(v);const t=L===R?0:(L>R?-8:8);const dy=t?19.5:0;const r2=qR.map(x=>x.slice());r2[r2.length-1][1]=v;draw(r2);
+    const beam=sc.querySelector('.beam'),pl=sc.querySelector('.pl'),pr=sc.querySelector('.pr');void beam.getBoundingClientRect();
+    beam.style.transform=`rotate(${t}deg)`;pl.style.transform=`translateY(${t<0?dy:-dy}px)`;pr.style.transform=`translateY(${t<0?-dy:dy}px)`;return[L,R]};
   stage.append(sc,el('div','hint',text));
-  help({clues:['Both sides must weigh exactly the same.',lv===3?`Add up the left side first. The right side has to reach the same number.`:`Think about what one apple is worth in pears.`],answer:ans,why:explain});
-  controls.appendChild(numpad((v,nm)=>{if(v===ans){lock(nm);win(`${cheer()} ${explain}`)}else miss(ctx.hints===0?'Both sides must weigh the same. Think about what one apple is worth.':explain.split(':')[0]+'.')}))
+  help({clues:['Both sides must weigh exactly the same.',lv===3?`Add up the left side first. The right side has to reach the same number.`:`Think about what one apple is worth in pears.`],answer:ans,why:explain,show:()=>tip(ans)});
+  controls.appendChild(numpad((v,nm)=>{const [L,R]=tip(v);if(v===ans){lock(nm);win(`${cheer()} ${explain}`)}
+    else miss(L>R?`With ${v}${unit} the left side is heavier and sinks down. The right needs more.`:`With ${v}${unit} the right side is heavier and sinks down. That's too many.`)}))
   function pan(items,x0){let h='',x=x0;items.forEach(([it,n])=>{h+=`<g transform="translate(${x},62) scale(.9)">${shapes[it.s](it.c)}</g><text x="${x+18}" y="100" text-anchor="middle" font-size="20" font-family="var(--display)" fill="var(--fg)">${n}</text>`;x+=36});return h}}});
 
 const WODB=[
@@ -426,29 +446,68 @@ const THINGS=['strawberries','stickers','marbles','dinosaurs','crayons','shells'
 const KID=()=>S.name||'Zoe';
 const STORIES={
  1:[ // one step, within 10
-  (k,t)=>{const a=rnd(2,6),b=rnd(1,4);return{text:`${k} had <b>${a}</b> ${t}. Papa gave her <b>${b}</b> more. How many ${t} does ${k} have now?`,ans:a+b,hint:`Start at ${a} and count on ${b} more.`,why:`${a} and ${b} more is ${a+b}.`}},
-  (k,t)=>{const a=rnd(5,10),b=rnd(1,a-1);return{text:`There were <b>${a}</b> ${t} in the jar. ${k} ate <b>${b}</b>. How many are left in the jar?`,ans:a-b,hint:`Start at ${a} and count back ${b}.`,why:`${a} take away ${b} leaves ${a-b}.`}},
-  (k,t)=>{const a=rnd(2,5),b=rnd(2,5);return{text:`${k} has <b>${a}</b> ${t} in one hand and <b>${b}</b> in the other. How many altogether?`,ans:a+b,hint:`Put both hands together and count.`,why:`${a} + ${b} = ${a+b}.`}},
-  (k,t)=>{const a=rnd(3,9),b=rnd(1,a-1);return{text:`${k} needs <b>${a}</b> ${t} for a game. She has <b>${b}</b>. How many more does she need?`,ans:a-b,hint:`Count up from ${b} until you reach ${a}.`,why:`From ${b} up to ${a} is ${a-b} more.`}}
+  (k,t)=>{const a=rnd(2,6),b=rnd(1,4);return{text:`${k} had <b>${a}</b> ${t}. Papa gave her <b>${b}</b> more. How many ${t} does ${k} have now?`,ans:a+b,hint:`Start at ${a} and count on ${b} more.`,why:`${a} and ${b} more is ${a+b}.`,viz:{type:'add',a,b}}},
+  (k,t)=>{const a=rnd(5,10),b=rnd(1,a-1);return{text:`There were <b>${a}</b> ${t} in the jar. ${k} ate <b>${b}</b>. How many are left in the jar?`,ans:a-b,hint:`Start at ${a} and count back ${b}.`,why:`${a} take away ${b} leaves ${a-b}.`,viz:{type:'take',a,b}}},
+  (k,t)=>{const a=rnd(2,5),b=rnd(2,5);return{text:`${k} has <b>${a}</b> ${t} in one hand and <b>${b}</b> in the other. How many altogether?`,ans:a+b,hint:`Put both hands together and count.`,why:`${a} + ${b} = ${a+b}.`,viz:{type:'add',a,b}}},
+  (k,t)=>{const a=rnd(3,9),b=rnd(1,a-1);return{text:`${k} needs <b>${a}</b> ${t} for a game. She has <b>${b}</b>. How many more does she need?`,ans:a-b,hint:`Count up from ${b} until you reach ${a}.`,why:`From ${b} up to ${a} is ${a-b} more.`,viz:{type:'need',need:a,have:b}}}
  ],
  2:[ // within 20, compare and missing part
-  (k,t)=>{const a=rnd(8,15),b=rnd(3,9);return{text:`${k} found <b>${a}</b> ${t}. Her friend found <b>${b}</b>. How many more did ${k} find than her friend?`,ans:a-b,hint:`Line them up side by side. How many stick out past the shorter row?`,why:`${a} is ${a-b} more than ${b}.`}},
-  (k,t)=>{const a=rnd(7,12),b=rnd(4,9);return{text:`A box holds <b>10</b> ${t}. ${k} has <b>${a}</b> and Papa gives her <b>${b}</b> more. How many will NOT fit in the box?`,ans:a+b-10,hint:`First find how many she has in all. Then take away the 10 that fit.`,why:`${a} + ${b} = ${a+b}. The box takes 10, so ${a+b-10} don't fit.`}},
-  (k,t)=>{const a=rnd(11,19),b=rnd(2,9);return{text:`${k} had some ${t}. She gave <b>${b}</b> to her friend and now has <b>${a-b}</b>. How many did she start with?`,ans:a,hint:`Put the ${b} back. Then count everything.`,why:`${a-b} and the ${b} she gave away: ${a} to start.`}},
-  (k,t)=>{const a=rnd(6,9),b=rnd(6,9);return{text:`${k} put <b>${a}</b> ${t} in a bag, then <b>${b}</b> more. Then she took <b>5</b> out. How many are in the bag?`,ans:a+b-5,hint:`Do one thing at a time. First ${a} and ${b}. Then take away 5.`,why:`${a} + ${b} = ${a+b}, then ${a+b} − 5 = ${a+b-5}.`}}
+  (k,t)=>{const a=rnd(8,15),b=rnd(3,9);return{text:`${k} found <b>${a}</b> ${t}. Her friend found <b>${b}</b>. How many more did ${k} find than her friend?`,ans:a-b,hint:`Line them up side by side. How many stick out past the shorter row?`,why:`${a} is ${a-b} more than ${b}.`,viz:{type:'compare',a,b,k}}},
+  (k,t)=>{const a=rnd(7,12),b=rnd(4,9);return{text:`A box holds <b>10</b> ${t}. ${k} has <b>${a}</b> and Papa gives her <b>${b}</b> more. How many will NOT fit in the box?`,ans:a+b-10,hint:`First find how many she has in all. Then take away the 10 that fit.`,why:`${a} + ${b} = ${a+b}. The box takes 10, so ${a+b-10} don't fit.`,viz:{type:'box',a,b}}},
+  (k,t)=>{const a=rnd(11,19),b=rnd(2,9);return{text:`${k} had some ${t}. She gave <b>${b}</b> to her friend and now has <b>${a-b}</b>. How many did she start with?`,ans:a,hint:`Put the ${b} back. Then count everything.`,why:`${a-b} and the ${b} she gave away: ${a} to start.`,viz:{type:'add',a:a-b,b,label:['has now','gave away']}}},
+  (k,t)=>{const a=rnd(6,9),b=rnd(6,9);return{text:`${k} put <b>${a}</b> ${t} in a bag, then <b>${b}</b> more. Then she took <b>5</b> out. How many are in the bag?`,ans:a+b-5,hint:`Do one thing at a time. First ${a} and ${b}. Then take away 5.`,why:`${a} + ${b} = ${a+b}, then ${a+b} − 5 = ${a+b-5}.`,viz:{type:'chain',a,steps:[b,-5]}}}
  ],
  3:[ // two steps, within 30, some reasoning
-  (k,t)=>{const a=rnd(3,6),g=rnd(2,4);return{text:`${k} has <b>${a}</b> friends coming over. She wants to give each friend <b>${g}</b> ${t}. How many ${t} does she need?`,ans:a*g,hint:`Make ${a} piles with ${g} in each. Count them all.`,why:`${a} piles of ${g} is ${a*g}.`}},
-  (k,t)=>{const tot=rnd(12,24);const half=tot/2;const a=tot%2?null:half;if(a==null)return null;return{text:`${k} and Papa share <b>${tot}</b> ${t} so they each get the same. Then ${k} eats <b>3</b> of hers. How many does ${k} have left?`,ans:half-3,hint:`Half of ${tot} first. Then take away 3.`,why:`Half of ${tot} is ${half}. ${half} − 3 = ${half-3}.`}},
-  (k,t)=>{const a=rnd(12,20),b=rnd(3,8),c=rnd(3,8);return{text:`${k} started with <b>${a}</b> ${t}. She lost <b>${b}</b> at the park, then found <b>${c}</b> under the couch. How many now?`,ans:a-b+c,hint:`Two steps. Lose ${b} first, then find ${c}.`,why:`${a} − ${b} = ${a-b}, then + ${c} = ${a-b+c}.`}},
-  (k,t)=>{const d=rnd(3,6);return{text:`A spider has 8 legs. A ladybug has 6. ${k} saw <b>1</b> spider and <b>${d}</b> ladybugs. How many legs did she see?`,ans:8+6*d,hint:`Legs on the ladybugs first: count by 6 ${d} times. Then add the spider.`,why:`${d} ladybugs is ${6*d} legs, plus 8 is ${8+6*d}.`}},
-  (k,t)=>{const a=rnd(2,4),b=a+rnd(2,5);return{text:`${k} is <b>${a}</b> years older than her cousin. Her cousin is <b>${b}</b>. In 2 years, how old will ${k} be?`,ans:a+b+2,hint:`How old is ${k} now? Then add 2.`,why:`${k} is ${a+b} now. In 2 years she'll be ${a+b+2}.`}}
+  (k,t)=>{const a=rnd(3,6),g=rnd(2,4);return{text:`${k} has <b>${a}</b> friends coming over. She wants to give each friend <b>${g}</b> ${t}. How many ${t} does she need?`,ans:a*g,hint:`Make ${a} piles with ${g} in each. Count them all.`,why:`${a} piles of ${g} is ${a*g}.`,viz:{type:'groups',rows:Array(a).fill(g),label:'friend'}}},
+  (k,t)=>{const tot=rnd(6,12)*2,half=tot/2;return{text:`${k} and Papa share <b>${tot}</b> ${t} so they each get the same. Then ${k} eats <b>3</b> of hers. How many does ${k} have left?`,ans:half-3,hint:`Half of ${tot} first. Then take away 3.`,why:`Half of ${tot} is ${half}. ${half} − 3 = ${half-3}.`,viz:{type:'share',tot,eat:3,k}}},
+  (k,t)=>{const a=rnd(12,20),b=rnd(3,8),c=rnd(3,8);return{text:`${k} started with <b>${a}</b> ${t}. She lost <b>${b}</b> at the park, then found <b>${c}</b> under the couch. How many now?`,ans:a-b+c,hint:`Two steps. Lose ${b} first, then find ${c}.`,why:`${a} − ${b} = ${a-b}, then + ${c} = ${a-b+c}.`,viz:{type:'chain',a,steps:[-b,c]}}},
+  (k,t)=>{const d=rnd(3,6);return{text:`A spider has 8 legs. A ladybug has 6. ${k} saw <b>1</b> spider and <b>${d}</b> ladybugs. How many legs did she see?`,ans:8+6*d,hint:`Legs on the ladybugs first: count by 6 ${d} times. Then add the spider.`,why:`${d} ladybugs is ${6*d} legs, plus 8 is ${8+6*d}.`,viz:{type:'groups',rows:[8].concat(Array(d).fill(6)),label:'bug'}}},
+  (k,t)=>{const a=rnd(2,4),b=a+rnd(2,5);return{text:`${k} is <b>${a}</b> years older than her cousin. Her cousin is <b>${b}</b>. In 2 years, how old will ${k} be?`,ans:a+b+2,hint:`How old is ${k} now? Then add 2.`,why:`${k} is ${a+b} now. In 2 years she'll be ${a+b+2}.`,viz:{type:'chain',a:b,steps:[a,2],label:['cousin now',`${a} older`,'2 years']}}}
  ]};
+
+/* scene engine: draws the objects in a story and acts out what the child answered */
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function dot(cls){const d=el('div','it2'+(cls?' '+cls:''));return d}
+function row(label){const r=el('div','srow');if(label)r.appendChild(el('div','lab',label));return r}
+async function appear(items,cls,gap){for(const d of items){d.classList.add('in');await wait(0);d.classList.add(cls||'new');await wait(10);d.classList.remove('in');await wait(gap||110)}}
+async function countAlong(items,gap){let n=0;for(const d of items){if(d.classList.contains('gone')||d.classList.contains('slot'))continue;n++;d.classList.add('hi');d.appendChild(el('b','',n));await wait(gap||170);d.classList.remove('hi')}return n}
+function buildScene(v){const sc=el('div','scene');const S={sc,rows:[]};
+  const mkRow=(n,label,cls)=>{const r=row(label);const items=[];for(let i=0;i<n;i++){const d=dot(cls);items.push(d);r.appendChild(d)}sc.appendChild(r);S.rows.push(items);return items};
+  if(v.type==='add'){S.a=mkRow(v.a,v.label?v.label[0]:'');S.b=mkRow(0,v.label?v.label[1]:'more')}
+  else if(v.type==='take'){S.a=mkRow(v.a,'')}
+  else if(v.type==='need'){const r=row('needs');S.slots=[];for(let i=0;i<v.need;i++){const d=dot(i<v.have?'':'slot');S.slots.push(d);r.appendChild(d)}sc.appendChild(r)}
+  else if(v.type==='compare'){S.a=mkRow(v.a,v.k);S.b=mkRow(v.b,'friend');S.rows.forEach(rw=>rw[0].parentElement.style.justifyContent='flex-start')}
+  else if(v.type==='box'){const r=row('');const bx=el('div','box10');S.slots=[];for(let i=0;i<10;i++){const d=dot('slot');S.slots.push(d);bx.appendChild(d)}r.appendChild(bx);sc.appendChild(r);S.pile=mkRow(v.a,'has');S.more=mkRow(0,'Papa gives')}
+  else if(v.type==='chain'){S.a=mkRow(v.a,v.label?v.label[0]:'start');S.steps=v.steps.map((s,i)=>mkRow(0,v.label?v.label[i+1]:(s>0?`+${s}`:`${s}`)))}
+  else if(v.type==='groups'){S.g=v.rows.map((n,i)=>mkRow(0,`${v.label} ${i+1}`))}
+  else if(v.type==='share'){S.a=mkRow(0,v.k);S.b=mkRow(0,'Papa')}
+  return S}
+async function actOut(v,S,guess){ // plays the true story; returns nothing. guess is the child's answer or null.
+  const ans=v.ans;
+  if(v.type==='add'){const r=S.b[0]?S.b[0].parentElement:S.sc.children[1];const items=[];for(let i=0;i<v.b;i++){const d=dot('in');items.push(d);r.appendChild(d)}await appear(items);S.b=items;await wait(300);await countAlong(S.a.concat(items))}
+  else if(v.type==='take'){for(let i=0;i<v.b;i++){S.a[S.a.length-1-i].classList.add('gone');await wait(220)}await wait(300);await countAlong(S.a)}
+  else if(v.type==='need'){const n=guess==null?ans:guess;const empties=S.slots.filter(d=>d.classList.contains('slot'));let placed=0;const extras=[];const r=S.slots[0].parentElement;
+    for(let i=0;i<n;i++){if(placed<empties.length){const d=empties[placed++];d.classList.remove('slot');d.classList.add('in');await wait(10);d.classList.add('new');await wait(10);d.classList.remove('in')}else{const d=dot('in extra');r.appendChild(d);extras.push(d);await wait(0);d.classList.remove('in')}await wait(160)}
+    await wait(300);if(guess!=null&&guess<ans){say(`You said ${guess}. ${ans-guess} ${ans-guess===1?'box is':'boxes are'} still empty. How many more would fill them?`)}else if(guess!=null&&guess>ans){say(`You said ${guess}. The purple ones don't fit, there are ${guess-ans} extra. How many did fit?`)}}
+  else if(v.type==='compare'){for(let i=v.b;i<v.a;i++){S.a[i].classList.add('hi');await wait(180)}await wait(200);await countAlong(S.a.slice(v.b))}
+  else if(v.type==='box'){const items=[];for(let i=0;i<v.b;i++){const d=dot('in');items.push(d);S.more[0]?S.more[0].parentElement.appendChild(d):S.sc.children[2].appendChild(d)}await appear(items);await wait(300);
+    const all=S.pile.concat(items);let i=0;for(const d of all){if(i<10){d.classList.add('gone');const s=S.slots[i];s.classList.remove('slot');s.classList.add('in');await wait(0);s.classList.remove('in');i++;await wait(140)}else{d.classList.add('extra');await wait(140)}}
+    await wait(300);await countAlong(all.slice(10))}
+  else if(v.type==='chain'){let cur=S.a.slice();for(let i=0;i<v.steps.length;i++){const s=v.steps[i];if(s>0){const items=[];for(let j=0;j<s;j++){const d=dot('in');items.push(d);S.steps[i][0]?S.steps[i][0].parentElement.appendChild(d):S.sc.children[i+1].appendChild(d)}await appear(items);cur=cur.concat(items)}else{const live=cur.filter(d=>!d.classList.contains('gone'));for(let j=0;j<-s;j++){live[live.length-1-j].classList.add('gone');await wait(200)}}await wait(400)}await countAlong(cur)}
+  else if(v.type==='groups'){let all=[];for(let i=0;i<v.rows.length;i++){const items=[];for(let j=0;j<v.rows[i];j++){const d=dot('in');items.push(d);S.sc.children[i].appendChild(d)}await appear(items,'',70);all=all.concat(items);await wait(150)}await wait(300);await countAlong(all,120)}
+  else if(v.type==='share'){const A=[],B=[];for(let i=0;i<v.tot;i++){const d=dot('in');(i%2?B:A).push(d);S.sc.children[i%2].appendChild(d);await wait(0);d.classList.remove('in');await wait(90)}await wait(400);for(let i=0;i<v.eat;i++){A[A.length-1-i].classList.add('gone');await wait(220)}await wait(300);await countAlong(A)}}
+
 skill({id:'tale',room:'story',title:'Story mystery',levels:3,mount(lv){
   let st=null;for(let i=0;i<10&&!st;i++)st=pick(STORIES[lv])(KID(),pick(THINGS));
-  prompt.textContent='Read the story. Then solve it.';const box=el('div','story',st.text);stage.appendChild(box);
-  help({clues:['Read it once more. What do we know, and what is the question asking?',st.hint],answer:st.ans,why:st.why});
-  controls.appendChild(numpad((v,nm)=>{if(v===st.ans){lock(nm);win(`${cheer()} ${st.why}`)}else miss(ctx.hints===0?st.hint:`Draw it with dots or use your fingers. ${st.hint}`)},3))}});
+  st.viz.ans=st.ans;
+  prompt.textContent='Read the story. Then solve it.';const box=el('div','story',st.text);const scene=buildScene(st.viz);stage.append(box,scene.sc);
+  let fresh=true;const replay=()=>{const old=scene.sc;const s=buildScene(st.viz);Object.assign(scene,s);stage.replaceChild(s.sc,old)};
+  let busy=false;
+  help({clues:['Look at the picture. What do we know, and what is the question asking?',st.hint],answer:st.ans,why:st.why,show:()=>{if(!fresh)replay();fresh=false;actOut(st.viz,scene,null)}});
+  controls.appendChild(numpad(async(v,nm)=>{if(busy)return;busy=true;if(!fresh)replay();fresh=false;
+    if(v===st.ans){lock(nm);win(`${cheer()} ${st.why}`);await actOut(st.viz,scene,v)}
+    else{miss(`You said ${v}. Watch what really happens.`);await actOut(st.viz,scene,v);if(st.viz.type!=='need')say(`You said ${v}. Now count the numbered ones, then try again.`)}
+    busy=false},3))}});
 
 skill({id:'ways',room:'story',title:'How many ways?',levels:3,mount(lv){
   const k=KID(),t=pick(THINGS);let total,parts,text,need;
