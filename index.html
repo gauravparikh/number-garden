@@ -501,7 +501,7 @@ function drawGarden(){const svg=$('#gardenSvg');const fl=S.flowers.slice(-40);le
 /* ---------- trails ---------- */
 function makeTrail(door){const room=r=>shuffle(Object.values(SK).filter(k=>k.room===r).map(k=>k.id));const w=room('warm'),d=room(door),z=room('puz');
   const day=Math.floor(Date.now()/864e5);S.last=S.last||{};const stale=Object.values(SK).filter(k=>k.room!=='make'&&S.counts[k.id]&&day-(S.last[k.id]||0)>=3).sort((a,b)=>(S.last[a.id]||0)-(S.last[b.id]||0))[0];if(stale)z[0]=stale.id;
-  let steps;if(door==='make')steps=shuffle(['hide','rulemaker','writestory']).concat(shuffle(['hide','rulemaker','writestory'])).slice(0,5);
+  let steps;if(door==='make')steps=shuffle(['hide','rulemaker','writestory','patmaker']).concat(shuffle(['hide','rulemaker','writestory','patmaker'])).slice(0,5);
   else if(door==='warm')steps=[w[0],room('pat')[0],w[1],z[0],w[0]];
   else if(door==='puz')steps=[d[0],w[0],d[1],d[2],d[3]||d[0]];
   else steps=[d[0],w[0],d[1%d.length],z[0],d[(2)%d.length]];
@@ -1278,6 +1278,33 @@ skill({id:'writestory',room:'make',title:'You write the story',levels:1,mount(){
         else{b.classList.add('miss');miss(wrong?`Check me again. Start with ${st.a} and act it out.`:`Count it out: I was actually right this time.`);r.querySelectorAll('button').forEach(x=>x.disabled=false);b.disabled=true;await show()}});
       r.classList.add('bigpick');controls.insertBefore(r,controls.querySelector('#helpRow'))},900)}
   build()}});
+
+skill({id:'patmaker',room:'make',title:'You make the pattern',levels:1,mount(){
+  /* she builds a repeating pattern from four shapes; the ladybug says the rule and continues it, now and then wrongly, so she checks */
+  const cols=['var(--accent)','var(--leaf)','var(--sky)','var(--plum)'],sh=shuffle(Object.keys(shapes));const units=sh.map((s,i)=>({s,c:cols[i],i}));
+  prompt.textContent='Make a pattern that repeats. Tap shapes to add them.';
+  const seq=el('div','seq');stage.appendChild(seq);const made=[];
+  const hint=el('div','hint','Make it repeat at least twice, like 🔴🟢🔴🟢. Then tap Done.');stage.appendChild(hint);
+  const draw=()=>{seq.innerHTML='';made.forEach(u=>{const it=el('div','it');it.appendChild(svgShape(u.s,u.c));seq.appendChild(it)});if(made.length<12)seq.appendChild(el('div','it q','+'))};draw();
+  const period=a=>{for(let p=1;p<=3;p++){if(a.length<2*p)continue;if(a.every((u,i)=>i<p||u===a[i-p]))return p}return 0};
+  const letters=p=>made.slice(0,p).map(u=>String.fromCharCode(65+made.slice(0,p).findIndex(x=>x===u))).join(' ');
+  const pal=choices(units.map(u=>({u,node:svgShape(u.s,u.c)})),(o)=>{if(made.length>=12)return;made.push(o.u);draw();say('')});
+  const r=el('div','row');const undo=el('button','btn quiet','⌫'),done=el('button','btn','Done');undo.onclick=()=>{made.pop();draw()};
+  done.onclick=()=>{const p=period(made);if(made.length<4)return say('Add a few more shapes so I can see it repeat.');if(!p)return say('I can\'t see a repeat yet. Say it out loud: does it go round and round?');lock(pal);undo.disabled=done.disabled=true;solve(p)};
+  r.append(undo,done);controls.append(pal,r);
+  function solve(p){const ext=made.slice();for(let i=0;i<3;i++)ext.push(ext[ext.length-p]);const cont=ext.slice(-3); // each new one is the same as the one p back
+    const wrong=Math.random()<.4;let said=cont.slice();if(wrong){const j=rnd(0,2);said[j]=pick(units.filter(u=>u!==cont[j]))}
+    const rule=letters(p);const plus=seq.querySelector('.q');if(plus)plus.remove();const qs=[];said.forEach(u=>{const it=el('div','it q');it.appendChild(svgShape(u.s,u.c));seq.appendChild(it);qs.push(it)});hint.textContent='';
+    help({book:`made the pattern ${rule} and ${wrong?'caught my mistake continuing it':'checked how I continued it'}`,clues:['Say your pattern out loud from the start. Keep going past the end.',`It repeats every ${p}. Each new one is the same as the one ${p} back.`],why:`Your pattern is ${rule}, over and over.`,show:()=>qs.forEach((it,i)=>{it.innerHTML='';it.appendChild(svgShape(cont[i].s,cont[i].c));it.style.borderColor='var(--leaf)'})});
+    controls.innerHTML='';const n=el('div','narr');n.innerHTML=`<svg class="bug think" viewBox="0 0 60 60">${BUG}</svg><div class="bubble">Hmm, let me look…</div>`;controls.append(n,helpRow());const bub=n.querySelector('.bubble');const my=ctx;
+    setTimeout(()=>{if(ctx!==my)return;bub.innerHTML=`I think your pattern goes <em>${rule}</em>, over and over. So the next three are the dotted ones. Am I right?`;
+      const ch=choices(['Yes!','No'],(o,b)=>{if(ctx.done)return;const yes=o==='Yes!';lock(ch);
+        if(yes===!wrong){b.classList.add('hit');if(!wrong){qs.forEach(it=>it.style.borderColor='var(--leaf)');win(`${cheer()} ${rule}, over and over, and I kept it going.`)}
+          else{say('Good catch! Which one did I get wrong? Tap it.',true);qs.forEach((it,i)=>{it.style.cursor='pointer';it.onclick=()=>{if(ctx.done)return;if(said[i]===cont[i])return miss('That one fits. Which one breaks the pattern?');
+            it.innerHTML='';it.appendChild(svgShape(cont[i].s,cont[i].c));it.style.borderColor='var(--leaf)';win(`${cheer()} That one should be the same as the one ${p} back. You caught me!`)}})}}
+        else{b.classList.add('miss');miss(wrong?`Say the pattern out loud and keep going. Do all three dotted ones fit?`:`Check each dotted one: is it the same as the one ${p} back? I was right this time.`);ch.querySelectorAll('button').forEach(x=>x.disabled=false);b.disabled=true}});
+      ch.classList.add('bigpick');controls.insertBefore(ch,controls.querySelector('#helpRow'))},900)}
+  help({clues:['Tap shapes in an order that repeats, like red, green, red, green.','When it repeats at least twice, tap Done and I will continue it.'],why:'You make the pattern; I say the rule and keep it going.'})}});
 
 /* ---------- play loop ---------- */
 function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');$('#where').textContent=`${DOORS[SK[id].room][0]} · ${SK[id].title}`;
