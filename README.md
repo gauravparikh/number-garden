@@ -18,7 +18,7 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 | Shapes & space | Mirror it · Count the shapes · Fit the hole | Spatial reasoning: reflections, shapes hidden inside shapes, matching a piece to a gap |
 | Playground | Counters and sticks · Number line walk · Balance scale | Free play with no questions: feel ten snapping into a stick, hop a sum along the line, load a scale and watch it tip |
 | Zoe makes it | You hide the number · You make the rule | She sets the puzzle and the app solves it, checking her answers and teaching when one is off |
-| Big Ideas | Even and odd · How far apart · Tens and ones · Bigger and smaller · Making ten · Double and half | Concept pages she reads herself: a short explanation, a hands-on demo, three try-it questions, then a link to the game that uses the idea |
+| Big Ideas | Even and odd · How far apart · Tens and ones · Bigger and smaller · Making ten · Double and half | Animated picture-book stories narrated by the ladybug (four scenes each), then a drag-and-drop page where she does it herself, then three try-it questions and a link to the game |
 
 ## How a session works
 
@@ -61,7 +61,7 @@ Sudoku and Who-has-what are generators with parameters (grid size, box shape, sy
 
 ## Adding a Big Idea
 
-Each idea is an entry in `IDEAS`: `title`, one-line `line`, `words` (the explanation, reading level, with `<em>` on the key terms), `demo(box, btns)` that draws something she can poke, `tries()` returning `{q, kind:'choice'|'num', opts?, ans, draw, explain, show?}`, the `door` to play afterwards, and the `book` sentence.
+Each idea is an entry in `IDEAS`: `title`, one-line `line`, `thing` (which object icon to draw), `pages` (each `{say, draw(scene)}`: the ladybug's line and an async function that animates the scene with `dot`, `row`, `appear`, `flyTo`, `tenFrame`, `walkSvg`), one page built with the drag engine (`trayOf`, `zones`, `makeDraggable`, `fullCount`), `tries()` returning `{q, kind:'choice'|'num', opts?, ans, draw, explain, show?}`, the `door` to play afterwards, and the `book` sentence.
 
 ## Adding a game
 
