@@ -76,6 +76,13 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .papa{display:flex;flex-direction:column;gap:6px;background:var(--bg);border-radius:14px;padding:12px 14px;font-weight:600;font-size:.95rem;line-height:1.45}
 .papa h3{font-size:1rem;color:var(--muted);margin-top:4px}
 .papa ul{margin:0;padding-left:18px}
+/* greeting, note, streak */
+.greet{font-size:1.15rem;line-height:1.5;font-weight:700;padding:2px 4px}
+.greet em{font-style:normal;color:var(--accent)}
+.note{background:var(--card);border-left:6px solid var(--accent);border-radius:14px;padding:12px 14px;font-size:1.1rem;line-height:1.5;font-weight:700}
+.note small{display:block;color:var(--muted);font-size:.85rem;margin-bottom:2px}
+.streak{background:var(--sun);color:#1a1a1a;border-radius:999px;padding:6px 12px;font-family:var(--display);font-size:.95rem;white-space:nowrap;animation:badge .35s}
+.cloud{font-size:.85rem;color:var(--muted)}
 /* big ideas */
 .idealist{display:flex;flex-direction:column;gap:10px}
 .idea{background:var(--card);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;box-shadow:0 6px 18px rgba(20,60,40,.08)}
@@ -214,6 +221,8 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 
 <div id="home" class="view">
   <div class="hometop"><h1 id="homeTitle">Number Garden</h1><button class="pill" id="bookBtn">Zoe's Book</button></div>
+  <div class="greet" id="greet"></div>
+  <div class="note" id="noteCard" hidden></div>
   <div class="garden big"><svg id="gardenSvg" viewBox="0 0 400 150" aria-label="your garden"></svg><div class="sign" id="sign"></div></div>
   <h2 class="pickline">Pick a door</h2>
   <div class="doors" id="doors"></div>
@@ -221,7 +230,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 </div>
 
 <div id="play" class="view" hidden>
-  <div class="playtop"><button class="back" id="backBtn" aria-label="back to garden">‹</button><div class="trail" id="trail"></div><div class="turn" id="turn"></div></div>
+  <div class="playtop"><button class="back" id="backBtn" aria-label="back to garden">‹</button><div class="trail" id="trail"></div><div class="streak" id="streakChip" hidden></div><div class="turn" id="turn"></div></div>
   <div class="card" id="card">
     <div class="prompt" id="prompt"></div>
     <div class="stage" id="stage"></div>
@@ -271,6 +280,8 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
   <div class="papa" id="papa"></div>
   <label>Her name <input id="name" placeholder="Zoe" maxlength="20"></label>
   <label>Me &amp; Dad mode (take turns) <input type="checkbox" id="duo"></label>
+  <label style="flex-direction:column;align-items:stretch;gap:6px">A note for her (shows on her home screen)<input id="note" placeholder="e.g. I loved watching you count the acorns. Papa" maxlength="120"></label>
+  <p id="cloud" class="cloud"></p>
   <p>Levels move by themselves: three problems in a row with no hints goes up a level, two problems that needed hints goes down. Nudge a level here if she's bored or stuck. She never sees levels; she sees flowers, her book, and badges.</p>
   <table id="levels"></table>
   <div class="row"><button class="btn quiet" id="resetAll">Start over (clears everything)</button></div>
@@ -282,8 +293,15 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 const $=s=>document.querySelector(s), el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1)), pick=a=>a[rnd(0,a.length-1)], shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const S=Object.assign({stars:0,dad:0,name:'',duo:false,m:{},room:'add',skill:null,turn:0,book:[],flowers:[],badges:{},counts:{},trail:null},store.get('ng2',{}));
-const save=()=>store.set('ng2',S);
+const S=Object.assign({stars:0,dad:0,name:'',duo:false,m:{},room:'add',skill:null,turn:0,book:[],flowers:[],badges:{},counts:{},trail:null,streakNow:0,bestStreak:0,note:'',days:[],savedAt:0},store.get('ng2',{}));
+/* save: browser storage right away, cloud (db capability) a moment later; the cloud copy wins on load when it is newer */
+let cloud=null,cloudTimer=null,cloudWriting=null,cloudState='';
+function save(){S.savedAt=Date.now();store.set('ng2',S);if(cloud){clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1500)}}
+async function pushCloud(){if(!cloud)return;if(cloudWriting){cloudTimer=setTimeout(pushCloud,1500);return}const body=JSON.parse(JSON.stringify(S));cloudWriting=cloud.doc('progress/main').set(body).then(()=>{cloudState='saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}).catch(e=>{cloudState='could not save ('+(e&&e.code||'error')+')'}).finally(()=>{cloudWriting=null;const c=document.getElementById('cloud');if(c)c.textContent=cloudLine()})}
+function cloudLine(){return cloud?`Progress is saved to the cloud for this page (${cloudState||'connected'}), so it carries over between devices and survives a cleared browser.`:'Progress is saved in this browser only. Sign in to Claude on this device for cloud saving across devices.'}
+async function connectCloud(){try{if(!window.claude||!claude.use)return;const db=await claude.use('db');if(!db)return;cloud=db;const snap=await db.doc('progress/main').get();
+  if(snap.exists){const d=snap.data();if(d&&(d.savedAt||0)>(S.savedAt||0)){Object.assign(S,d);store.set('ng2',S);renderHome();if(!$('#home').hidden)show('home');else if(!$('#play').hidden&&S.trail)play(S.trail.steps[S.trail.i])}else pushCloud()}
+  else pushCloud();cloudState='connected';const c=document.getElementById('cloud');if(c)c.textContent=cloudLine()}catch(e){cloud=null}}
 
 /* ---------- rooms & skills ---------- */
 const ROOMS=[
@@ -329,7 +347,12 @@ function win(text,noMastery){
   if(!noMastery){if(ctx.hints===0){m.streak++;m.low=0;if(m.streak>=3&&m.lv<MAX(S.skill)){m.lv++;m.streak=0;levelUp=true}}
     else{m.streak=0;if(ctx.hints>=2){m.low++;if(m.low>=2&&m.lv>1){m.lv--;m.low=0}}else m.low=0}}
   const mine=!(S.duo&&ctx.turn===1);
-  if(mine){S.stars++;S.counts[S.skill]=(S.counts[S.skill]||0)+1;
+  if(mine){S.stars++;S.counts[S.skill]=(S.counts[S.skill]||0)+1;const day=Math.floor(Date.now()/864e5);if(!S.days.includes(day))S.days.push(day);
+    if(ctx.hints===0){S.streakNow++;if(S.streakNow>S.bestStreak)S.bestStreak=S.streakNow}else{S.streakNow=0;say('You kept going and got it. That is what good thinkers do. '+text,true)}
+    if(S.streakNow===3)setTimeout(()=>say(`Three in a row, ${KID()}!`,true),900);
+    if(S.streakNow===5){setTimeout(()=>{say(`Five in a row! ${KID()} is unstoppable today.`,true);confetti()},900);addPage(`${KID()} got five right in a row, no clues needed.`,true)}
+    if(S.streakNow===10){setTimeout(()=>{say(`TEN in a row! Papa, come and see this.`,true);confetti()},900);addPage(`${KID()} got TEN right in a row. Best streak ever: ${S.bestStreak}.`,true)}
+    renderStreak();
     const line=ctx.help&&ctx.help.book?ctx.help.book:`finished a ${SK[S.skill].title} problem`;addPage(`${KID()} ${line}.`,false);
     if(levelUp){addPage(`${KID()} moved up in ${SK[S.skill].title}. ${SK[S.skill].grow?SK[S.skill].grow(m.lv):'The problems get a little bigger now.'}`,true);setTimeout(()=>{say(text+' You moved up!',true);confetti()},700)}
     checkBadges()}
@@ -338,13 +361,13 @@ function win(text,noMastery){
 }
 function addPage(text,big){S.book.unshift({t:text,d:Date.now(),big:!!big});if(S.book.length>200)S.book.length=200}
 const KID=()=>S.name||'Zoe';
-function miss(hint){ctx.hints++;say(hint,false);const t=controls.querySelector('.typed');if(t){t.classList.remove('shake');void t.offsetWidth;t.classList.add('shake')}}
+function miss(hint){ctx.hints++;say(hint,false);if(S.streakNow){S.streakNow=0;renderStreak()}const t=controls.querySelector('.typed');if(t){t.classList.remove('shake');void t.offsetWidth;t.classList.add('shake')}}
 /* every game declares help({clues:[...], answer, why, show}) so the Clue / Show me buttons work the same everywhere */
 function help(o){ctx.help=o;ctx.clueIdx=0}
 function helpRow(){const r=el('div','row');r.id='helpRow';const c=el('button','btn quiet','Clue'),s=el('button','btn quiet','Show me');
   c.onclick=()=>{if(ctx.done||!ctx.help)return;const cl=ctx.help.clues;say(cl[Math.min(ctx.clueIdx,cl.length-1)]);ctx.clueIdx++;ctx.hints++};
   s.onclick=()=>{if(ctx.done||!ctx.help)return;reveal()};r.append(c,s);return r}
-function reveal(){const h=ctx.help;ctx.done=true;controls.querySelectorAll('button').forEach(b=>{if(b.closest('#helpRow'))return;b.disabled=true});
+function reveal(){const h=ctx.help;ctx.done=true;S.streakNow=0;renderStreak();controls.querySelectorAll('button').forEach(b=>{if(b.closest('#helpRow'))return;b.disabled=true});
   if(h.show)try{h.show()}catch(e){}
   say((h.answer!=null?`It's ${h.answer}. `:'')+(h.why||''),true);
   const m=S.m[S.skill];m.streak=0;m.low++;if(m.low>=2&&m.lv>1){m.lv--;m.low=0}S.turn=1-S.turn;save();
@@ -366,6 +389,7 @@ function drawGarden(){const svg=$('#gardenSvg');const fl=S.flowers.slice(-40);le
 function makeTrail(door){const room=r=>shuffle(Object.values(SK).filter(k=>k.room===r).map(k=>k.id));const w=room('warm'),d=room(door),z=room('puz');
   let steps;if(door==='make')steps=['hide','rulemaker','hide','rulemaker','hide'];else if(door==='warm')steps=[w[0],w[1],room('pat')[0],w[0],z[0]];else if(door==='puz')steps=[w[0],d[0],d[1],d[2],d[3]||d[0]];else steps=[w[0],d[0],d[1%d.length],z[0],d[0]];
   S.trail={door,steps,i:0,lit:[false,false,false,false,false]};save()}
+function renderStreak(){const c=$('#streakChip');if(!c)return;c.hidden=S.streakNow<2;c.textContent=`${S.streakNow} in a row`}
 function renderTrail(){const t=$('#trail');t.innerHTML='';if(!S.trail)return;S.trail.steps.forEach((_,i)=>{const st=el('div','stone'+(S.trail.lit[i]?' lit':'')+(i===S.trail.i?' now':''));t.appendChild(st)})}
 function startTrail(door){makeTrail(door);show('play');play(S.trail.steps[0])}
 function stepTrail(){const tr=S.trail;if(!tr)return show('home');if(tr.i>=tr.steps.length-1)return finishTrail();tr.i++;save();play(tr.steps[tr.i])}
@@ -804,14 +828,21 @@ function renderDoors(){const d=$('#doors');d.innerHTML='';ROOMS.forEach(rm=>{con
 function renderPapa(){const P=$('#papa');const played=Object.values(SK).filter(k=>S.counts[k.id]);const strong=played.slice().sort((a,b)=>(S.m[b.id]?S.m[b.id].lv:1)*10+(S.counts[b.id]||0)-((S.m[a.id]?S.m[a.id].lv:1)*10+(S.counts[a.id]||0))).slice(0,3);
   const stuck=Object.values(SK).map(k=>({k,low:S.m[k.id]?S.m[k.id].low:0,streak:S.m[k.id]?S.m[k.id].streak:0})).filter(x=>x.low>0).sort((a,b)=>b.low-a.low)[0];
   const ideas=IDEAS.filter(i=>S.counts['idea_'+i.id]).map(i=>i.title);
-  P.innerHTML=`<h3>At a glance</h3><div>${inWords(S.flowers.length).replace(/^./,c=>c.toUpperCase())} flowers, ${S.stars} problems solved, ${S.book.length} lines in her book.</div>
+  P.innerHTML=`<h3>At a glance</h3><div>${inWords(S.flowers.length).replace(/^./,c=>c.toUpperCase())} flowers, ${S.stars} problems solved, best streak ${S.bestStreak} in a row, played on ${S.days.length} day${S.days.length===1?'':'s'}.</div>
   <h3>Big ideas she has read</h3><div>${ideas.length?ideas.join(', '):'None yet. Try Even and odd together first.'}</div>
   <h3>Strongest right now</h3><div>${strong.length?strong.map(k=>`${k.title} (level ${S.m[k.id]?S.m[k.id].lv:1})`).join(', '):'Not enough played yet.'}</div>
   <h3>Needs a second look</h3><div>${stuck?`${stuck.k.title}: she needed hints on the last ${stuck.low===1?'problem':'two problems'}. Worth doing one together.`:'Nothing flagged. She is solving without many hints.'}</div>
   <h3>Her last lines</h3><ul>${S.book.slice(0,5).map(e=>`<li>${e.t}</li>`).join('')||'<li>Nothing yet.</li>'}</ul>`}
 function renderLevels(){renderPapa();const t=$('#levels');t.innerHTML='';Object.values(SK).forEach(k=>{const tr=el('tr');tr.innerHTML=`<td>${DOORS[k.room][0]} · ${k.title}</td>`;const td=el('td');const box=el('div','lvl');const dn=el('button','','−'),sp=el('span','',` ${lvl(k.id)} / ${k.levels} `),up=el('button','','+');
   dn.onclick=()=>{const m=S.m[k.id];if(m.lv>1){m.lv--;m.streak=0;m.low=0;save();renderLevels()}};up.onclick=()=>{const m=S.m[k.id];if(m.lv<k.levels){m.lv++;m.streak=0;m.low=0;save();renderLevels()}};box.append(dn,sp,up);td.appendChild(box);tr.appendChild(td);t.appendChild(tr)})}
-function renderHome(){$('#homeTitle').textContent='Number Garden';$('#bookBtn').textContent=`${KID()}'s Book`;drawGarden();renderDoors()}
+const MOTTOS=['Every problem you try makes your brain a little stronger.','Being stuck is where the thinking happens.','Mistakes are how we find out what to look at next.','Slow and sure beats fast and wrong.','You can always break a hard problem into small pieces.','Ask yourself: how do I know?','Nobody is born knowing this. You are learning it.'];
+function greeting(){const h=new Date().getHours();const hi=h<12?'Good morning':h<17?'Good afternoon':'Good evening';const k=KID();
+  const big=S.book.find(e=>e.big)||S.book[0];const today=Math.floor(Date.now()/864e5);const last=S.days.length?S.days[S.days.length-1]:null;
+  let line;if(!S.book.length)line=`Welcome to your garden, <em>${k}</em>. Pick a door and let's grow your first flower.`;
+  else if(last===today)line=`${hi}, <em>${k}</em>! Last thing you did: ${big.t.replace(k,'you').replace(/\bshe\b/g,'you')}`;
+  else{const n=S.days.length;line=`${hi}, <em>${k}</em>! Welcome back. ${big?big.t.replace(k,'You').replace(/\bshe\b/g,'you')+' ':''}You have played on ${inWords(n)} different day${n===1?'':'s'}.`}
+  return line+' <br><span style="color:var(--muted)">'+MOTTOS[today%MOTTOS.length]+'</span>'}
+function renderHome(){$('#homeTitle').textContent='Number Garden';$('#bookBtn').textContent=`${KID()}'s Book`;$('#greet').innerHTML=greeting();const nc=$('#noteCard');nc.hidden=!S.note;if(S.note)nc.innerHTML=`<small>A note from Papa</small>${S.note.replace(/</g,'&lt;')}`;drawGarden();renderDoors()}
 
 /* ---------- wiring ---------- */
 $('#gearBtn').onclick=()=>{renderLevels();show('sheet')};
@@ -823,8 +854,10 @@ $('#ideasBack').onclick=()=>{renderHome();show('home')};
 $('#learnBack').onclick=()=>{renderIdeas();show('ideas')};
 $('#name').value=S.name;$('#name').oninput=e=>{S.name=e.target.value.trim();save()};
 $('#duo').checked=S.duo;$('#duo').onchange=e=>{S.duo=e.target.checked;save()};
-$('#resetAll').onclick=()=>{S.stars=0;S.dad=0;S.m={};S.turn=0;S.book=[];S.flowers=[];S.badges={};S.counts={};S.trail=null;save();renderLevels()};
-renderHome();
+$('#note').value=S.note||'';$('#note').oninput=e=>{S.note=e.target.value;save()};
+$('#gearBtn').addEventListener('click',()=>{$('#cloud').textContent=cloudLine()});
+$('#resetAll').onclick=()=>{S.stars=0;S.dad=0;S.m={};S.turn=0;S.book=[];S.flowers=[];S.badges={};S.counts={};S.trail=null;S.streakNow=0;S.bestStreak=0;S.days=[];save();renderLevels()};
+renderHome();connectCloud();
 if(S.trail&&S.trail.steps&&S.trail.steps.every(id=>SK[id])){show('play');play(S.trail.steps[S.trail.i])}else{S.trail=null;show('home')}
 })();
 </script>

@@ -2,7 +2,9 @@
 
 A single-file math game for a five-year-old who already does Kumon arithmetic and needs the other half: number sense, strategy, patterns, and puzzles with no procedure.
 
-Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen" and it behaves like an installed app. Nothing is sent anywhere; progress lives in the browser's local storage.
+Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen" and it behaves like an installed app.
+
+**Saving.** Progress is written to the browser's local storage immediately, and, on the published claude.ai page, to the page's cloud database (`db` capability) a moment later. On load the newer of the two wins, so a cleared browser or a second device picks up where she left off. Outside claude.ai (a plain local file) only the browser copy exists.
 
 ## Rooms
 
@@ -34,7 +36,9 @@ In Stories and the dots warm-up she can touch each object to count it herself; t
 - Wrong answers get a hint that points at the structure, never an X.
 - Levels adapt on their own: three clean problems in a row moves up, two hint-heavy problems moves down. The gear menu lets a grown-up nudge any level.
 - "Me & Dad" mode alternates turns on the same games so the child watches an adult think out loud.
-- Every finished trail plants a flower. Confetti is reserved for flowers and level-ups.
+- Every finished trail plants a flower. Confetti is reserved for flowers, level-ups, and 5- and 10-in-a-row streaks.
+- Streaks count first-try answers in a row within a session; they are celebrated, never punished, and there is no daily streak to break.
+- The home screen greets her by name with what she did last time and a rotating one-line motto; Papa can leave a note from the grown-up screen.
 
 ## Ideas queued
 
