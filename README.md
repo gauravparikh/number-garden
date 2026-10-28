@@ -15,18 +15,25 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 | Patterns | What comes next? · Rule machine | Repeating and growing patterns, function machines |
 | Puzzles | Balance it · Which one is different? · Make the money · Mini sudoku · Number riddle | Reasoning with no algorithm: the seed of competition math |
 | Stories | Story mystery · How many ways? | Reading-level word problems in one to two steps, and open questions with several right answers |
+| Shapes & space | Mirror it · Count the shapes · Fit the hole | Spatial reasoning: reflections, shapes hidden inside shapes, matching a piece to a gap |
 | Zoe makes it | You hide the number · You make the rule | She sets the puzzle and the app solves it, checking her answers and teaching when one is off |
 | Big Ideas | Even and odd · How far apart · Tens and ones · Bigger and smaller · Making ten · Double and half | Concept pages she reads herself: a short explanation, a hands-on demo, three try-it questions, then a link to the game that uses the idea |
 
 ## How a session works
 
-The home screen is the garden with five doors. Tapping a door starts a **trail** of five stepping stones (two warm-ups, games from that door, one puzzle). Each solved stone lights up; the fifth plants a flower in the garden. Levels adapt silently and are never shown to the child.
+The home screen is the garden with eight doors. Tapping a door starts a **trail** of five stepping stones (two warm-ups, games from that door, one puzzle). Each solved stone lights up; the fifth plants a flower in the garden. Levels adapt silently and are never shown to the child.
 
 **Zoe's Book** writes one sentence she can read for every problem she solves ("Zoe took 9 away from 23 and got 14"), a bigger entry for each level-up and finished trail, and holds the badge shelf (First Flower, Ten-Breaker, Riddle Solver, Many Ways, Balance Master, Pattern Spotter, Story Reader, Gardener).
 
 The grown-up settings are behind the faint "for grown-ups" link at the bottom of the home screen, with a short Papa page: ideas she has read, strongest games, what needs a second look, her last five book lines.
 
 In Stories and the dots warm-up she can touch each object to count it herself; the touch adds a green number.
+
+**Tell Papa.** Every fourth clean win, a card asks her to explain out loud how she knew before the next stone; tapping "I told Papa" writes it in her book.
+
+**Remember this?** Each trail swaps its puzzle stone for whichever game she hasn't played in three or more days, so older skills come back before they fade.
+
+**Read it to me.** Stories, riddles, how-many-ways and Big Ideas have a speaker button that reads the text aloud (browser speech, where available).
 
 ## Design rules
 
@@ -44,7 +51,7 @@ In Stories and the dots warm-up she can touch each object to count it herself; t
 
 - "You write the story": she picks a thing and two numbers, Papa solves it
 - "You make the pattern": she builds a pattern, the app continues it
-- Shapes & space room (tangram fits, counting squares, symmetry)
+- More Shapes & space: symmetry completion, cube stacks with hidden blocks
 - Place value room (10 more / 10 less, build a number from sticks)
 
 ## Adding a Big Idea
