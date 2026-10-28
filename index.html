@@ -30,7 +30,11 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .story{background:var(--bg);border-radius:18px;padding:16px 18px;font-size:1.25rem;line-height:1.5;max-width:40ch;font-weight:700}
 .story b{color:var(--accent)}
 .ways{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-.way{background:var(--bg);border-radius:12px;padding:6px 12px;font-family:var(--display);font-variant-numeric:tabular-nums}
+.way{background:var(--bg);border-radius:12px;padding:6px 12px;font-family:var(--display);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:3px}
+.way i{width:14px;height:14px;border-radius:50%;display:inline-block}.way b{margin-left:6px;font-weight:600;color:var(--muted);font-size:.9rem}
+.beads{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.bead{width:46px;height:46px;border-radius:50%;background:var(--card);border:3px dashed var(--line);box-sizing:border-box;transition:background .2s}
+.bead.on{border-style:solid;border-color:rgba(0,0,0,.12)}.bead[disabled]{opacity:1}
 .pick{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;font-family:var(--display);font-size:1.2rem}
 .pick .num{width:56px}
 .pick .stepper{display:flex;align-items:center;gap:6px}
@@ -137,6 +141,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .pages-dots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
 .pages-dots i.on{background:var(--accent)}
 .srow.wide{gap:10px}
+.srow.dense{gap:4px}.srow.dense .it2{width:31px;height:31px}.srow.dense .it2 svg{width:28px;height:28px}
 .srow .it2{width:46px;height:46px}.srow .it2 svg{width:42px;height:42px}
 .pairgrid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(2,1fr);gap:8px 14px}
 .it2.alone{animation:wobble 1s ease-in-out infinite}
@@ -824,7 +829,7 @@ async function countAlong(items,gap){let n=0;const sc=items[0]&&items[0].closest
 /* move an item to a new parent with a real flight path */
 async function flyTo(d,target){const a=d.getBoundingClientRect(),b=target.getBoundingClientRect();d.classList.add('fly');d.style.transform=`translate(${b.left-a.left}px,${b.top-a.top}px)`;await wait(620);d.classList.remove('fly');d.style.transform='';target.replaceWith(d);d.classList.add('new')}
 function buildScene(v){const sc=el('div','scene');const S={sc,rows:[]};
-  const mkRow=(n,label,cls)=>{const r=row(label);const items=[];for(let i=0;i<n;i++){const d=dot(cls);items.push(d);r.appendChild(d)}sc.appendChild(r);S.rows.push(items);return items};
+  const mkRow=(n,label,cls)=>{const r=row(label);if(n>7)r.classList.add('dense');const items=[];for(let i=0;i<n;i++){const d=dot(cls);items.push(d);r.appendChild(d)}sc.appendChild(r);S.rows.push(items);return items};
   if(v.type==='add'){S.a=mkRow(v.a,v.label?v.label[0]:'');S.b=mkRow(0,v.label?v.label[1]:'more')}
   else if(v.type==='take'){S.a=mkRow(v.a,'')}
   else if(v.type==='need'){const r=row('needs');S.slots=[];for(let i=0;i<v.need;i++){const d=dot(i<v.have?'':'slot');S.slots.push(d);r.appendChild(d)}sc.appendChild(r)}
@@ -861,25 +866,26 @@ skill({id:'tale',room:'story',title:'Story mystery',levels:3,grow:lv=>['','Now t
     else{miss(`You said ${v}. Watch what really happens.`);await actOut(st.viz,scene,v);if(st.viz.type!=='need')say(`You said ${v}. Now count the numbered ones, then try again.`)}
     busy=false;nm.style.pointerEvents='';nm.style.opacity=''},3))}});
 
-skill({id:'ways',room:'story',title:'How many ways?',levels:3,mount(lv){
-  const k=KID(),t=pick(THINGS);let total,parts,text,need;
-  if(lv===1){total=rnd(5,8);parts=['red','blue'];need=2;text=`${k} has <b>${total}</b> ${t}. Some are <b>red</b> and some are <b>blue</b>, at least one of each. What could it be? Find <b>${need}</b> different ways.`}
-  else if(lv===2){total=rnd(8,12);parts=['red','blue'];need=3;text=`${k} has <b>${total}</b> ${t}, some <b>red</b>, some <b>blue</b>, at least one of each. Find <b>${need}</b> different ways to split them.`}
-  else{total=rnd(7,10);parts=['red','blue','green'];need=3;text=`${k} has <b>${total}</b> ${t} in <b>three</b> colors: red, blue and green, at least one of each. Find <b>${need}</b> different ways.`}
+skill({id:'ways',room:'story',title:'How many ways?',levels:3,grow:lv=>['','Now find three ways.','Now with three colors.'][lv-1],mount(lv){
+  /* she colors the beads herself by tapping; every split that uses every color is a right answer, and she needs a few different ones */
+  const k=KID();const COL={red:'var(--accent)',blue:'var(--sky)',green:'var(--leaf)'};let total,parts,need;
+  if(lv===1){total=rnd(4,6);parts=['red','blue'];need=2}else if(lv===2){total=rnd(6,9);parts=['red','blue'];need=3}else{total=rnd(6,8);parts=['red','blue','green'];need=3}
+  const text=`${k} has <b>${total}</b> beads to paint. Some <b>${parts.slice(0,-1).join('</b>, some <b>')}</b> and some <b>${parts[parts.length-1]}</b>, at least one of each. Find <b>${need}</b> different ways.`;
   prompt.textContent='Many right answers!';const wtext=el('div','story',text);stage.append(wtext,readBtn(()=>wtext.textContent));
-  const found=[],list=el('div','ways');stage.appendChild(list);
-  const ex=parts.length===2?[`1 ${parts[0]} + ${total-1} ${parts[1]}`,`2 ${parts[0]} + ${total-2} ${parts[1]}`,`3 ${parts[0]} + ${total-3} ${parts[1]}`]:[`1 red + 1 blue + ${total-2} green`,`1 red + 2 blue + ${total-3} green`,`2 red + 1 blue + ${total-3} green`];
-  help({book:`found ${need} different ways to split ${total} ${t}`,clues:[`Start with just 1 ${parts[0]}. Then all the rest are the other color. Does that add up to ${total}?`,`Now change it by one: one more ${parts[0]}, one fewer ${parts[1]}. That's a new way.`],why:`Some ways: ${ex.join('; ')}.`,show:()=>ex.forEach(w=>list.appendChild(el('span','way',w)))});
-  const pk=el('div','pick');const vals=parts.map(()=>1);
-  parts.forEach((c,i)=>{const sp=el('div','stepper');const dn=el('button','num','−'),nv=el('span','',`<b style="font-size:1.6rem">1</b> ${c}`),up=el('button','num','+');
-    dn.onclick=()=>{if(vals[i]>1){vals[i]--;nv.querySelector('b').textContent=vals[i]}};up.onclick=()=>{if(vals[i]<total){vals[i]++;nv.querySelector('b').textContent=vals[i]}};sp.append(dn,nv,up);pk.appendChild(sp)});
-  const go=el('button','btn','That\'s a way');go.onclick=()=>{if(ctx.done)return;const sum=vals.reduce((a,b)=>a+b,0);const key=vals.join('+');
-    if(sum!==total)return miss(sum<total?`That's only ${sum}. She has ${total}.`:`That's ${sum}, too many. She has ${total}.`);
-    if(found.includes(key))return miss('You already found that one. Try a different split.');
-    found.push(key);list.appendChild(el('span','way',vals.map((v,i)=>`${v} ${parts[i]}`).join(' + ')));
-    if(found.length>=need){lock(pk);go.disabled=true;win(`${cheer()} ${need} ways, and there are even more. Can you say how many ways there are in all?`)}else say(`That works! ${need-found.length} more.`,true)};
-  const r=el('div','row');r.appendChild(go);controls.append(pk,r)}});
-
+  const beads=[],row=el('div','beads');for(let i=0;i<total;i++){const b=el('button','bead');b.ci=-1;b.onclick=()=>{if(ctx.done)return;b.ci=(b.ci+1)%parts.length;b.style.background=COL[parts[b.ci]];b.classList.add('on');say('')};beads.push(b);row.appendChild(b)}
+  const legend=el('div','hint',`Tap a bead to paint it${parts.length>2?'. Tap again for the next color':', tap again for blue'}.`);const found=[],list=el('div','ways');stage.append(row,legend,list);
+  const counts=()=>parts.map((_,ci)=>beads.filter(b=>b.ci===ci).length);
+  const ex=parts.length===2?[[1,total-1],[2,total-2],[3,total-3]]:[[1,1,total-2],[1,2,total-3],[2,1,total-3]];
+  const paint=c=>{let i=0;c.forEach((n,ci)=>{for(let j=0;j<n;j++){beads[i].ci=ci;beads[i].style.background=COL[parts[ci]];beads[i].classList.add('on');i++}})};
+  const miniRow=c=>{const w=el('span','way');c.forEach((n,ci)=>{for(let j=0;j<n;j++){const d=el('i');d.style.background=COL[parts[ci]];w.appendChild(d)}});w.appendChild(el('b','',c.map((n,ci)=>`${n} ${parts[ci]}`).join(' + ')));return w};
+  help({book:`found ${need} different ways to split ${total} beads`,clues:[`Paint just one bead ${parts[0]} and all the rest ${parts[1]}. That is one way.`,`Now change one bead: one more ${parts[0]}, one fewer ${parts[1]}. That is a new way.`],why:`Some ways: ${ex.map(c=>c.map((n,ci)=>`${n} ${parts[ci]}`).join(' + ')).join('; ')}.`,show:()=>{ex.forEach(c=>list.appendChild(miniRow(c)));paint(ex[0])}});
+  const go=el('button','btn','That\'s a way');go.onclick=()=>{if(ctx.done)return;const c=counts();const blank=beads.filter(b=>b.ci<0).length;
+    if(blank)return miss(`${blank} bead${blank>1?'s are':' is'} still plain. Paint every bead.`);
+    const missing=parts.filter((_,ci)=>c[ci]===0);if(missing.length)return miss(`There is no ${missing[0]} bead. She needs at least one of each color.`);
+    const key=c.join('+');if(found.includes(key))return miss('You already found that one. Change a bead to make a different way.');
+    found.push(key);list.appendChild(miniRow(c));
+    if(found.length>=need){lock(row);go.disabled=true;win(`${cheer()} ${need} ways, and there are even more. Can you say how many ways there are in all?`)}else{say(`That works! ${need-found.length} more. Change a bead for a new way.`,true)}};
+  const r=el('div','row');r.appendChild(go);controls.append(r)}});
 
 /* ================= BIG IDEAS ================= */
 function dotsRow(n,cls){const r=el('div','srow');const a=[];for(let i=0;i<n;i++){const d=el('div','it2'+(cls?' '+cls:''));d.innerHTML='<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="var(--dot)"/></svg>';a.push(d);r.appendChild(d)}r.items=a;return r}
