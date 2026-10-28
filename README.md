@@ -17,7 +17,7 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 | Stories | Story mystery · How many ways? | Reading-level word problems in one to two steps, and open questions with several right answers |
 | Shapes & space | Mirror it · Count the shapes · Fit the hole | Spatial reasoning: reflections, shapes hidden inside shapes, matching a piece to a gap |
 | Playground | Counters and sticks · Number line walk · Balance scale | Free play with no questions: feel ten snapping into a stick, hop a sum along the line, load a scale and watch it tip |
-| Zoe makes it | You hide the number · You make the rule | She sets the puzzle and the app solves it, checking her answers and teaching when one is off |
+| Zoe makes it | You hide the number · You make the rule · You write the story | She sets the puzzle and the app solves it, checking her answers and teaching when one is off |
 | Big Ideas | **Numbers:** Counting on · Skip counting · Tens and ones · Bigger and smaller · Number neighbors **Adding and taking:** Making ten · How far apart · What = really means **Groups:** Even and odd · Double and half · Equal groups · Fair sharing **Time:** Reading the clock · Day and night · Why 24, 60 and 60? · A day on Mars · Before there were clocks · Why time is precious · What is time for? | Six-page picture books narrated by the ladybug (see it, the rule, where you meet it, the trap, your turn by drag-and-drop, it's the same as…), then three try-its and a link to the game |
 
 ## How a session works
@@ -50,7 +50,6 @@ In Stories and the dots warm-up she can touch each object to count it herself; t
 
 ## Ideas queued
 
-- "You write the story": she picks a thing and two numbers, Papa solves it
 - "You make the pattern": she builds a pattern, the app continues it
 - More Shapes & space: symmetry completion, cube stacks with hidden blocks
 - More ideas: parts of a whole (halves/quarters), measuring with units, estimating, sorting by two things, "if this then that"

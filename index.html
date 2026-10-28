@@ -501,7 +501,7 @@ function drawGarden(){const svg=$('#gardenSvg');const fl=S.flowers.slice(-40);le
 /* ---------- trails ---------- */
 function makeTrail(door){const room=r=>shuffle(Object.values(SK).filter(k=>k.room===r).map(k=>k.id));const w=room('warm'),d=room(door),z=room('puz');
   const day=Math.floor(Date.now()/864e5);S.last=S.last||{};const stale=Object.values(SK).filter(k=>k.room!=='make'&&S.counts[k.id]&&day-(S.last[k.id]||0)>=3).sort((a,b)=>(S.last[a.id]||0)-(S.last[b.id]||0))[0];if(stale)z[0]=stale.id;
-  let steps;if(door==='make')steps=['hide','rulemaker','hide','rulemaker','hide'];
+  let steps;if(door==='make')steps=shuffle(['hide','rulemaker','writestory']).concat(shuffle(['hide','rulemaker','writestory'])).slice(0,5);
   else if(door==='warm')steps=[w[0],room('pat')[0],w[1],z[0],w[0]];
   else if(door==='puz')steps=[d[0],w[0],d[1],d[2],d[3]||d[0]];
   else steps=[d[0],w[0],d[1%d.length],z[0],d[(2)%d.length]];
@@ -1247,6 +1247,37 @@ skill({id:'rulemaker',room:'make',title:'You make the rule',levels:1,mount(){
     const c2=choices(['Yes!','No'],(o,b)=>{lock(c2);b.classList.add('hit');help({book:`made a secret rule (${rule.t}) and ran her own machine`,clues:['',''],why:''});
       win(right===3?`${cheer()} Your machine worked perfectly and I cracked the rule.`:`I cracked it! ${3-right} output${3-right>1?'s':''} needed a second look.`)});c2.classList.add('bigpick');controls.appendChild(c2)}
   help({clues:['Pick a rule, then do that rule to each number I give you.','If you forget, the rule is shown only to you at the top: look at the choice you made.'],why:'You choose the rule; I give inputs and guess it.'})}});
+
+skill({id:'writestory',room:'make',title:'You write the story',levels:1,mount(){
+  /* she picks a thing and two numbers; the ladybug solves it out loud, and now and then gets it wrong so she has to check */
+  const k=KID(),max=12;const acts=[{t:'got',v:1,q:'now'},{t:'found',v:1,q:'now'},{t:'ate',v:-1,q:'left'},{t:'gave away',v:-1,q:'left'}];
+  const st={thing:null,a:null,act:null,b:null};
+  prompt.textContent='You write the story. I will try to solve it.';
+  const box=el('div','story','');stage.appendChild(box);
+  const words=()=>{if(!st.thing)return`<i>Tap to build your story…</i>`;let h=`${k} had `;if(st.a==null)return h+`<b>?</b> ${st.thing}…`;h+=`<b>${st.a}</b> ${st.thing}.`;if(!st.act)return h;
+    h+=` Then she ${st.act.t} <b>${st.b==null?'?':st.b}</b>${st.act.v>0?' more':''}.`;if(st.b!=null)h+=` How many ${st.thing} ${st.act.q==='left'?'are left':'does she have now'}?`;return h};
+  const chips=(opts,label,on)=>{controls.innerHTML='';controls.appendChild(el('div','hint',label));const c=choices(opts.map(x=>({node:x.node||el('span','',x.t),o:x.o})),(x,b)=>{b.classList.add('hit');lock(c);on(x.o)});controls.appendChild(c)};
+  const ask=(label,lo,hi,on)=>{controls.innerHTML='';controls.appendChild(el('div','hint',label));const p=pad(hi,(v,b)=>{if(v<lo)return;b.classList.add('hit');lock(p);on(v)});for(let i=0;i<lo;i++)p.children[i].disabled=true;controls.appendChild(p)};
+  const build=()=>{box.innerHTML=words();
+    if(!st.thing)return chips(shuffle(THINGS).slice(0,4).map(t=>{const d=el('span');d.innerHTML=`<svg viewBox="0 0 40 40" width="30" height="30">${ICONS[t]}</svg> ${t}`;return{node:d,o:t}}),`What does ${k} have?`,t=>{st.thing=t;currentThing=t;build()});
+    if(st.a==null)return ask('How many to start?',1,max,v=>{st.a=v;build()});
+    if(!st.act)return chips(acts.filter(a=>a.v>0?st.a<max:st.a>1).map(a=>({t:a.t,o:a})),'Then what happened?',a=>{st.act=a;build()});
+    if(st.b==null)return ask(`How many did she ${st.act.t}?`,1,st.act.v>0?max-st.a:st.a-1,v=>{st.b=v;build()});
+    solve()};
+  function solve(){const ans=st.a+st.b*st.act.v,wrong=Math.random()<.4,said=wrong?ans+pick([-2,-1,1,2].filter(o=>ans+o>=0&&ans+o!==st.a)):ans;const add=st.act.v>0;
+    const viz={type:add?'add':'take',a:st.a,b:st.b,ans};const sc=buildScene(viz);stage.appendChild(sc.sc);let fresh=true;
+    const replay=()=>{const s2=buildScene(viz);stage.replaceChild(s2.sc,sc.sc);Object.assign(sc,s2)};const show=()=>{if(!fresh)replay();fresh=false;return actOut(viz,sc,null)};
+    const steps=add?Array.from({length:st.b},(_,i)=>st.a+i+1):Array.from({length:st.b},(_,i)=>st.a-i-1);
+    const miscount=Array.from({length:Math.abs(said-st.a)},(_,i)=>st.a+(said>st.a?i+1:-i-1)); // when wrong, the bug counts too far or not far enough, so the slip is in the counting
+    help({book:`wrote a story about ${st.a} ${st.thing} and ${wrong?`caught a wrong answer (${said})`:`checked the answer ${ans}`}`,clues:[`Act it out with your fingers: start with ${st.a}, then ${st.act.t} ${st.b}.`,`${add?'Count on':'Count back'} from ${st.a}: ${steps.join(', ')}.`],answer:ans,why:`${st.a} ${add?'+':'−'} ${st.b} = ${ans}. I was ${wrong?'wrong':'right'}.`,show});
+    controls.innerHTML='';const n=el('div','narr');n.innerHTML=`<svg class="bug think" viewBox="0 0 60 60">${BUG}</svg><div class="bubble">Hmm, let me think…</div>`;controls.append(n,helpRow());const bub=n.querySelector('.bubble');const my=ctx;
+    setTimeout(()=>{if(ctx!==my)return;bub.innerHTML=`Start at ${st.a} and ${add?'count on':'count back'} ${st.b}: ${miscount.join(', ')}. So it's <em>${said}</em>! Am I right?`;
+      const r=choices(['Yes!','No'],async(o,b)=>{if(ctx.done)return;const yes=o==='Yes!';lock(r);if(!fresh)replay();fresh=false;
+        if(yes===!wrong){b.classList.add('hit');if(!wrong){win(`${cheer()} ${st.a} ${add?'+':'−'} ${st.b} is ${ans}.`);await show()}
+          else{say(`Good catch! I said ${said}. What is it really?`,true);controls.insertBefore(numpad((v,nm)=>{if(v===ans){lock(nm);win(`${cheer()} It's ${ans}, not ${said}. You caught me!`);show()}else miss(ctx.hints===0?`Act it out: start with ${st.a}, then ${st.act.t} ${st.b}.`:`Count the picture after each step.`)},2),controls.querySelector('#helpRow'))}}
+        else{b.classList.add('miss');miss(wrong?`Check me again. Start with ${st.a} and act it out.`:`Count it out: I was actually right this time.`);r.querySelectorAll('button').forEach(x=>x.disabled=false);b.disabled=true;await show()}});
+      r.classList.add('bigpick');controls.insertBefore(r,controls.querySelector('#helpRow'))},900)}
+  build()}});
 
 /* ---------- play loop ---------- */
 function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');$('#where').textContent=`${DOORS[SK[id].room][0]} · ${SK[id].title}`;
