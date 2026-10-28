@@ -12,6 +12,7 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 | Add & take | Take away · Make a ten to add · Find the missing number | Place value (sticks of 10 that break), bridging through ten, missing-addend thinking |
 | Patterns | What comes next? · Rule machine | Repeating and growing patterns, function machines |
 | Puzzles | Balance it · Which one is different? · Make the money · Mini sudoku · Number riddle | Reasoning with no algorithm: the seed of competition math |
+| Stories | Story mystery · How many ways? | Reading-level word problems in one to two steps, and open questions with several right answers |
 
 ## Design rules
 
@@ -21,6 +22,13 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 - Levels adapt on their own: three clean problems in a row moves up, two hint-heavy problems moves down. The gear menu lets a grown-up nudge any level.
 - "Me & Dad" mode alternates turns on the same games so the child watches an adult think out loud.
 - Every two stars plants a flower in the garden strip at the top.
+
+## Ideas queued
+
+- "You make the rule": Zoe invents the rule machine and the app guesses
+- "You hide the number": Zoe picks the secret and answers the app's clue questions
+- Shapes & space room (tangram fits, counting squares, symmetry)
+- Place value room (10 more / 10 less, build a number from sticks)
 
 ## Adding a game
 
