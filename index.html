@@ -51,7 +51,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .door svg{width:40px;height:40px}
 .door b{font-family:var(--display);font-size:1.15rem;font-weight:600}
 .door small{color:var(--muted);font-size:.9rem;font-weight:600}
-.door.ideas{background:var(--sun);color:#1a1a1a}.door.ideas small{color:#5a4a1a}
+.door.ideas{background:var(--sun);color:#1a1a1a}.door.maker{background:var(--plum);color:#fff}.door.maker small{color:#efe6ff}.doors .door:last-child{grid-column:1/-1;flex-direction:row;align-items:center;min-height:0}.door.ideas small{color:#5a4a1a}
 .grownup{align-self:center;color:var(--muted);font-size:.8rem;padding:8px;opacity:.7}
 .playtop{display:flex;align-items:center;gap:10px}
 .back{width:44px;height:44px;border-radius:50%;background:var(--card);font-family:var(--display);font-size:1.8rem;line-height:1;display:grid;place-items:center;color:var(--fg);flex:none}
@@ -73,6 +73,9 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .page.big{border:3px solid var(--sun)}
 .page small{display:block;color:var(--muted);font-size:.8rem;font-weight:600;margin-top:4px}
 .sheet label{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.papa{display:flex;flex-direction:column;gap:6px;background:var(--bg);border-radius:14px;padding:12px 14px;font-weight:600;font-size:.95rem;line-height:1.45}
+.papa h3{font-size:1rem;color:var(--muted);margin-top:4px}
+.papa ul{margin:0;padding-left:18px}
 /* big ideas */
 .idealist{display:flex;flex-direction:column;gap:10px}
 .idea{background:var(--card);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;box-shadow:0 6px 18px rgba(20,60,40,.08)}
@@ -102,6 +105,9 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .it2.extra svg{filter:grayscale(.6) drop-shadow(0 0 5px var(--plum))}
 .it2.extra::after{content:"";position:absolute;inset:-3px;border:3px solid var(--plum);border-radius:50%}
 .it2.hi{animation:hop .35s ease}
+.dot{position:relative}
+.dot b.tc,.it2 b.tc{position:absolute;right:-6px;bottom:-6px;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--leaf);color:#fff;display:grid;place-items:center;font-family:var(--display);font-size:.85rem;animation:badge .3s cubic-bezier(.34,1.56,.64,1)}
+.counted{font-family:var(--display);color:var(--leaf);font-size:1rem;text-align:center;min-height:1.2em}
 .it2 b{position:absolute;right:-6px;bottom:-6px;min-width:20px;height:20px;padding:0 4px;border-radius:10px;background:var(--sun);color:#1a1a1a;display:grid;place-items:center;font-family:var(--display);font-size:.85rem;animation:badge .3s cubic-bezier(.34,1.56,.64,1)}
 .it2.fly{transition:transform .6s cubic-bezier(.4,0,.2,1)}
 .tally{font-family:var(--display);font-size:2.4rem;color:var(--accent);font-variant-numeric:tabular-nums;min-height:1.2em;line-height:1.2}
@@ -262,6 +268,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 
 <div class="sheet view" id="sheet" hidden>
   <div class="playtop"><button class="back" id="closeSheet" aria-label="back">‹</button><h2 style="font-size:1.2rem">For grown-ups</h2></div>
+  <div class="papa" id="papa"></div>
   <label>Her name <input id="name" placeholder="Zoe" maxlength="20"></label>
   <label>Me &amp; Dad mode (take turns) <input type="checkbox" id="duo"></label>
   <p>Levels move by themselves: three problems in a row with no hints goes up a level, two problems that needed hints goes down. Nudge a level here if she's bored or stuck. She never sees levels; she sees flowers, her book, and badges.</p>
@@ -284,7 +291,8 @@ const ROOMS=[
  {id:'add',title:'Add & take',icon:'<rect x="3" y="4" width="6" height="16" rx="2" fill="var(--dot)"/><circle cx="15" cy="8" r="2.4" fill="var(--dot)"/><circle cx="15" cy="16" r="2.4" fill="var(--dot-gone)"/><circle cx="20" cy="8" r="2.4" fill="var(--dot)"/>'},
  {id:'pat',title:'Patterns',icon:'<circle cx="5" cy="12" r="3" fill="var(--accent)"/><rect x="10" y="9" width="6" height="6" fill="var(--leaf)"/><circle cx="21" cy="12" r="3" fill="var(--accent)"/>'},
  {id:'puz',title:'Puzzles',icon:'<path d="M4 18h16M12 18V6M6 6h12" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="6" cy="10" r="3" fill="var(--sun)"/><circle cx="18" cy="10" r="3" fill="var(--plum)"/>'},
- {id:'story',title:'Stories',icon:'<path d="M4 5h7a2 2 0 012 2v13a2 2 0 00-2-2H4zM20 5h-7a2 2 0 00-2 2v13a2 2 0 012-2h7z" fill="var(--bg)" stroke="currentColor" stroke-width="2"/><path d="M6 9h4M6 12h4M14 9h4M14 12h4" stroke="var(--accent)" stroke-width="1.5"/>'}
+ {id:'story',title:'Stories',icon:'<path d="M4 5h7a2 2 0 012 2v13a2 2 0 00-2-2H4zM20 5h-7a2 2 0 00-2 2v13a2 2 0 012-2h7z" fill="var(--bg)" stroke="currentColor" stroke-width="2"/><path d="M6 9h4M6 12h4M14 9h4M14 12h4" stroke="var(--accent)" stroke-width="1.5"/>'},
+ {id:'make',title:'Zoe makes it',icon:'<rect x="3" y="8" width="18" height="10" rx="3" fill="var(--plum)"/><circle cx="8" cy="13" r="2" fill="#fff"/><circle cx="16" cy="13" r="2" fill="#fff"/><path d="M12 3v5" stroke="var(--plum)" stroke-width="2"/><circle cx="12" cy="3" r="2" fill="var(--sun)"/>'}
 ];
 const SK={};
 function skill(def){SK[def.id]=def}
@@ -293,7 +301,7 @@ const lvl=id=>{const m=S.m[id]||(S.m[id]={lv:1,streak:0,low:0});return m.lv};
 
 /* ---------- shared UI ---------- */
 const prompt=$('#prompt'),stage=$('#stage'),msg=$('#msg'),controls=$('#controls'),turnEl=$('#turn');
-const DOORS={warm:['Warm-ups','Count the dots'],add:['Add & take','Sticks of ten'],pat:['Patterns','What comes next?'],puz:['Puzzles','Think hard'],story:['Stories','Read and solve']};
+const DOORS={warm:['Warm-ups','Count the dots'],add:['Add & take','Sticks of ten'],pat:['Patterns','What comes next?'],puz:['Puzzles','Think hard'],story:['Stories','Read and solve'],make:['Zoe makes it','You hide, I guess']};
 function show(id){document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==id);window.scrollTo(0,0);const c=document.getElementById('confetti');if(c&&id!=='done'){cancelAnimationFrame(window.__cf);c.getContext('2d').clearRect(0,0,c.width,c.height)}}
 let ctx=null; // current problem context
 function say(t,good){msg.textContent=t;msg.className='msg'+(good?' good':'')}
@@ -356,7 +364,7 @@ function drawGarden(){const svg=$('#gardenSvg');const fl=S.flowers.slice(-40);le
 
 /* ---------- trails ---------- */
 function makeTrail(door){const room=r=>shuffle(Object.values(SK).filter(k=>k.room===r).map(k=>k.id));const w=room('warm'),d=room(door),z=room('puz');
-  let steps;if(door==='warm')steps=[w[0],w[1],room('pat')[0],w[0],z[0]];else if(door==='puz')steps=[w[0],d[0],d[1],d[2],d[3]||d[0]];else steps=[w[0],d[0],d[1%d.length],z[0],d[0]];
+  let steps;if(door==='make')steps=['hide','rulemaker','hide','rulemaker','hide'];else if(door==='warm')steps=[w[0],w[1],room('pat')[0],w[0],z[0]];else if(door==='puz')steps=[w[0],d[0],d[1],d[2],d[3]||d[0]];else steps=[w[0],d[0],d[1%d.length],z[0],d[0]];
   S.trail={door,steps,i:0,lit:[false,false,false,false,false]};save()}
 function renderTrail(){const t=$('#trail');t.innerHTML='';if(!S.trail)return;S.trail.steps.forEach((_,i)=>{const st=el('div','stone'+(S.trail.lit[i]?' lit':'')+(i===S.trail.i?' now':''));t.appendChild(st)})}
 function startTrail(door){makeTrail(door);show('play');play(S.trail.steps[0])}
@@ -384,6 +392,10 @@ function renderBook(){$('#bookTitle').textContent=`${KID()}'s Book`;const sh=$('
   const pg=$('#pages');pg.innerHTML='';if(!S.book.length)pg.appendChild(el('div','page',`This book is empty. Every problem ${KID()} solves writes a line here.`));
   S.book.forEach(e=>{const d=new Date(e.d);pg.appendChild(el('div','page'+(e.big?' big':''),`${e.t}<small>${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</small>`))})}
 
+/* tap-to-count: the child touches each object and it gets her number */
+function tapCount(container,selector,onCount){let order=[];const items=()=>Array.from(container.querySelectorAll(selector));
+  const renumber=()=>{items().forEach(d=>{const b=d.querySelector('b.tc');if(b)b.remove()});order.forEach((d,i)=>{const b=el('b','tc',i+1);d.appendChild(b)});if(onCount)onCount(order.length)};
+  items().forEach(d=>{d.style.cursor='pointer';d.addEventListener('click',()=>{if(ctx&&ctx.done)return;if(order.includes(d))order=order.filter(x=>x!==d);else order.push(d);renumber()})})}
 /* ---------- visuals ---------- */
 const shapes={circle:c=>`<circle cx="20" cy="20" r="16" fill="${c}"/>`,square:c=>`<rect x="5" y="5" width="30" height="30" rx="4" fill="${c}"/>`,tri:c=>`<path d="M20 4L37 35H3z" fill="${c}"/>`,star:c=>`<path d="M20 3l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="${c}"/>`};
 const svgShape=(s,c)=>{const e=el('div');e.innerHTML=`<svg class="shape" viewBox="0 0 40 40">${shapes[s](c)}</svg>`;return e.firstChild};
@@ -395,7 +407,7 @@ skill({id:'dots',room:'warm',title:'How many?',levels:3,grow:lv=>['','Now the do
   if(lv===1){n=rnd(1,6);grid.style.gridTemplateColumns='repeat(3,34px)';const m={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]}[n];for(let i=0;i<9;i++)grid.appendChild(el('div','dot'+(m.includes(i)?'':' ghost')))}
   else if(lv===2){n=rnd(3,10);grid.style.gridTemplateColumns='repeat(5,34px)';for(let i=0;i<10;i++)grid.appendChild(el('div','dot'+(i<n?'':' ghost')))}
   else{n=rnd(11,20);grid.style.gridTemplateColumns='repeat(5,34px)';for(let i=0;i<20;i++)grid.appendChild(el('div','dot'+(i<n?'':' ghost')+(i>=10?' a':'')))}
-  prompt.textContent='How many dots?';stage.appendChild(grid);
+  prompt.textContent='How many dots?';stage.appendChild(grid);const cnt=el('div','counted','Touch each dot to count it');stage.appendChild(cnt);tapCount(grid,'.dot:not(.ghost)',k=>{cnt.textContent=k?`You counted ${k}`:'Touch each dot to count it'});
   help({book:`counted ${n} dots without missing one`,clues:['Touch each dot as you count.',lv===1?'Do you see a dice pattern?':'Count the full row of 5 first, then the rest.'],answer:n,why:lv===1?'':n>10?`A full frame is 10, and ${n-10} more.`:n>5?`A row of 5, and ${n-5} more.`:'',show:()=>grid.querySelectorAll('.dot:not(.ghost)').forEach((d,i)=>d.classList.add(i<5?'a':i<10?'b':'a'))});
   const p=pad(lv===3?20:10,(v,b)=>{if(v===n){b.classList.add('hit');lock(p);const d=grid.querySelectorAll('.dot:not(.ghost)');
       if(lv===2&&n>5){d.forEach((x,i)=>x.classList.add(i<5?'a':'b'));win(`${cheer()} 5 and ${n-5} make ${n}.`)}
@@ -647,11 +659,11 @@ async function actOut(v,S,guess){ // plays the true story; returns nothing. gues
 skill({id:'tale',room:'story',title:'Story mystery',levels:3,grow:lv=>['','Now the stories go up to 20 and ask trickier questions.','Now the stories have two steps.'][lv-1],mount(lv){
   const thing=pick(THINGS);currentThing=thing;let st=null;for(let i=0;i<10&&!st;i++)st=pick(STORIES[lv])(KID(),thing);
   st.viz.ans=st.ans;
-  prompt.textContent='Read the story. Then solve it.';const box=el('div','story',st.text);const scene=buildScene(st.viz);stage.append(box,scene.sc);
+  prompt.textContent='Read the story. Then solve it.';const box=el('div','story',st.text);const scene=buildScene(st.viz);stage.append(box,scene.sc);const cnt=el('div','counted','Touch things to count them');scene.sc.appendChild(cnt);tapCount(scene.sc,'.it2:not(.slot)',k=>{cnt.textContent=k?`You counted ${k}`:'Touch things to count them'});
   let fresh=true;const replay=()=>{const old=scene.sc;const s=buildScene(st.viz);Object.assign(scene,s);stage.replaceChild(s.sc,old)};
   let busy=false;
   help({book:`read a story and worked out the answer: ${st.ans}`,clues:['Look at the picture. What do we know, and what is the question asking?',st.hint],answer:st.ans,why:st.why,show:()=>{if(!fresh)replay();fresh=false;actOut(st.viz,scene,null)}});
-  controls.appendChild(numpad(async(v,nm)=>{if(busy)return;busy=true;nm.style.pointerEvents='none';nm.style.opacity='.6';if(!fresh)replay();fresh=false;
+  controls.appendChild(numpad(async(v,nm)=>{if(busy)return;busy=true;nm.style.pointerEvents='none';nm.style.opacity='.6';if(!fresh)replay();fresh=false;scene.sc.querySelectorAll('b.tc').forEach(b=>b.remove());const cc=scene.sc.querySelector('.counted');if(cc)cc.remove();
     if(v===st.ans){lock(nm);win(`${cheer()} ${st.why}`);await actOut(st.viz,scene,v)}
     else{miss(`You said ${v}. Watch what really happens.`);await actOut(st.viz,scene,v);if(st.viz.type!=='need')say(`You said ${v}. Now count the numbered ones, then try again.`)}
     busy=false;nm.style.pointerEvents='';nm.style.opacity=''},3))}});
@@ -732,15 +744,72 @@ function openIdea(idea){show('learn');$('#learnTitle').textContent=idea.title;$(
     else C.appendChild(numpad((v,nm)=>{if(v===t.ans)finish(true);else if(first){first=false;M.textContent=`Not ${v}. Try once more.`}else finish(false)},3))}
   next()}
 
+
+/* ================= ZOE MAKES IT ================= */
+skill({id:'hide',room:'make',title:'You hide the number',levels:1,mount(){
+  prompt.textContent=`Pick a secret number from 1 to 20. Don't say it out loud!`;
+  const p=pad(20,(v,b)=>{if(v<1)return;lock(p);p.remove();start(v)});controls.appendChild(p);
+  let secret,lo=1,hi=20,asked=0,right=0,wrongs=[];
+  const qs=[
+    {t:n=>`Is it bigger than ${n}?`,mid:true,f:(s,n)=>s>n,teach:(s,n)=>`${s} is ${s>n?'bigger':'smaller'} than ${n}. Count up from ${Math.min(s,n)}: you reach ${Math.max(s,n)} after ${Math.abs(s-n)} steps.`,apply:(ans,n)=>{if(ans)lo=Math.max(lo,n+1);else hi=Math.min(hi,n)}},
+    {t:()=>`Is it an odd number?`,f:s=>s%2===1,teach:s=>`Pair up ${s}: ${s%2?'one is left alone, so it is odd':'everyone has a partner, so it is even'}.`,apply:(ans)=>{par=ans?1:0}},
+    {t:()=>`Does it have two digits?`,f:s=>s>=10,teach:s=>`${s} ${s>=10?'has two digits, a tens digit and a ones digit':'is a one-digit number'}.`,apply:(ans)=>{if(ans)lo=Math.max(lo,10);else hi=Math.min(hi,9)}}
+  ];let par=null;
+  function cands(){const a=[];for(let i=lo;i<=hi;i++)if(par==null||i%2===par)a.push(i);return a}
+  function start(v){secret=v;say(`Secret saved. I will ask you questions and try to guess it.`);stage.innerHTML='';const lock1=el('div','story',`🔒 Your number is hidden. Answer my questions with Yes or No.`);stage.appendChild(lock1);ask()}
+  function ask(){const c=cands();if(c.length===1||asked>=5)return guess(c);
+    let q;if(asked===0)q=qs[0];else if(asked===1)q=qs[1];else if(asked===2&&lo<10&&hi>=10)q=qs[2];else q=qs[0];
+    const n=q.mid?Math.floor((lo+hi)/2):0;const text=q.t(n);asked++;
+    controls.innerHTML='';const box=el('div','story',text);stage.appendChild(box);
+    const ch=choices(['Yes','No'],(o,b)=>{lock(ch);const ans=o==='Yes';const truth=q.f(secret,n);
+      if(ans===truth){right++;b.classList.add('hit');q.apply(ans,n);say('Got it.',true);setTimeout(ask,500)}
+      else{b.classList.add('miss');wrongs.push(text);const t=el('div','hint',`Hmm, let's check that together. ${q.teach(secret,n)} So the answer is ${truth?'Yes':'No'}.`);stage.appendChild(t);
+        if(q===qs[1]){stage.appendChild(pairUp(secret))}
+        q.apply(truth,n);const r=el('div','row');const k=el('button','btn','Okay, keep going');k.onclick=()=>{say('');ask()};r.appendChild(k);controls.appendChild(r)}});
+    ch.classList.add('bigpick');controls.appendChild(ch)}
+  function guess(c){const g=c[0];controls.innerHTML='';const box=el('div','story',`I think your number is <b>${g}</b>! Am I right?`);stage.appendChild(box);
+    const ch=choices(['Yes!','No'],(o,b)=>{lock(ch);if(g===secret){b.classList.add(o==='Yes!'?'hit':'miss');
+        help({book:`hid the number ${secret} and answered ${right} of ${asked} questions about it correctly`,clues:['',''],why:''});
+        win(right===asked?`${cheer()} You answered every question right and I still found it. Hide a harder one next time!`:`I found it! ${asked-right} answer${asked-right>1?'s':''} needed a second look, and now you know.`)}
+      else{say(`My guess was off, because one of the answers sent me the wrong way. Your number was ${secret}. Let's play again!`);help({book:`played hide the number with ${secret}`,clues:['',''],why:''});win(`Your number was ${secret}. Let's do another!`,true)}});
+    ch.classList.add('bigpick');controls.appendChild(ch)}
+  help({clues:['Pick a number and keep it secret. Then answer Yes or No.','If a question is hard, think about the pictures from Big Ideas.'],why:'You pick the number; I ask questions and guess it.'})}});
+
+skill({id:'rulemaker',room:'make',title:'You make the rule',levels:1,mount(){
+  const rules=[1,2,3,4,5].map(n=>({t:'+'+n,f:x=>x+n})).concat([1,2,3].map(n=>({t:'−'+n,f:x=>x-n})),[{t:'double',f:x=>x*2}]);
+  prompt.textContent='Choose a secret rule for your machine.';let rule=null,asked=0,right=0;
+  const ch=choices(rules.map(r=>r.t),(o,b)=>{rule=rules.find(r=>r.t===o);lock(ch);ch.remove();stage.innerHTML='';stage.appendChild(el('div','story',`🔒 Your rule is hidden. I will put numbers in. You tell me what comes out.`));feed()});controls.appendChild(ch);
+  const m=el('div','machine');stage.appendChild(m);
+  const inputs=shuffle([2,3,4,5,6,7,8,9,10]);
+  function feed(){if(asked>=3)return guess();const x=inputs[asked];asked++;controls.innerHTML='';
+    const io=el('div','io',`<span>${x}</span><span>→</span><span class="q" style="color:var(--accent)">?</span>`);m.appendChild(io);if(!m.parentElement)stage.appendChild(m);
+    say(`I put in ${x}. What comes out with your rule?`);
+    controls.appendChild(numpad((v,nm)=>{const truth=rule.f(x);lock(nm);io.querySelector('.q').textContent=v;
+      if(v===truth){right++;say('Okay!',true);setTimeout(feed,500)}
+      else{io.querySelector('.q').textContent=truth;io.querySelector('.q').style.color='var(--leaf)';const t=el('div','hint',`With your rule ${rule.t}, ${x} becomes ${truth}, not ${v}. ${rule.t==='double'?`Double means ${x} + ${x}.`:rule.t[0]==='+'?`Count up ${rule.t.slice(1)} from ${x}.`:`Count back ${rule.t.slice(1)} from ${x}.`}`);stage.appendChild(t);
+        const r=el('div','row');const k=el('button','btn','Okay, keep going');k.onclick=()=>{t.remove();say('');feed()};r.appendChild(k);controls.appendChild(r)}},3))}
+  function guess(){controls.innerHTML='';const g=rule;stage.appendChild(el('div','story',`I think your rule is <b>${g.t}</b>! Am I right?`));
+    const c2=choices(['Yes!','No'],(o,b)=>{lock(c2);b.classList.add('hit');help({book:`made a secret rule (${rule.t}) and ran her own machine`,clues:['',''],why:''});
+      win(right===3?`${cheer()} Your machine worked perfectly and I cracked the rule.`:`I cracked it! ${3-right} output${3-right>1?'s':''} needed a second look.`)});c2.classList.add('bigpick');controls.appendChild(c2)}
+  help({clues:['Pick a rule, then do that rule to each number I give you.','If you forget, the rule is shown only to you at the top: look at the choice you made.'],why:'You choose the rule; I give inputs and guess it.'})}});
+
 /* ---------- play loop ---------- */
 function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');
   ctx={hints:0,done:false,turn:S.duo?S.turn:0};
   turnEl.textContent=S.duo?(ctx.turn===1?"Dad's turn":`${KID()}'s turn`):'';
   const m=S.m[id]||(S.m[id]={lv:1,streak:0,low:0});SK[id].mount(m.lv);if(ctx.help)controls.appendChild(helpRow());renderTrail()}
 function renderSkills(){}
-function renderDoors(){const d=$('#doors');d.innerHTML='';ROOMS.forEach(rm=>{const b=el('button','door',`<svg viewBox="0 0 24 24">${rm.icon}</svg><b>${DOORS[rm.id][0]}</b><small>${DOORS[rm.id][1]}</small>`);b.onclick=()=>startTrail(rm.id);d.appendChild(b)});
+function renderDoors(){const d=$('#doors');d.innerHTML='';ROOMS.forEach(rm=>{const b=el('button','door'+(rm.id==='make'?' maker':''),`<svg viewBox="0 0 24 24">${rm.icon}</svg><b>${rm.id==='make'?KID()+' makes it':DOORS[rm.id][0]}</b><small>${DOORS[rm.id][1]}</small>`);b.onclick=()=>startTrail(rm.id);d.appendChild(b)});
   const i=el('button','door ideas',`<svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z" fill="#fff"/><rect x="9" y="18" width="6" height="3" rx="1" fill="#1a1a1a"/></svg><b>Big Ideas</b><small>Read and understand</small>`);i.onclick=()=>{renderIdeas();show('ideas')};d.appendChild(i)}
-function renderLevels(){const t=$('#levels');t.innerHTML='';Object.values(SK).forEach(k=>{const tr=el('tr');tr.innerHTML=`<td>${DOORS[k.room][0]} · ${k.title}</td>`;const td=el('td');const box=el('div','lvl');const dn=el('button','','−'),sp=el('span','',` ${lvl(k.id)} / ${k.levels} `),up=el('button','','+');
+function renderPapa(){const P=$('#papa');const played=Object.values(SK).filter(k=>S.counts[k.id]);const strong=played.slice().sort((a,b)=>(S.m[b.id]?S.m[b.id].lv:1)*10+(S.counts[b.id]||0)-((S.m[a.id]?S.m[a.id].lv:1)*10+(S.counts[a.id]||0))).slice(0,3);
+  const stuck=Object.values(SK).map(k=>({k,low:S.m[k.id]?S.m[k.id].low:0,streak:S.m[k.id]?S.m[k.id].streak:0})).filter(x=>x.low>0).sort((a,b)=>b.low-a.low)[0];
+  const ideas=IDEAS.filter(i=>S.counts['idea_'+i.id]).map(i=>i.title);
+  P.innerHTML=`<h3>At a glance</h3><div>${inWords(S.flowers.length).replace(/^./,c=>c.toUpperCase())} flowers, ${S.stars} problems solved, ${S.book.length} lines in her book.</div>
+  <h3>Big ideas she has read</h3><div>${ideas.length?ideas.join(', '):'None yet. Try Even and odd together first.'}</div>
+  <h3>Strongest right now</h3><div>${strong.length?strong.map(k=>`${k.title} (level ${S.m[k.id]?S.m[k.id].lv:1})`).join(', '):'Not enough played yet.'}</div>
+  <h3>Needs a second look</h3><div>${stuck?`${stuck.k.title}: she needed hints on the last ${stuck.low===1?'problem':'two problems'}. Worth doing one together.`:'Nothing flagged. She is solving without many hints.'}</div>
+  <h3>Her last lines</h3><ul>${S.book.slice(0,5).map(e=>`<li>${e.t}</li>`).join('')||'<li>Nothing yet.</li>'}</ul>`}
+function renderLevels(){renderPapa();const t=$('#levels');t.innerHTML='';Object.values(SK).forEach(k=>{const tr=el('tr');tr.innerHTML=`<td>${DOORS[k.room][0]} · ${k.title}</td>`;const td=el('td');const box=el('div','lvl');const dn=el('button','','−'),sp=el('span','',` ${lvl(k.id)} / ${k.levels} `),up=el('button','','+');
   dn.onclick=()=>{const m=S.m[k.id];if(m.lv>1){m.lv--;m.streak=0;m.low=0;save();renderLevels()}};up.onclick=()=>{const m=S.m[k.id];if(m.lv<k.levels){m.lv++;m.streak=0;m.low=0;save();renderLevels()}};box.append(dn,sp,up);td.appendChild(box);tr.appendChild(td);t.appendChild(tr)})}
 function renderHome(){$('#homeTitle').textContent='Number Garden';$('#bookBtn').textContent=`${KID()}'s Book`;drawGarden();renderDoors()}
 

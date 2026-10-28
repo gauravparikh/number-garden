@@ -13,6 +13,7 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 | Patterns | What comes next? · Rule machine | Repeating and growing patterns, function machines |
 | Puzzles | Balance it · Which one is different? · Make the money · Mini sudoku · Number riddle | Reasoning with no algorithm: the seed of competition math |
 | Stories | Story mystery · How many ways? | Reading-level word problems in one to two steps, and open questions with several right answers |
+| Zoe makes it | You hide the number · You make the rule | She sets the puzzle and the app solves it, checking her answers and teaching when one is off |
 | Big Ideas | Even and odd · How far apart · Tens and ones · Bigger and smaller · Making ten · Double and half | Concept pages she reads herself: a short explanation, a hands-on demo, three try-it questions, then a link to the game that uses the idea |
 
 ## How a session works
@@ -21,7 +22,9 @@ The home screen is the garden with five doors. Tapping a door starts a **trail**
 
 **Zoe's Book** writes one sentence she can read for every problem she solves ("Zoe took 9 away from 23 and got 14"), a bigger entry for each level-up and finished trail, and holds the badge shelf (First Flower, Ten-Breaker, Riddle Solver, Many Ways, Balance Master, Pattern Spotter, Story Reader, Gardener).
 
-The grown-up settings are behind the faint "for grown-ups" link at the bottom of the home screen.
+The grown-up settings are behind the faint "for grown-ups" link at the bottom of the home screen, with a short Papa page: ideas she has read, strongest games, what needs a second look, her last five book lines.
+
+In Stories and the dots warm-up she can touch each object to count it herself; the touch adds a green number.
 
 ## Design rules
 
@@ -35,9 +38,8 @@ The grown-up settings are behind the faint "for grown-ups" link at the bottom of
 
 ## Ideas queued
 
-- Let her tap objects to count them herself before typing
-- "You make the rule": Zoe invents the rule machine and the app guesses
-- "You hide the number": Zoe picks the secret and answers the app's clue questions
+- "You write the story": she picks a thing and two numbers, Papa solves it
+- "You make the pattern": she builds a pattern, the app continues it
 - Shapes & space room (tangram fits, counting squares, symmetry)
 - Place value room (10 more / 10 less, build a number from sticks)
 
