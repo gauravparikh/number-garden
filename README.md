@@ -2,7 +2,7 @@
 
 A single-file math game for a five-year-old who already does Kumon arithmetic and needs the other half: number sense, strategy, patterns, and puzzles with no procedure.
 
-Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen" and it behaves like an installed app.
+Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen" and it behaves like an installed app. The layout adapts: one column on a phone, three-column doors and side-by-side picture-book pages from about 700px (iPad, laptop).
 
 **Saving.** Progress is written to the browser's local storage immediately, and, on the published claude.ai page, to the page's cloud database (`db` capability) a moment later. On load the newer of the two wins, so a cleared browser or a second device picks up where she left off. Outside claude.ai (a plain local file) only the browser copy exists.
 
@@ -18,7 +18,7 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 | Shapes & space | Mirror it · Count the shapes · Fit the hole | Spatial reasoning: reflections, shapes hidden inside shapes, matching a piece to a gap |
 | Playground | Counters and sticks · Number line walk · Balance scale | Free play with no questions: feel ten snapping into a stick, hop a sum along the line, load a scale and watch it tip |
 | Zoe makes it | You hide the number · You make the rule | She sets the puzzle and the app solves it, checking her answers and teaching when one is off |
-| Big Ideas | Even and odd · How far apart · Tens and ones · Bigger and smaller · Making ten · Double and half | Animated picture-book stories narrated by the ladybug (four scenes each), then a drag-and-drop page where she does it herself, then three try-it questions and a link to the game |
+| Big Ideas | **Numbers:** Counting on · Skip counting · Tens and ones · Bigger and smaller · Number neighbors **Adding and taking:** Making ten · How far apart · What = really means **Groups:** Even and odd · Double and half · Equal groups · Fair sharing **Time:** Reading the clock · Before there were clocks · Why time is precious | Six-page picture books narrated by the ladybug (see it, the rule, where you meet it, the trap, your turn by drag-and-drop, it's the same as…), then three try-its and a link to the game |
 
 ## How a session works
 
@@ -53,7 +53,8 @@ In Stories and the dots warm-up she can touch each object to count it herself; t
 - "You write the story": she picks a thing and two numbers, Papa solves it
 - "You make the pattern": she builds a pattern, the app continues it
 - More Shapes & space: symmetry completion, cube stacks with hidden blocks
-- Place value room (10 more / 10 less, build a number from sticks)
+- More ideas: parts of a whole (halves/quarters), measuring with units, estimating, sorting by two things, "if this then that"
+- Time: minutes past the hour, elapsed time ("how long until…"), days of the week and months
 
 ## Puzzle families
 
