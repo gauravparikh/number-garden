@@ -505,8 +505,11 @@ function makeTrail(door){const room=r=>shuffle(Object.values(SK).filter(k=>k.roo
   const day=Math.floor(Date.now()/864e5);S.last=S.last||{};const stale=Object.values(SK).filter(k=>k.room!=='make'&&S.counts[k.id]&&day-(S.last[k.id]||0)>=3).sort((a,b)=>(S.last[a.id]||0)-(S.last[b.id]||0))[0];if(stale)z[0]=stale.id;
   let steps;if(door==='make')steps=shuffle(['hide','rulemaker','writestory','patmaker']).concat(shuffle(['hide','rulemaker','writestory','patmaker'])).slice(0,5);
   else if(door==='warm')steps=[w[0],room('pat')[0],w[1],z[0],w[0]];
-  else if(door==='puz')steps=[d[0],w[0],d[1],d[2],d[3]||d[0]];
-  else steps=[d[0],w[0],d[1%d.length],z[0],d[(2)%d.length]];
+  else if(door==='puz')steps=[d[0],w[0],d[1],d[2],d[3]||room('pat')[0]];
+  else steps=[d[0],w[0],d[1%d.length],z[0],d[2%d.length]];
+  if(door==='warm')steps[4]=room('add')[0];
+  if(d.length<3&&door!=='warm'&&door!=='make')steps[4]=room(door==='pat'?'space':'pat')[0]; // a room with only two games borrows its last stone // the second warm-up game already sits at stone 3, so the last stone borrows from Add & take instead of repeating
+  if(door!=='make'&&z[0]===steps[0])z[0]=z[1]||z[0];
   S.trail={door,steps,i:0,lit:[false,false,false,false,false]};save()}
 function renderStreak(){const c=$('#streakChip');if(!c)return;c.hidden=S.streakNow<2;c.textContent=`${S.streakNow} in a row`}
 function renderTrail(){const t=$('#trail');t.innerHTML='';if(!S.trail)return;S.trail.steps.forEach((_,i)=>{const st=el('div','stone'+(S.trail.lit[i]?' lit':'')+(i===S.trail.i?' now':''));t.appendChild(st)})}
@@ -1377,18 +1380,29 @@ skill({id:'estimate',room:'meas',title:'About how many?',levels:3,mount(lv){
 
 /* ================= more PUZZLES ================= */
 skill({id:'sort2',room:'puz',title:'Sort by two things',levels:3,mount(lv){
-  const cols=[['var(--accent)','red'],['var(--sky)','blue']];let rowsA,colsA,items,where,drawIt;
-  if(lv===1){rowsA=['big','small'];colsA=['red','blue'];items=shuffle([[0,0],[0,1],[1,0],[1,1]]);drawIt=([r,c])=>{const e=svgShape('circle',cols[c][0]);e.style.width=e.style.height=r===0?'44px':'24px';return e}}
-  else if(lv===2){rowsA=['circle','square'];colsA=['red','blue'];items=shuffle([[0,0],[0,1],[1,0],[1,1]]);drawIt=([r,c])=>svgShape(r===0?'circle':'square',cols[c][0])}
-  else{rowsA=['odd','even'];colsA=['less than 10','10 or more'];const nums=shuffle([rnd(1,9)|1,rnd(1,4)*2,rnd(5,9)*2+1,rnd(5,9)*2]).slice(0,4);items=nums.map(v=>[v%2?0:1,v<10?0:1,v]);drawIt=it=>el('b','',it[2])}
-  prompt.textContent='Where does each one go?';const grid=el('div','sud');grid.style.gridTemplateColumns='auto 1fr 1fr';grid.style.background='var(--card)';grid.style.border='3px solid var(--fg)';
-  const cell=(t,hdr)=>{const c=el('div','sq'+(hdr?' given':''),t);c.style.width='auto';c.style.minWidth='70px';c.style.minHeight='54px';c.style.fontSize=hdr?'.95rem':'1.4rem';c.style.padding='4px';return c};
-  grid.appendChild(cell(''));colsA.forEach(c=>grid.appendChild(cell(c,true)));const zones=[];rowsA.forEach((r,ri)=>{grid.appendChild(cell(r,true));colsA.forEach((c,ci)=>{const z=el('button','sq');z.style.width='auto';z.style.minHeight='54px';z.style.border='3px dashed var(--line)';z.style.background='var(--bg)';z.style.display='flex';z.style.flexWrap='wrap';z.style.gap='4px';z.style.justifyContent='center';z.r=ri;z.c=ci;zones.push(z);grid.appendChild(z)})});
-  const cur=el('div','hint','');stage.append(grid,cur);let i=0,placed=0;
-  const next=()=>{if(i>=items.length)return;cur.innerHTML='Where does this go? ';cur.appendChild(drawIt(items[i]));cur.firstChild.after(el('span','',' '))};next();
-  help({book:`sorted things by two rules at once`,clues:[`Ask two questions about it: which row does it match, and which column?`,`Find the row first, then slide along to the column.`],why:`Each box answers two questions at once: the row and the column.`,show:()=>items.slice(i).forEach(it=>{const z=zones.find(z=>z.r===it[0]&&z.c===it[1]);const e=drawIt(it);e.style.opacity='.5';z.appendChild(e)})});
-  zones.forEach(z=>z.onclick=()=>{if(ctx.done||i>=items.length)return;const it=items[i];if(z.r===it[0]&&z.c===it[1]){z.appendChild(drawIt(it));i++;placed++;say(i<items.length?'Yes!':'' ,true);if(i>=items.length){win(`${cheer()} All four sorted by both rules.`)}else next()}
-    else miss(z.r!==it[0]?`Is it ${rowsA[it[0]]}? Look at the row labels.`:`Is it ${colsA[it[1]]}? Look at the column labels.`)})}});
+  /* a two-way grid. The ladybug sorts the first one out loud as the example; then she sorts four, and every miss names the question she skipped */
+  const cols=[['var(--accent)','red'],['var(--sky)','blue']];let rowsA,colsA,items,drawIt,describe;
+  if(lv===1){rowsA=['big','small'];colsA=['red','blue'];items=shuffle([[0,0],[0,1],[1,0],[1,1]]);drawIt=([r,c],big)=>{const e=svgShape('circle',cols[c][0]);e.style.width=e.style.height=(r===0?44:24)*(big?1.6:1)+'px';return e};describe=([r,c])=>`It is <b>${rowsA[r]}</b> and it is <b>${colsA[c]}</b>.`}
+  else if(lv===2){rowsA=['circle','square'];colsA=['red','blue'];items=shuffle([[0,0],[0,1],[1,0],[1,1]]);drawIt=([r,c],big)=>{const e=svgShape(r===0?'circle':'square',cols[c][0]);if(big)e.style.width=e.style.height='64px';return e};describe=([r,c])=>`It is a <b>${rowsA[r]}</b> and it is <b>${colsA[c]}</b>.`}
+  else{rowsA=['odd','even'];colsA=['less than 10','10 or more'];const nums=shuffle([rnd(1,9)|1,rnd(1,4)*2,rnd(5,9)*2+1,rnd(5,9)*2]).slice(0,4);items=nums.map(v=>[v%2?0:1,v<10?0:1,v]);drawIt=(it,big)=>{const e=el('b','',it[2]);e.style.fontSize=big?'2.4rem':'1.4rem';return e};describe=it=>`${it[2]} is <b>${rowsA[it[0]]}</b> and it is <b>${colsA[it[1]]}</b>.`}
+  const example=[(items[0][0]+1)%2,(items[0][1]+1)%2,lv===3?(items[0][0]?rnd(1,4)*2:rnd(1,4)*2+1):0];if(lv===3){const v=example[2];example[0]=v%2?0:1;example[1]=v<10?0:1}
+  prompt.textContent='Sort them into the boxes.';
+  const card=el('div','story');card.style.cssText='display:flex;align-items:center;gap:14px;max-width:none';const pic=el('div'),txt=el('div');card.append(pic,txt);
+  const grid=el('div','sud');grid.style.cssText='grid-template-columns:auto 1fr 1fr;background:var(--card);border:3px solid var(--fg)';
+  const hdr=(t,color)=>{const c=el('div','sq given',t);c.style.cssText=`width:auto;min-width:76px;min-height:48px;font-size:1rem;padding:4px 8px;${color?`color:${color};`:''}`;return c};
+  grid.appendChild(hdr(''));colsA.forEach((c,ci)=>grid.appendChild(hdr(c,lv<3?cols[ci][0]:'')));const zones=[];
+  rowsA.forEach((r,ri)=>{grid.appendChild(hdr(r));colsA.forEach((c,ci)=>{const z=el('button','sq');z.style.cssText='width:auto;min-width:76px;min-height:64px;border:3px dashed var(--line);background:var(--bg);display:flex;flex-wrap:wrap;gap:4px;justify-content:center;align-items:center';z.r=ri;z.c=ci;zones.push(z);grid.appendChild(z)})});
+  stage.append(card,grid);let i=-1;
+  const zoneOf=it=>zones.find(z=>z.r===it[0]&&z.c===it[1]);
+  const showItem=(it,text)=>{pic.innerHTML='';pic.appendChild(drawIt(it,true));txt.innerHTML=text};
+  const next=()=>{i++;if(i>=items.length)return;showItem(items[i],`Which box? Ask two things: <b>${rowsA[0]} or ${rowsA[1]}</b>? <b>${colsA[0]} or ${colsA[1]}</b>?`)};
+  /* the ladybug does the first one */
+  showItem(example,`Watch me. ${describe(example)} So it goes in the <b>${rowsA[example[0]]}</b> row, <b>${colsA[example[1]]}</b> column.`);
+  const ez=zoneOf(example);setTimeout(()=>{if(ctx.done||!ez.isConnected)return;ez.style.outline='4px solid var(--sun)';const e=drawIt(example);e.style.opacity='.55';ez.appendChild(e);setTimeout(()=>{ez.style.outline='';next()},1400)},1200);
+  help({book:`sorted things by two rules at once`,clues:[`Ask two questions about it: ${rowsA[0]} or ${rowsA[1]}? That picks the row. ${colsA[0]} or ${colsA[1]}? That picks the column.`,i>=0&&i<items.length?describe(items[i]).replace(/<\/?b>/g,''):`Find the row first, then slide along to the column.`],why:`Each box answers two questions at once: the row and the column.`,show:()=>items.slice(Math.max(i,0)).forEach(it=>{const e=drawIt(it);e.style.opacity='.5';zoneOf(it).appendChild(e)})});
+  zones.forEach(z=>z.onclick=()=>{if(ctx.done||i<0||i>=items.length)return;const it=items[i];
+    if(z.r===it[0]&&z.c===it[1]){z.appendChild(drawIt(it));if(i>=items.length-1){i++;txt.innerHTML='All sorted!';win(`${cheer()} All four sorted by both rules.`)}else{say('Yes!',true);next()}}
+    else miss(z.r!==it[0]?`Look at the row. Is it ${rowsA[it[0]]} or ${rowsA[(it[0]+1)%2]}?`:`Right row! Now the column: is it ${colsA[it[1]]} or ${colsA[(it[1]+1)%2]}?`)})}});
 
 skill({id:'ifthen',room:'puz',title:'If this, then that',levels:3,mount(lv){
   const cols=[['var(--accent)','red'],['var(--sky)','blue'],['var(--leaf)','green']];
@@ -1451,7 +1465,12 @@ skill({id:'calendar',room:'time',title:'Days and months',levels:3,mount(lv){
 function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');$('#where').textContent=`${DOORS[SK[id].room][0]} · ${SK[id].title}`;
   ctx={hints:0,done:false,turn:S.duo?S.turn:0};
   turnEl.textContent=S.duo?(ctx.turn===1?"Dad's turn":`${KID()}'s turn`):'';
-  const m=S.m[id]||(S.m[id]={lv:1,streak:0,low:0});SK[id].mount(m.lv);if(ctx.help)controls.appendChild(helpRow());renderTrail()}
+  const m=S.m[id]||(S.m[id]={lv:1,streak:0,low:0});
+  /* no repeats: a problem's signature is its prompt plus what is on the stage; re-roll if she has seen it in the last few goes of this game */
+  S.recent=S.recent||{};const seen=S.recent[id]||[];let sig='';
+  for(let t=0;t<6;t++){stage.innerHTML='';controls.innerHTML='';ctx={hints:0,done:false,turn:S.duo?S.turn:0};SK[id].mount(m.lv);sig=prompt.textContent+'|'+stage.textContent+'|'+stage.innerHTML.length;if(!seen.includes(sig))break}
+  S.recent[id]=seen.concat(sig).slice(-6);save();
+  if(ctx.help)controls.appendChild(helpRow());renderTrail()}
 function renderSkills(){}
 function renderDoors(){const d=$('#doors');d.innerHTML='';ROOMS.forEach(rm=>{const b=el('button','door'+(rm.id==='make'?' maker':''),`<svg viewBox="0 0 24 24">${rm.icon}</svg><b>${rm.id==='make'?KID()+' makes it':DOORS[rm.id][0]}</b><small>${DOORS[rm.id][1]}</small>`);b.onclick=()=>startTrail(rm.id);d.appendChild(b)});
   const pgd=el('button','door sand',`<svg viewBox="0 0 24 24"><rect x="3" y="14" width="18" height="6" rx="2" fill="var(--soil)"/><circle cx="8" cy="9" r="3" fill="var(--sky)"/><rect x="13" y="6" width="6" height="6" fill="var(--accent)"/></svg><b>Playground</b><small>Just play</small>`);pgd.onclick=()=>{renderToys();show('playground')};d.appendChild(pgd);
