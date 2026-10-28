@@ -1398,7 +1398,8 @@ skill({id:'sort2',room:'puz',title:'Sort by two things',levels:3,mount(lv){
   const next=()=>{i++;if(i>=items.length)return;showItem(items[i],`Which box? Ask two things: <b>${rowsA[0]} or ${rowsA[1]}</b>? <b>${colsA[0]} or ${colsA[1]}</b>?`)};
   /* the ladybug does the first one */
   showItem(example,`Watch me. ${describe(example)} So it goes in the <b>${rowsA[example[0]]}</b> row, <b>${colsA[example[1]]}</b> column.`);
-  const ez=zoneOf(example);setTimeout(()=>{if(ctx.done||!ez.isConnected)return;ez.style.outline='4px solid var(--sun)';const e=drawIt(example);e.style.opacity='.55';ez.appendChild(e);setTimeout(()=>{ez.style.outline='';next()},1400)},1200);
+  const ez=zoneOf(example);setTimeout(()=>{if(ctx.done||!ez.isConnected)return;ez.style.outline='4px solid var(--sun)';const e=drawIt(example);e.style.opacity='.55';ez.appendChild(e);
+    const r=el('div','row');const b=el('button','btn','My turn');b.onclick=()=>{r.remove();ez.style.outline='';next()};r.appendChild(b);controls.insertBefore(r,controls.firstChild)},1200); // the example stays until she taps, so she can look as long as she likes
   help({book:`sorted things by two rules at once`,clues:[`Ask two questions about it: ${rowsA[0]} or ${rowsA[1]}? That picks the row. ${colsA[0]} or ${colsA[1]}? That picks the column.`,i>=0&&i<items.length?describe(items[i]).replace(/<\/?b>/g,''):`Find the row first, then slide along to the column.`],why:`Each box answers two questions at once: the row and the column.`,show:()=>items.slice(Math.max(i,0)).forEach(it=>{const e=drawIt(it);e.style.opacity='.5';zoneOf(it).appendChild(e)})});
   zones.forEach(z=>z.onclick=()=>{if(ctx.done||i<0||i>=items.length)return;const it=items[i];
     if(z.r===it[0]&&z.c===it[1]){z.appendChild(drawIt(it));if(i>=items.length-1){i++;txt.innerHTML='All sorted!';win(`${cheer()} All four sorted by both rules.`)}else{say('Yes!',true);next()}}
