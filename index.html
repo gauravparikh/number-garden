@@ -416,6 +416,7 @@ const ROOMS=[
  {id:'puz',title:'Puzzles',icon:'<path d="M4 18h16M12 18V6M6 6h12" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="6" cy="10" r="3" fill="var(--sun)"/><circle cx="18" cy="10" r="3" fill="var(--plum)"/>'},
  {id:'story',title:'Stories',icon:'<path d="M4 5h7a2 2 0 012 2v13a2 2 0 00-2-2H4zM20 5h-7a2 2 0 00-2 2v13a2 2 0 012-2h7z" fill="var(--bg)" stroke="currentColor" stroke-width="2"/><path d="M6 9h4M6 12h4M14 9h4M14 12h4" stroke="var(--accent)" stroke-width="1.5"/>'},
  {id:'space',title:'Shapes & space',icon:'<rect x="3" y="11" width="8" height="8" fill="var(--sky)"/><path d="M14 19l4-8 4 8z" fill="var(--accent)"/><circle cx="8" cy="6" r="3" fill="var(--leaf)"/>'},
+ {id:'time',title:'Time',icon:'<circle cx="12" cy="12" r="9" fill="var(--card)" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" fill="none"/>'},
  {id:'make',title:'Zoe makes it',icon:'<rect x="3" y="8" width="18" height="10" rx="3" fill="var(--plum)"/><circle cx="8" cy="13" r="2" fill="#fff"/><circle cx="16" cy="13" r="2" fill="#fff"/><path d="M12 3v5" stroke="var(--plum)" stroke-width="2"/><circle cx="12" cy="3" r="2" fill="var(--sun)"/>'}
 ];
 const SK={};
@@ -428,7 +429,7 @@ function speak(text){try{if(!window.speechSynthesis)return false;speechSynthesis
 function readBtn(getText){if(!window.speechSynthesis)return el('span');const b=el('button','readbtn','🔊 Read it to me');b.onclick=()=>speak(getText());return b}
 /* ---------- shared UI ---------- */
 const prompt=$('#prompt'),stage=$('#stage'),msg=$('#msg'),controls=$('#controls'),turnEl=$('#turn');
-const DOORS={sand:['Playground','Just play'],warm:['Warm-ups','Count the dots'],add:['Add & take','Sticks of ten'],pat:['Patterns','What comes next?'],puz:['Puzzles','Think hard'],story:['Stories','Read and solve'],space:['Shapes & space','Look closely'],make:['Zoe makes it','You hide, I guess']};
+const DOORS={sand:['Playground','Just play'],warm:['Warm-ups','Count the dots'],add:['Add & take','Sticks of ten'],pat:['Patterns','What comes next?'],puz:['Puzzles','Think hard'],story:['Stories','Read and solve'],space:['Shapes & space','Look closely'],time:['Time','Clocks and days'],make:['Zoe makes it','You hide, I guess']};
 function show(id){document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==id);window.scrollTo(0,0);const c=document.getElementById('confetti');if(c&&id!=='done'){cancelAnimationFrame(window.__cf);c.getContext('2d').clearRect(0,0,c.width,c.height)}}
 let ctx=null; // current problem context
 function say(t,good){msg.textContent=t;msg.className='msg'+(good?' good':'')}
@@ -488,7 +489,7 @@ function reveal(){const h=ctx.help;ctx.done=true;S.streakNow=0;renderStreak();co
 function renderStars(){}
 
 /* ---------- garden ---------- */
-const FLOWER={warm:'var(--sky)',add:'var(--accent)',pat:'var(--leaf)',puz:'var(--plum)',story:'var(--sun)'};
+const FLOWER={warm:'var(--sky)',add:'var(--accent)',pat:'var(--leaf)',puz:'var(--plum)',story:'var(--sun)',space:'var(--sky)',time:'var(--plum)'};
 const WORDS=['no','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'];
 const inWords=n=>n<=20?WORDS[n]:String(n);
 function flowerSvg(x,y,ht,col,scale){scale=scale||1;let h=`<line x1="${x}" y1="${y}" x2="${x}" y2="${y-ht}" stroke="var(--leaf)" stroke-width="${2.5*scale}"/><ellipse cx="${x-5*scale}" cy="${y-ht/2}" rx="${5*scale}" ry="${2.5*scale}" fill="var(--leaf)" transform="rotate(-30 ${x-5*scale} ${y-ht/2})"/>`;
@@ -976,7 +977,7 @@ const IDEAS=[
   ],
   tries:()=>{const k=rnd(2,4),e=rnd(2,5);return{q:`${k*e} shared fairly by ${k} friends. How many each?`,kind:'num',ans:e,draw:st=>{currentThing='strawberries';st.appendChild(dotsRow2(k*e))},explain:`Deal them out one at a time: ${e} each.`}}}
 ,
- {id:'clock',title:'Reading the clock',line:'Hands, o\'clock, half past, and digital',door:'pat',thing:'buttons',strand:'Time',book:'learned to read a clock',
+ {id:'clock',title:'Reading the clock',line:'Hands, o\'clock, half past, and digital',door:'time',thing:'buttons',strand:'Time',book:'learned to read a clock',
   pages:[
    {say:`A clock has two hands. The <em>short</em> one is slow and points to the hour. The <em>long</em> one is fast and counts minutes.`,draw:async(sc)=>{const c=el('div');sc.appendChild(c);for(let m=0;m<=60;m+=5){c.innerHTML=clockSvg(3,m);await wait(140)}sc.appendChild(el('div','bigword','short = <em>hour</em>, long = <em>minutes</em>'))}},
    {say:`When the long hand points straight up to the 12, it's something <em>o'clock</em>. Short hand on the 3: three o'clock.`,draw:async(sc)=>{const c=el('div');sc.appendChild(c);c.innerHTML=clockSvg(3,0);sc.appendChild(el('div','bigword','3 o\'clock &nbsp;=&nbsp; <em>3:00</em>'))}},
@@ -1305,6 +1306,47 @@ skill({id:'patmaker',room:'make',title:'You make the pattern',levels:1,mount(){
         else{b.classList.add('miss');miss(wrong?`Say the pattern out loud and keep going. Do all three dotted ones fit?`:`Check each dotted one: is it the same as the one ${p} back? I was right this time.`);ch.querySelectorAll('button').forEach(x=>x.disabled=false);b.disabled=true}});
       ch.classList.add('bigpick');controls.insertBefore(ch,controls.querySelector('#helpRow'))},900)}
   help({clues:['Tap shapes in an order that repeats, like red, green, red, green.','When it repeats at least twice, tap Done and I will continue it.'],why:'You make the pattern; I say the rule and keep it going.'})}});
+
+/* ================= TIME ================= */
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const tStr=(h,m)=>`${h}:${String(m).padStart(2,'0')}`;
+const tWords=(h,m)=>m===0?`${h} o'clock`:m===30?`half past ${h}`:m===15?`quarter past ${h}`:m===45?`quarter to ${h%12+1}`:`${m} minutes past ${h}`;
+function clockBox(h,m,marks){const d=el('div');d.innerHTML=clockSvg(h,m,marks);return d}
+
+skill({id:'minutes',room:'time',title:'What time is it?',levels:3,mount(lv){
+  const h=rnd(1,12),m=lv===1?pick([0,30]):lv===2?pick([0,15,30,45]):rnd(0,11)*5;prompt.textContent='What time is it?';
+  const c=clockBox(h,m,lv===3);stage.appendChild(c);
+  const near=m===0?h:m<30?h:h;const mins=m;
+  help({book:`read the clock at ${tWords(h,m)}`,clues:[`The short hand is the hour. It points ${m===0?'right at':'just past'} the ${h}.`,lv===1?`The long hand on the 12 is o'clock; on the 6 is half past.`:`The long hand counts by fives: the ${m/5||12} means ${m===0?'0':m} minutes.`],answer:tStr(h,m),why:`The short hand is ${m===0?'on':'past'} the ${h}, the long hand says ${m} minutes: ${tWords(h,m)}.`,show:()=>c.innerHTML=clockSvg(h,m,true)});
+  const wrongs=new Set();while(wrongs.size<3){const o=pick([[h%12+1,m],[(h+10)%12+1,m],[h,(m+30)%60],[h,(m+15)%60],[h,(m+5)%60],[m/5||12,h*5%60]]);if(o[0]!==h||o[1]!==m)wrongs.add(tStr(o[0],o[1]))}
+  const opts=shuffle([tStr(h,m)].concat([...wrongs]));
+  const ch=choices(opts,(o,b)=>{if(o===tStr(h,m)){b.classList.add('hit');lock(ch);win(`${cheer()} ${tWords(h,m)}: ${tStr(h,m)}.`)}else{b.classList.add('miss');b.disabled=true;const [oh,om]=o.split(':').map(Number);miss(oh!==h?`The short hand is the hour. Is it pointing near the ${oh}?`:`Look at the long hand. It is on the ${m/5||12}, and each number is 5 minutes.`)}});controls.appendChild(ch)}});
+
+skill({id:'elapsed',room:'time',title:'How long until…?',levels:3,mount(lv){
+  const acts=['lunch','the park','bedtime','swimming','Grandma comes','the movie'];const what=pick(acts);
+  let h1,m1,gap;if(lv===1){h1=rnd(1,9);m1=0;gap=rnd(1,3)*60}else if(lv===2){h1=rnd(1,9);m1=pick([0,30]);gap=pick([30,60,90])}else{h1=rnd(1,11);m1=rnd(0,5)*5;gap=rnd(1,8)*5}
+  const t2=h1*60+m1+gap,h2=Math.floor(t2/60)%12||12,m2=t2%60;const inHours=lv===1;const ans=inHours?gap/60:gap;
+  prompt.textContent=`It is ${tWords(h1,m1)}. ${what[0].toUpperCase()+what.slice(1)} is at ${tWords(h2,m2)}. How long until ${what}?`;
+  const r=el('div','row');r.style.alignItems='center';const a=clockBox(h1,m1,lv===3),b=clockBox(h2,m2,lv===3);a.querySelector('svg').style.width=b.querySelector('svg').style.width='150px';r.append(a,el('div','plus','→'),b);stage.appendChild(r);
+  const unit=inHours?'hour':'minute';const jumps=inHours?Array.from({length:ans},(_,i)=>`${(h1+i)%12+1}`):lv===2?Array.from({length:gap/30},(_,i)=>`${tWords(Math.floor((h1*60+m1+(i+1)*30)/60)%12||12,(m1+(i+1)*30)%60)}`):Array.from({length:gap/5},(_,i)=>`${m1+(i+1)*5}`);
+  help({book:`worked out that ${what} was ${ans} ${unit}${ans===1?'':'s'} away`,clues:[inHours?`Count the hours from ${h1} up to ${h2}: ${jumps.join(', ')}.`:lv===2?`Count on by half hours: ${jumps.join(', ')}.`:`Count on by fives from ${m1}: ${jumps.join(', ')}. How many fives?`,`Watch the ${inHours?'short':'long'} hand: how far does it move from the first clock to the second?`],answer:ans,why:`From ${tWords(h1,m1)} to ${tWords(h2,m2)} is ${ans} ${unit}${ans===1?'':'s'}.`,
+    show:async()=>{for(let t=h1*60+m1;t<=h1*60+m1+gap;t+=inHours?15:5){a.innerHTML=clockSvg(Math.floor(t/60)%12||12,t%60,lv===3);await wait(90)}}});
+  const onPick=(v,b,box)=>{if(v===ans){if(b)b.classList.add('hit');lock(box);win(`${cheer()} ${tWords(h1,m1)} to ${tWords(h2,m2)} is ${ans} ${unit}${ans===1?'':'s'}.`)}else{if(b){b.classList.add('miss');b.disabled=true}miss(ctx.hints===0?(inHours?`Count the hours from ${h1} to ${h2} on your fingers.`:`Count on from ${tWords(h1,m1)} ${lv===2?'half an hour':'5 minutes'} at a time.`):`It's ${ans} ${unit}s. Count: ${jumps.join(', ')}.`)}};
+  if(lv===3)controls.appendChild(numpad((v,nm)=>onPick(v,null,nm),2));
+  else{const opts=shuffle([...new Set([ans,inHours?ans+1:ans+30,inHours?Math.max(1,ans-1):Math.max(30,ans-30),inHours?ans+2:120])]).map(v=>`${v} ${unit}${v===1?'':'s'}`);
+    const ch=choices(opts,(o,b)=>onPick(parseInt(o),b,ch));controls.appendChild(ch)}}});
+
+skill({id:'calendar',room:'time',title:'Days and months',levels:3,mount(lv){
+  let list,i,k,q,ans,why,clue;const wk=lv<3;list=wk?DAYS:MONTHS;i=rnd(0,list.length-1);
+  if(lv===1){k=pick([1,-1]);q=`Today is <b>${list[i]}</b>. What day ${k>0?'comes next':'was yesterday'}?`;why=`${list[i]} is followed by ${list[(i+1)%7]}; before it comes ${list[(i+6)%7]}.`}
+  else if(lv===2){k=rnd(2,4);q=`Today is <b>${list[i]}</b>. What day is it in <b>${k}</b> days?`;why=`Count on from ${list[i]}: ${Array.from({length:k},(_,j)=>list[(i+j+1)%7]).join(', ')}.`}
+  else{k=pick([1,-1,2]);q=k===1?`It is <b>${list[i]}</b>. What month comes next?`:k===-1?`It is <b>${list[i]}</b>. What month was before?`:`It is <b>${list[i]}</b>. What month is it in 2 months?`;why=`The months go ${list.slice(Math.max(0,i-1),i+3).join(', ')}… and after December comes January again.`}
+  ans=list[((i+k)%list.length+list.length)%list.length];
+  prompt.textContent=wk?'Days of the week':'Months of the year';const box=el('div','story',q);stage.appendChild(box);
+  const strip=el('div','ways');list.forEach((d,j)=>{const s=el('span','way',wk?d.slice(0,3):d.slice(0,3));if(j===i)s.style.background='var(--sun)';s.dataset.i=j;strip.appendChild(s)});stage.appendChild(strip);
+  help({book:wk?`knew that ${k>0?`${k} day${k>1?'s':''} after`:'the day before'} ${list[i]} is ${ans}`:`knew the month ${k>0?'after':'before'} ${list[i]}`,clues:[`Find ${list[i]} in the yellow box on the strip. Then ${k>0?`move ${k} to the right`:'move one to the left'}.`,`The ${wk?'week':'year'} goes round: after ${list[list.length-1]} comes ${list[0]} again.`],answer:ans,why,show:()=>{const n=((i+k)%list.length+list.length)%list.length;strip.children[n].style.background='var(--leaf)';strip.children[n].style.color='#fff'}});
+  const opts=shuffle([ans].concat(shuffle(list.filter(d=>d!==ans)).slice(0,3)));
+  const ch=choices(opts,(o,b)=>{if(o===ans){b.classList.add('hit');lock(ch);win(`${cheer()} ${why}`)}else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?`Say the ${wk?'days':'months'} out loud from ${list[i]}, and point along the strip.`:`${k>0?'Forward':'Back'} ${Math.abs(k)} from ${list[i]} on the strip.`)}});controls.appendChild(ch)}});
 
 /* ---------- play loop ---------- */
 function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');$('#where').textContent=`${DOORS[SK[id].room][0]} · ${SK[id].title}`;
