@@ -10,7 +10,7 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 
 | Room | Games | What it builds |
 |---|---|---|
-| Warm-ups | How many? · Make 10 | Subitizing, complements to 10/20/100 |
+| Warm-ups | How many? · Make 10 · Which has more? | Subitizing, complements to 10/20/100, comparing groups and numbers and finding the difference |
 | Add & take | Take away · Make a ten to add · Find the missing number | Place value (sticks of 10 that break), bridging through ten, missing-addend thinking |
 | Patterns | What comes next? · Rule machine | Repeating and growing patterns, function machines |
 | Puzzles | Balance it · Which one is different? · Make the money · Sudoku (shapes 4×4 → digits 4×4 → 6×6) · Number riddle · Who has what? (logic grid) · Sort by two things · If this, then that | Reasoning with no algorithm: the seed of competition math |
