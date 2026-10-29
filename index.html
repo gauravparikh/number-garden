@@ -44,6 +44,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .pots{display:flex;gap:14px;justify-content:center}
 .pot{width:64px;height:54px;border-radius:12px 12px 18px 18px;border:4px solid transparent;color:#fff;font-family:var(--display);font-size:.85rem;display:grid;place-items:end center;padding-bottom:4px;box-shadow:inset 0 10px 0 rgba(255,255,255,.25)}
 .pot.sel{border-color:var(--fg);transform:translateY(-4px)}
+.sq .shown{outline:3px dashed var(--muted);outline-offset:2px;border-radius:50%}
 .bead.picked{border:4px solid var(--fg);transform:scale(1.15)}
 .bead{width:46px;height:46px;border-radius:50%;background:var(--card);border:3px dashed var(--line);box-sizing:border-box;transition:background .2s}
 .bead.on{border-style:solid;border-color:rgba(0,0,0,.12)}.bead[disabled]{opacity:1}
@@ -1473,9 +1474,9 @@ skill({id:'sort2',room:'puz',title:'Sort by two things',levels:3,mount(lv){
   const next=()=>{i++;if(i>=items.length)return;showItem(items[i],`Which box? Ask two things: <b>${rowsA[0]} or ${rowsA[1]}</b>? <b>${colsA[0]} or ${colsA[1]}</b>?`)};
   /* the ladybug does the first one */
   showItem(example,`Watch me. ${describe(example)} So it goes in the <b>${rowsA[example[0]]}</b> row, <b>${colsA[example[1]]}</b> column.`);
-  const ez=zoneOf(example);setTimeout(()=>{if(ctx.done||!ez.isConnected)return;ez.style.outline='4px solid var(--sun)';const e=drawIt(example);e.style.opacity='.55';ez.appendChild(e);
+  const ez=zoneOf(example);setTimeout(()=>{if(ctx.done||!ez.isConnected)return;ez.style.outline='4px solid var(--sun)';const e=drawIt(example);e.classList.add('shown');ez.appendChild(e);
     const r=el('div','row');const b=el('button','btn','My turn');b.onclick=()=>{r.remove();ez.style.outline='';next()};r.appendChild(b);controls.insertBefore(r,controls.firstChild)},1200); // the example stays until she taps, so she can look as long as she likes
-  help({book:`sorted things by two rules at once`,clues:[`Ask two questions about it: ${rowsA[0]} or ${rowsA[1]}? That picks the row. ${colsA[0]} or ${colsA[1]}? That picks the column.`,i>=0&&i<items.length?describe(items[i]).replace(/<\/?b>/g,''):`Find the row first, then slide along to the column.`],why:`Each box answers two questions at once: the row and the column.`,show:()=>items.slice(Math.max(i,0)).forEach(it=>{const e=drawIt(it);e.style.opacity='.5';zoneOf(it).appendChild(e)})});
+  help({book:`sorted things by two rules at once`,clues:[`Ask two questions about it: ${rowsA[0]} or ${rowsA[1]}? That picks the row. ${colsA[0]} or ${colsA[1]}? That picks the column.`,i>=0&&i<items.length?describe(items[i]).replace(/<\/?b>/g,''):`Find the row first, then slide along to the column.`],why:`Each box answers two questions at once: the row and the column.`,show:()=>{items.slice(Math.max(i,0)).forEach(it=>{const e=drawIt(it);e.classList.add('shown');zoneOf(it).appendChild(e)});pic.innerHTML='';txt.innerHTML='Here is where each one goes. The dashed ones are the ones Pip placed.';i=items.length}});
   zones.forEach(z=>z.onclick=()=>{if(ctx.done||i<0||i>=items.length)return;const it=items[i];
     if(z.r===it[0]&&z.c===it[1]){z.appendChild(drawIt(it));if(i>=items.length-1){i++;txt.innerHTML='All sorted!';win(`${cheer()} All four sorted by both rules.`)}else{say('Yes!',true);next()}}
     else miss(z.r!==it[0]?`Look at the row. Is it ${rowsA[it[0]]} or ${rowsA[(it[0]+1)%2]}?`:`Right row! Now the column: is it ${colsA[it[1]]} or ${colsA[(it[1]+1)%2]}?`)})}});
