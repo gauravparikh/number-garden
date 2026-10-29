@@ -321,6 +321,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 
 .wodb{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .wodb .choice{height:72px;font-size:1.8rem;display:grid;place-items:center}
+.why{flex-direction:column;align-items:stretch}.why .choice{font-size:1.05rem;text-align:left}
 .clues{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;font-size:1.15rem;text-align:center}
 
 .sheet{background:var(--card);border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:12px}
@@ -711,25 +712,35 @@ skill({id:'balance',room:'puz',title:'Balance it',levels:3,mount(lv){
     else miss(L>R?`With ${v}${unit} the left side is heavier and sinks down. The right needs more.`:`With ${v}${unit} the right side is heavier and sinks down. That's too many.`)}))
   function pan(items,x0){let h='',x=x0;items.forEach(([it,n])=>{h+=`<g transform="translate(${x},62) scale(.9)">${shapes[it.s](it.c)}</g><text x="${x+18}" y="100" text-anchor="middle" font-size="20" font-family="var(--display)" fill="var(--fg)">${n}</text>`;x+=36});return h}}});
 
-const WODB=[
- {items:[4,9,16,20],why:['4 is the smallest','9 is the only odd number','16 is the only one bigger than 10 and a square','20 is the only one that ends in 0']},
- {items:[2,7,10,15],why:['2 is the only one you can make with two 1s','7 is the only odd number under 10','10 is the only one with two digits that ends in 0','15 is the only one bigger than 12']},
- {items:[3,6,9,11],why:['3 is the smallest','6 is the only even number','9 is 3 threes, the biggest one-digit','11 is the only two-digit number']},
- {items:[5,10,15,22],why:['5 is the only one-digit number','10 is the only one that ends in 0','15 is the only odd two-digit number','22 is the only one that does not count by 5s']},
- {items:[1,2,4,8],why:['1 is the only odd number','2 is the only one that is not a double of another here','4 is the only one with four sides on a square','8 is the biggest']},
- {items:[12,21,13,31],why:['12 is the only even number','21 is 12 backwards and the only one that is 3 sevens','13 is the only one with a 3 at the end','31 is the biggest']},
- {items:[6,8,10,7],why:['6 is the smallest','8 is the only one that is a double of another number here','10 is the only two-digit number','7 is the only odd number']},
- {items:[0,5,50,55],why:['0 is the only one with nothing in it','5 is the only one-digit number','50 is the only one that ends in 0','55 is the only one with two of the same digit']}
+/* Which one doesn't belong: any number can be the odd one out if she can say why. The properties are checked, not hand-written, so every offered reason is really true or really false for her pick. */
+/* sets are generated: four different numbers from 1 to 30 such that every one of them has at least one true reason */
+function wodbSet(){for(let t=0;t<300;t++){const set=[];while(set.length<4){const n=Math.random()<.6?rnd(1,12):rnd(10,30);if(!set.includes(n))set.push(n)}set.sort((a,b)=>a-b);if(set.every(n=>PROPS.some(p=>p.f(n,set))))return set}return [3,5,8,9]}
+const PROPS=[
+ {t:n=>`${n} is the only odd number`,apt:n=>n%2===1,f:(n,all)=>n%2===1&&all.filter(x=>x%2===1).length===1},
+ {t:n=>`${n} is the only even number`,apt:n=>n%2===0,f:(n,all)=>n%2===0&&all.filter(x=>x%2===0).length===1},
+ {t:n=>`${n} is the biggest`,f:(n,all)=>n===Math.max(...all)},
+ {t:n=>`${n} is the smallest`,f:(n,all)=>n===Math.min(...all)},
+ {t:n=>`${n} is the only one with two digits`,apt:n=>n>=10,f:(n,all)=>n>=10&&all.filter(x=>x>=10).length===1},
+ {t:n=>`${n} is the only one with just one digit`,apt:n=>n<10,f:(n,all)=>n<10&&all.filter(x=>x<10).length===1},
+ {t:n=>`${n} is the only one that ends in 0`,apt:n=>n%10===0,f:(n,all)=>n%10===0&&all.filter(x=>x%10===0).length===1},
+ {t:n=>`${n} is the only one you say when counting by 5s`,apt:n=>n%5===0,f:(n,all)=>n%5===0&&all.filter(x=>x%5===0).length===1},
+ {t:n=>`${n} is the only one you do NOT say when counting by 5s`,apt:n=>n%5!==0,f:(n,all)=>n%5!==0&&all.filter(x=>x%5!==0).length===1},
+ {t:n=>`${n} is the only one bigger than 10`,apt:n=>n>10,f:(n,all)=>n>10&&all.filter(x=>x>10).length===1},
+ {t:n=>`${n} is the only one with two of the same digit`,apt:n=>n>=10&&String(n)[0]===String(n)[1],f:(n,all)=>n>=10&&String(n)[0]===String(n)[1]&&all.filter(x=>x>=10&&String(x)[0]===String(x)[1]).length===1}
 ];
 skill({id:'wodb',room:'puz',title:'Which one is different?',levels:1,mount(){
-  const set=pick(WODB);prompt.textContent='Pick one that is different. Then tell a grown-up why.';
-  help({book:`picked the odd one out from ${set.items.join(', ')} and gave a reason`,clues:['Is one of them odd when the others are even? Or bigger than all the rest?','Any one can be the answer if you have a reason. Pick one and say why.'],why:`For example: ${set.why[0]}. ${set.why[1]}.`});
-  const g=el('div','wodb');set.items.forEach((it,i)=>{const b=el('button','choice',it);b.onclick=()=>{b.classList.add('hit');lock(g);
-    const ul=el('ul','clues');set.why.forEach((w,j)=>ul.appendChild(el('li','',j===i?`<b>${w}</b>`:w)));stage.appendChild(ul);win('Good eye! Every one can be the odd one out. Here is one reason for each.',true)};g.appendChild(b)});stage.appendChild(g)}});
+  const items=wodbSet();prompt.textContent='Pick one that is different from the other three.';
+  const trueOf=n=>PROPS.filter(p=>p.f(n,items));
+  help({book:`picked the odd one out from ${items.join(', ')} and said why`,clues:['Is one of them odd when the others are even? Is one the biggest? Does one have two digits?','Any one can be the answer if you have a reason. Pick one, then pick the reason that is true for it.'],why:`For example: ${trueOf(items[0])[0].t(items[0])}. ${trueOf(items[1])[0].t(items[1])}.`});
+  const g=el('div','wodb');items.forEach(n=>{const b=el('button','choice',n);b.onclick=()=>{if(ctx.done)return;b.classList.add('hit');lock(g);ask(n)};g.appendChild(b)});stage.appendChild(g);
+  function ask(n){say(`${n}. Why is it different?`);const good=pick(trueOf(n));
+    /* two false reasons: properties that are not true of her number, worded for it */
+    /* false reasons that look possible for her number ("8 is the biggest" when it is not), never nonsense ("5 has two of the same digit") */
+    let bad=shuffle(PROPS.filter(p=>!p.f(n,items)&&(!p.apt||p.apt(n)))).slice(0,2);if(bad.length<2)bad=bad.concat(shuffle(PROPS.filter(p=>!p.f(n,items)&&!bad.includes(p))).slice(0,2-bad.length));const opts=shuffle([good].concat(bad));
+    const ch=choices(opts.map(p=>p.t(n)),(o,b)=>{if(ctx.done)return;const p=opts[opts.findIndex(x=>x.t(n)===o)];
+      if(p===good){b.classList.add('hit');lock(ch);const ul=el('ul','clues');items.forEach(x=>ul.appendChild(el('li','',x===n?`<b>${good.t(x)}</b>`:trueOf(x)[0].t(x))));stage.appendChild(ul);win(`${cheer()} ${good.t(n)}. And every one of them can be the odd one out: here is a reason for each.`)}
+      else{b.classList.add('miss');b.disabled=true;miss(`Check it: ${o.replace(' is ',' really ')}? Look at all four again.`)}});ch.classList.add('why');controls.appendChild(ch)}}});
 
-/* US coins, drawn close to their real sizes: the dime really is the smallest, which is the trap */
-const COINS=[{v:1,name:'penny',col:'#c98a5a',ink:'#4a2a10',px:40,say:'A penny is 1 cent. It is brown.'},{v:5,name:'nickel',col:'#c9ced2',ink:'#2a2a2a',px:46,say:'A nickel is 5 cents. It is the thick silver one.'},{v:10,name:'dime',col:'#dde1e4',ink:'#2a2a2a',px:38,say:'A dime is 10 cents. It is the smallest coin, but it is worth more than a nickel!'},{v:25,name:'quarter',col:'#d6d9db',ink:'#2a2a2a',px:54,say:'A quarter is 25 cents. Four quarters make a dollar, like four quarters of a pizza.'}];
-function coinBtn(c,withName){const b=el('button','coin',`${c.v}¢`);b.style.cssText=`background:${c.col};color:${c.ink};width:${c.px}px;height:${c.px}px;font-size:${c.v===1?'.75rem':'.85rem'}`;if(!withName)return b;const w=el('div');w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:2px';const n=el('small','',c.name);n.style.cssText='font-family:var(--display);color:var(--muted)';w.append(b,n);w.btn=b;return w}
 skill({id:'coins',room:'puz',title:'Make the money',levels:3,grow:lv=>['','Now make amounts with pennies, nickels and dimes.','Now with quarters too.'][lv-1],mount(lv){
   const intro=el('div','story',`<b>¢</b> means <b>cents</b>. 100 cents make one dollar. Every coin is worth some cents, and the number is written on it.`);intro.style.maxWidth='none';
   if(lv===1){ /* learn the coins: which coin is this, and how much is a small handful */
