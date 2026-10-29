@@ -58,6 +58,8 @@ Sudoku and Who-has-what are generators with parameters (grid size, box shape, sy
 
 ## Adding a Big Idea
 
+A Big Idea is a concept taught, not a game dressed up. Even and odd is the model; a full book has, in order: the idea in one plain sentence; the same idea in a picture; a second and a third way to see it (two teams, counting by twos); the pattern or rule stated outright; the reason the rule works; the traps a child actually falls into (odd is not strange, big is not even, zero is even); where she meets it in life; two kinds of practice (with pictures, then without); and what it is the same as elsewhere in the garden. The try-its then sample every one of those, not just the first picture.
+
 Each idea is an entry in `IDEAS`: `title`, one-line `line`, `thing` (which object icon to draw), `pages` (each `{say, draw(scene)}`: the ladybug's line and an async function that animates the scene with `dot`, `row`, `appear`, `flyTo`, `tenFrame`, `walkSvg`), one page built with the drag engine (`trayOf`, `zones`, `makeDraggable`, `fullCount`), `tries()` returning `{q, kind:'choice'|'num', opts?, ans, draw, explain, show?}`, the `door` to play afterwards, and the `book` sentence.
 
 ## Learn, when she wants it
