@@ -60,6 +60,10 @@ Sudoku and Who-has-what are generators with parameters (grid size, box shape, sy
 
 Each idea is an entry in `IDEAS`: `title`, one-line `line`, `thing` (which object icon to draw), `pages` (each `{say, draw(scene)}`: the ladybug's line and an async function that animates the scene with `dot`, `row`, `appear`, `flyTo`, `tenFrame`, `walkSvg`), one page built with the drag engine (`trayOf`, `zones`, `makeDraggable`, `fullCount`), `tries()` returning `{q, kind:'choice'|'num', opts?, ans, draw, explain, show?}`, the `door` to play afterwards, and the `book` sentence.
 
+## Learn, when she wants it
+
+A game can name the Big Idea that teaches its concept (`idea:'ten'`). A **Learn** button then sits beside Clue and Show me; it opens that picture book and its last button brings her back to the same stone. On her second miss Pip offers it: "Want Pip to show you the idea? Tap Learn."
+
 ## Teach first
 
 A game can carry a `teach(lv, lesson)` function. The first time she meets that level, Pip runs it before any question: `lesson.say(html)` fills her bubble, `lesson.scene` is the stage to draw in, and `await lesson.wait(ms)` paces the animation (it stops cleanly if she taps **My turn** early). A **Watch** button beside Clue and Show me replays it any time. The three Time games have lessons; add one to any game where asking first would be unfair.

@@ -254,6 +254,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .btn{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:13px 24px;font-family:var(--display);font-size:1.15rem;font-weight:600}
 .btn.quiet{background:var(--bg);color:var(--fg)}
+.btn.learn.glow{background:var(--sun);color:#1a1a1a;animation:pop .6s ease 3}
 .choice{background:var(--bg);border-radius:16px;padding:12px 18px;font-family:var(--display);font-size:1.3rem;font-weight:600;min-width:64px}
 .choice.hit{background:var(--sun);color:#1a1a1a}.choice.miss{background:var(--line)}
 
@@ -510,13 +511,15 @@ function win(text,noMastery){
 }
 function addPage(text,big){S.book.unshift({t:text,d:Date.now(),big:!!big});if(S.book.length>200)S.book.length=200}
 const KID=()=>S.name||'Zoe';
-function miss(hint){ctx.hints++;say(hint,false);bugs('think');if(S.streakNow){S.streakNow=0;renderStreak()}const t=controls.querySelector('.typed');if(t){t.classList.remove('shake');void t.offsetWidth;t.classList.add('shake')}}
+function miss(hint){ctx.hints++;say(hint,false);bugs('think');
+  if(ctx.hints===2&&SK[S.skill]&&SK[S.skill].idea){const l=controls.querySelector('.learn');if(l){l.classList.add('glow');setTimeout(()=>say(hint+' Want Pip to show you the idea? Tap Learn.',false),1200)}}if(S.streakNow){S.streakNow=0;renderStreak()}const t=controls.querySelector('.typed');if(t){t.classList.remove('shake');void t.offsetWidth;t.classList.add('shake')}}
 /* every game declares help({clues:[...], answer, why, show}) so the Clue / Show me buttons work the same everywhere */
 function help(o){ctx.help=o;ctx.clueIdx=0}
 function helpRow(){const r=el('div','row');r.id='helpRow';const c=el('button','btn quiet','Clue'),s=el('button','btn quiet','Show me');
   c.onclick=()=>{if(ctx.done||!ctx.help)return;const cl=ctx.help.clues;say(cl[Math.min(ctx.clueIdx,cl.length-1)]);ctx.clueIdx++;ctx.hints++};
   s.onclick=()=>{if(ctx.done||!ctx.help)return;reveal()};r.append(c,s);
-  if(SK[S.skill]&&SK[S.skill].teach){const w=el('button','btn quiet','Watch');w.onclick=()=>{if(ctx.done)return;const lv=S.m[S.skill].lv;teachNow(S.skill,lv,()=>play(S.skill))};r.appendChild(w)}return r}
+  if(SK[S.skill]&&SK[S.skill].teach){const w=el('button','btn quiet','Watch');w.onclick=()=>{if(ctx.done)return;const lv=S.m[S.skill].lv;teachNow(S.skill,lv,()=>play(S.skill))};r.appendChild(w)}
+  if(SK[S.skill]&&SK[S.skill].idea){const l=el('button','btn quiet learn','Learn');l.onclick=()=>{const idea=IDEAS.find(i=>i.id===SK[S.skill].idea);if(idea)openIdea(idea,true)};r.appendChild(l)}return r}
 function reveal(){const h=ctx.help;ctx.done=true;S.streakNow=0;renderStreak();controls.querySelectorAll('button').forEach(b=>{if(b.closest('#helpRow'))return;b.disabled=true});
   if(h.show)try{h.show()}catch(e){}
   say((h.answer!=null?`It's ${h.answer}. `:'')+(h.why||''),true);
@@ -577,7 +580,7 @@ const svgShape=(s,c)=>{const e=el('div');e.innerHTML=`<svg class="shape" viewBox
 function tenFrame(k,cls){const f=el('div','frame'+(cls?' '+cls:''));f.cells=[];for(let i=0;i<10;i++){const c=el('div','cell');const d=el('i');if(i>=k)d.className='empty';c.appendChild(d);f.appendChild(c);f.cells.push(d)}return f}
 
 /* ================= WARM-UPS ================= */
-skill({id:'dots',room:'warm',title:'How many?',levels:3,grow:lv=>['','Now the dots go up to 10.','Now the dots go up to 20.'][lv-1],mount(lv){
+skill({id:'dots',room:'warm',title:'How many?',idea:'counton',levels:3,grow:lv=>['','Now the dots go up to 10.','Now the dots go up to 20.'][lv-1],mount(lv){
   let n,grid=el('div','dots');
   if(lv===1){n=rnd(1,6);grid.style.gridTemplateColumns='repeat(3,52px)';grid.classList.add('dice');const m={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]}[n];for(let i=0;i<9;i++)grid.appendChild(el('div','dot'+(m.includes(i)?'':' ghost')))}
   else if(lv===2){n=rnd(3,10);grid.style.gridTemplateColumns='repeat(5,34px)';for(let i=0;i<10;i++)grid.appendChild(el('div','dot'+(i<n?'':' ghost')))}
@@ -590,7 +593,7 @@ skill({id:'dots',room:'warm',title:'How many?',levels:3,grow:lv=>['','Now the do
     else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?'Hmm, touch each dot as you count.':'Count a row at a time.')}});
   controls.appendChild(p)}});
 
-skill({id:'make',room:'warm',title:'Make 10',levels:3,mount(lv){
+skill({id:'make',room:'warm',title:'Make 10',idea:'ten',levels:3,mount(lv){
   if(lv<3){const T=lv===1?10:20,k=lv===1?rnd(1,9):rnd(11,19);prompt.textContent=`${k} dots. How many more make ${T}?`;
     const fs=el('div','frames');const f1=tenFrame(Math.min(10,k)),f2=lv===2?tenFrame(k-10):null;fs.appendChild(f1);if(f2)fs.appendChild(f2);stage.appendChild(fs);
     help({book:`knew that ${k} and ${T-k} make ${T}`,clues:['The empty boxes are the ones still needed.','Count the empty boxes with your finger.'],answer:T-k,why:`${k} and ${T-k} make ${T}.`,show:()=>(f2||f1).cells.slice(T===10?k:k-10).forEach((d,i)=>setTimeout(()=>d.className='new',120*i))});
@@ -600,7 +603,7 @@ skill({id:'make',room:'warm',title:'Make 10',levels:3,mount(lv){
     help({book:`knew that ${k} and ${100-k} make 100`,clues:['Each stick is 10. The dashed ones are still empty.',`There are ${(100-k)/10} empty sticks. Count by tens: ${Array.from({length:(100-k)/10},(_,i)=>(i+1)*10).join(', ')}.`],answer:100-k,why:`${k} and ${100-k} make 100.`,show:()=>rods.querySelectorAll('.rod.empty').forEach(r=>{r.classList.remove('empty');r.classList.add('solid','new')})});
     const opts=shuffle([10,20,30,40,50,60,70,80,90]);const c=choices(opts,(o,b)=>{if(o===100-k){b.classList.add('hit');lock(c);rods.querySelectorAll('.rod.empty').forEach((r,i)=>setTimeout(()=>{r.classList.remove('empty');r.classList.add('solid','new')},150*i));win(`${cheer()} ${k} and ${100-k} make 100.`)}else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?'Count the dashed sticks. Each one is 10.':`There are ${(100-k)/10} empty sticks: that is ${100-k}.`)}});controls.appendChild(c)}}});
 
-skill({id:'more',room:'warm',title:'Which has more?',levels:3,grow:lv=>['','Now compare numbers, not pictures.','Now say how many more.'][lv-1],mount(lv){
+skill({id:'more',room:'warm',title:'Which has more?',idea:'compare',levels:3,grow:lv=>['','Now compare numbers, not pictures.','Now say how many more.'][lv-1],mount(lv){
   let a=rnd(1,10),b=rnd(1,10);while(b===a)b=rnd(1,10);if(lv===2){a=rnd(5,30);b=rnd(5,30);while(b===a)b=rnd(5,30)}
   const big=Math.max(a,b),small=Math.min(a,b);
   if(lv<3){prompt.textContent=lv===1?'Which side has more?':'Which number is bigger?';
@@ -613,7 +616,7 @@ skill({id:'more',room:'warm',title:'Which has more?',levels:3,grow:lv=>['','Now 
     controls.appendChild(numpad((v,nm)=>{if(v===big-small){lock(nm);ctx.help.show();win(`${cheer()} ${big} is ${big-small} more than ${small}.`)}else miss(ctx.hints===0?`Look at the dots that stick out past the shorter row. Count just those.`:`Count up from ${small} until you reach ${big}.`)},2))}}});
 
 /* ================= ADD & TAKE ================= */
-skill({id:'take',room:'add',title:'Take away',levels:4,grow:lv=>['','Now the numbers go up to 50.','Now she takes away two-digit numbers.','Now the numbers go up to 99.'][lv-1],mount(lv){
+skill({id:'take',room:'add',title:'Take away',idea:'tens',levels:4,grow:lv=>['','Now the numbers go up to 50.','Now she takes away two-digit numbers.','Now the numbers go up to 99.'][lv-1],mount(lv){
   let a,b;if(lv===1){a=rnd(11,20);b=rnd(1,9)}else if(lv===2){a=rnd(11,50);b=rnd(1,9)}else if(lv===3){a=rnd(21,50);b=rnd(11,29)}else{a=rnd(41,99);b=rnd(11,49)}
   if(b>=a)b=a-rnd(1,5);
   const tens=Math.floor(a/10),ones=a%10;prompt.textContent=`${a} take away ${b}`;
@@ -632,7 +635,7 @@ skill({id:'take',room:'add',title:'Take away',levels:4,grow:lv=>['','Now the num
   function ask(){say('How many are left? Count the blue sticks as 10 each, then the dots.');
     controls.appendChild(numpad((v,nm)=>{if(v===a-b){lock(nm);win(`${cheer()} ${a} take away ${b} is ${a-b}.`)}else miss(ctx.hints===0?'Count once more, slowly.':`Blue sticks first: each is 10. Then the blue dots.`)}))}}});
 
-skill({id:'bridge',room:'add',title:'Make a ten to add',levels:2,mount(lv){
+skill({id:'bridge',room:'add',title:'Make a ten to add',idea:'ten',levels:2,mount(lv){
   let a,b;if(lv===1){a=rnd(6,9);b=rnd(2,9);if(a+b<=10)b=11-a+rnd(0,2)}else{a=rnd(15,38);b=rnd(3,9);if(a%10+b<=10)b=11-(a%10)+rnd(0,2);if(a%10===0)a++}
   const ans=a+b;prompt.textContent=`${a} + ${b} = ?`;
   const fs=el('div','frames');const row=el('div','row');row.style.alignItems='center';
@@ -647,7 +650,7 @@ skill({id:'bridge',room:'add',title:'Make a ten to add',levels:2,mount(lv){
       win(`${cheer()} Move ${need} over to fill the ten: ${a} + ${need} = ${a+need}, then ${b-need} more is ${ans}.`)}
     else miss(ctx.hints===0?`How many dots fill up the first frame? Take those from the second one.`:`${a} needs ${need} to make a ten. Then add what's left.`)}))}});
 
-skill({id:'missing',room:'add',title:'Find the missing number',levels:4,mount(lv){
+skill({id:'missing',room:'add',title:'Find the missing number',idea:'diff',levels:4,mount(lv){
   let a,b,form,max;if(lv===1){max=10;a=rnd(1,8);b=rnd(a+1,10);form='a+?=b'}else if(lv===2){max=20;a=rnd(3,15);b=rnd(a+1,20);form=pick(['a+?=b','?+a=b'])}else if(lv===3){max=20;b=rnd(2,18);a=rnd(b+1,20);form='a-?=b'}else{max=50;if(Math.random()<.5){a=rnd(5,40);b=rnd(a+1,50);form='?+a=b'}else{b=rnd(5,40);a=rnd(b+1,50);form='a-?=b'}}
   const ans=form==='a-?=b'?a-b:b-a;
   const eq=el('div','eq');const box='<span class="box">?</span>';eq.innerHTML=form==='a+?=b'?`${a} + ${box} = ${b}`:form==='?+a=b'?`${box} + ${a} = ${b}`:`${a} − ${box} = ${b}`;
@@ -662,7 +665,7 @@ function numberLine(max,lo,hi){const w=500,pad=14,step=(w-2*pad)/max;let h=`<svg
   const xl=pad+lo*step,xh=pad+hi*step;h+=`<path d="M${xl} 34 Q${(xl+xh)/2} ${34-Math.min(26,(hi-lo)*3)} ${xh} 34" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="4 3"/><circle cx="${xl}" cy="36" r="5" fill="var(--leaf)"/><circle cx="${xh}" cy="36" r="5" fill="var(--accent)"/></svg>`;return h}
 
 /* ================= PATTERNS ================= */
-skill({id:'cont',room:'pat',title:'What comes next?',levels:3,mount(lv){
+skill({id:'cont',room:'pat',title:'What comes next?',idea:'skip',levels:3,mount(lv){
   prompt.textContent='What comes next?';const seq=el('div','seq');
   if(lv===1){const cols=['var(--accent)','var(--leaf)','var(--sky)','var(--plum)'],sh=Object.keys(shapes);const core=pick([2,3]);const units=[];for(let i=0;i<core;i++){let u;do{u={s:pick(sh),c:pick(cols)}}while(units.some(x=>x.s===u.s&&x.c===u.c));units.push(u)}
     const rule=pick(['AB','ABB','ABC'].filter(r=>new Set(r).size===core));const seqUnits=[];for(let i=0;i<7;i++)seqUnits.push(units[rule.charCodeAt(i%rule.length)-65]);
@@ -694,7 +697,7 @@ skill({id:'machine',room:'pat',title:'Rule machine',levels:3,mount(lv){
     controls.appendChild(numpad((v,nm)=>{if(v===rule.f(q)){lock(nm);win(`${cheer()} The machine ${rule.t}, so ${q} becomes ${rule.f(q)}.`)}else miss(ctx.hints===0?'First find what the machine does from the top rows. Then do that to the last number.':`The machine ${rule.t}. Do that to ${q}.`)},3))}}});
 
 /* ================= PUZZLES ================= */
-skill({id:'balance',room:'puz',title:'Balance it',levels:3,mount(lv){
+skill({id:'balance',room:'puz',title:'Balance it',idea:'equals',levels:3,mount(lv){
   const A={s:'circle',c:'var(--accent)'},B={s:'tri',c:'var(--leaf)'};
   let given,qL,qR,ans,text,explain,weigh,unit=' pears';
   if(lv===1){const r=rnd(2,3),k=rnd(2,3);given=`1 apple weighs the same as ${r} pears.`;qL=[[A,k]];qR=[[B,'?']];ans=k*r;text=`${given} How many pears balance ${k} apples?`;explain=`${k} apples is ${k} groups of ${r} pears: ${ans}.`;weigh=v=>[k*r,v]}
@@ -728,7 +731,7 @@ const PROPS=[
  {t:n=>`${n} is the only one bigger than 10`,apt:n=>n>10,f:(n,all)=>n>10&&all.filter(x=>x>10).length===1},
  {t:n=>`${n} is the only one with two of the same digit`,apt:n=>n>=10&&String(n)[0]===String(n)[1],f:(n,all)=>n>=10&&String(n)[0]===String(n)[1]&&all.filter(x=>x>=10&&String(x)[0]===String(x)[1]).length===1}
 ];
-skill({id:'wodb',room:'puz',title:'Which one is different?',levels:1,mount(){
+skill({id:'wodb',room:'puz',title:'Which one is different?',idea:'evenodd',levels:1,mount(){
   const items=wodbSet();prompt.textContent='Pick one that is different from the other three.';
   const trueOf=n=>PROPS.filter(p=>p.f(n,items));
   help({book:`picked the odd one out from ${items.join(', ')} and said why`,clues:['Is one of them odd when the others are even? Is one the biggest? Does one have two digits?','Any one can be the answer if you have a reason. Pick one, then pick the reason that is true for it.'],why:`For example: ${trueOf(items[0])[0].t(items[0])}. ${trueOf(items[1])[0].t(items[1])}.`});
@@ -762,7 +765,7 @@ skill({id:'coins',room:'puz',title:'Make the money',levels:3,grow:lv=>['','Now m
     help({book:`made ${target}¢ out of coins`,clues:['Start with the biggest coin that fits. Then fill the rest with smaller ones.',`Count up as you add. One way: ${way}.`],why:`One way: ${way} = ${target}¢.`});
     const r=el('div','row');const b=el('button','btn','Done');b.onclick=()=>{if(ctx.done)return;if(sum===target){lock(r);win(`${cheer()} That makes ${target}¢: ${said.textContent}.`)}else miss(sum<target?`You have ${sum}¢. ${target-sum}¢ more to go.`:`That's ${sum-target}¢ too much. Take one back.`)};r.appendChild(b);controls.appendChild(r)}}});
 
-skill({id:'sudoku',room:'puz',title:'Sudoku',levels:3,grow:lv=>['','Now with numbers instead of shapes.','Now a bigger 6 by 6 grid.'][lv-1],mount(lv){
+skill({id:'sudoku',room:'puz',title:'Sudoku',idea:'evenodd',levels:3,grow:lv=>['','Now with numbers instead of shapes.','Now a bigger 6 by 6 grid.'][lv-1],mount(lv){
   const N=lv===3?6:4,br=2,bc=lv===3?3:2;let g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;c++)g[r].push((bc*(r%br)+Math.floor(r/br)+c)%N)}
   const perm=shuffle([...Array(N).keys()]);g=g.map(r=>r.map(v=>perm[v]));
   const bands=shuffle([...Array(N/br).keys()]);g=bands.flatMap(b=>shuffle([...Array(br).keys()]).map(i=>g[b*br+i]));
@@ -781,7 +784,7 @@ skill({id:'sudoku',room:'puz',title:'Sudoku',levels:3,grow:lv=>['','Now with num
     if(!empty&&!bad){lock(p);win(`${cheer()} Every row, column and box is complete.`)}else miss(empty?`${empty} empty box${empty>1?'es':''} left. Which row is almost full?`:`${bad} clash${bad>1?'es':''} with a row, column or box. They turned orange.`)};
   p.appendChild(chk);controls.appendChild(p)}});
 
-skill({id:'riddle',room:'puz',title:'Number riddle',levels:3,grow:lv=>['','Now the secret number can be up to 50.','Now the secret number can be up to 100.'][lv-1],mount(lv){
+skill({id:'riddle',room:'puz',title:'Number riddle',idea:'evenodd',levels:3,grow:lv=>['','Now the secret number can be up to 50.','Now the secret number can be up to 100.'][lv-1],mount(lv){
   const max=lv===1?20:lv===2?50:100;let target,clues,cands;const digsum=n=>String(n).split('').reduce((a,b)=>a+ +b,0);
   for(let tries=0;tries<30;tries++){target=rnd(1,max);cands=[...Array(max).keys()].map(i=>i+1);clues=[];
     const pool=shuffle([
@@ -874,7 +877,7 @@ async function actOut(v,S,guess){ // plays the true story; returns nothing. gues
   else if(v.type==='groups'){let all=[];for(let i=0;i<v.rows.length;i++){const items=[];for(let j=0;j<v.rows[i];j++){const d=dot('in');items.push(d);S.sc.children[i].appendChild(d)}await appear(items,'',70);all=all.concat(items);await wait(150)}await wait(300);await countAlong(all,120)}
   else if(v.type==='share'){const A=[],B=[];for(let i=0;i<v.tot;i++){const d=dot('in');(i%2?B:A).push(d);S.sc.children[i%2].appendChild(d);await wait(0);d.classList.remove('in');await wait(90)}await wait(400);for(let i=0;i<v.eat;i++){A[A.length-1-i].classList.add('gone');await wait(220)}await wait(300);await countAlong(A)}}
 
-skill({id:'tale',room:'story',title:'Story mystery',levels:3,grow:lv=>['','Now the stories go up to 20 and ask trickier questions.','Now the stories have two steps.'][lv-1],mount(lv){
+skill({id:'tale',room:'story',title:'Story mystery',idea:'counton',levels:3,grow:lv=>['','Now the stories go up to 20 and ask trickier questions.','Now the stories have two steps.'][lv-1],mount(lv){
   const thing=pick(THINGS);currentThing=thing;let st=null;for(let i=0;i<10&&!st;i++)st=pick(STORIES[lv])(KID(),thing);
   st.viz.ans=st.ans;
   prompt.textContent='Read the story. Then solve it.';const box=el('div','story',st.text);const scene=buildScene(st.viz);stage.append(box,scene.sc);const cnt=el('div','counted','Touch things to count them');scene.sc.appendChild(cnt);stage.insertBefore(readBtn(()=>box.textContent),scene.sc);tapCount(scene.sc,'.it2:not(.slot)',k=>{cnt.textContent=k?`You counted ${k}`:'Touch things to count them'});
@@ -886,7 +889,7 @@ skill({id:'tale',room:'story',title:'Story mystery',levels:3,grow:lv=>['','Now t
     else{miss(`You said ${v}. Watch what really happens.`);await actOut(st.viz,scene,v);if(st.viz.type!=='need')say(`You said ${v}. Now count the numbered ones, then try again.`)}
     busy=false;nm.style.pointerEvents='';nm.style.opacity=''},3))}});
 
-skill({id:'ways',room:'story',title:'How many ways?',levels:4,grow:lv=>['','Now find three ways.','Now find every way there is.','Now she also says how many ways there are in all.'][lv-1],mount(lv){
+skill({id:'ways',room:'story',title:'How many ways?',idea:'share',levels:4,grow:lv=>['','Now find three ways.','Now find every way there is.','Now she also says how many ways there are in all.'][lv-1],mount(lv){
   /* she colors the beads herself by tapping; every split that uses every color is a right answer, and she needs a few different ones */
   const k=KID();const COL={red:'var(--accent)',blue:'var(--sky)',green:'var(--leaf)'};let total,parts,need;
   const all=lv>=3; /* levels 3 and 4: every split of n beads into two colors, at least one of each: n-1 ways */
@@ -1178,7 +1181,8 @@ function fullCount(zs){return zs.filter(z=>z.classList.contains('full')).length}
 function dotsRow2(n){const r=row('');r.classList.add('wide');r.items=[];for(let i=0;i<n;i++){const d=dot('');r.items.push(d);r.appendChild(d)}return r}
 function pairUp2(n){const g=el('div','pairgrid');for(let i=0;i<n;i++){const d=dot(i===n-1&&n%2?'alone glow':'');g.appendChild(d)}return g}
 function renderIdeas(){const l=$('#idealist');l.innerHTML='';const strands=['Numbers','Adding and taking','Groups','Time'];strands.forEach(st=>{const hs=IDEAS.filter(i=>i.strand===st);if(!hs.length)return;l.appendChild(el('h3','strand',st));hs.forEach(i=>{const b=el('button','idea'+(S.counts['idea_'+i.id]?' done':''),`<b>${i.title}</b><small>${i.line}</small>`);b.onclick=()=>openIdea(i);l.appendChild(b)})})}
-function openIdea(idea){show('learn');$('#learnTitle').textContent=idea.title;currentThing=idea.thing||'marbles';document.querySelectorAll('#learn .readbtn').forEach(b=>b.remove());
+let learnFromGame=false;
+function openIdea(idea,fromGame){learnFromGame=!!fromGame;show('learn');$('#learnTitle').textContent=idea.title;currentThing=idea.thing||'marbles';document.querySelectorAll('#learn .readbtn').forEach(b=>b.remove());
   const box=$('#sceneInner'),bub=$('#bubble'),dots=$('#pageDots'),prev=$('#prevBtn'),next=$('#nextBtn'),tryCard=$('#tryCard');let pg=0,token=0;tryCard.hidden=true;
   $('#narrBug').innerHTML=BUG;
   async function render(){const my=++token;const page=idea.pages[pg];box.innerHTML='';const sc=el('div','sceneInner');sc.style.padding='0';sc.style.minHeight='0';box.appendChild(sc);bub.innerHTML=page.say;const rb=readBtn(()=>bub.textContent);rb.style.marginTop='6px';bub.appendChild(el('div')).appendChild(rb);
@@ -1189,7 +1193,7 @@ function openIdea(idea){show('learn');$('#learnTitle').textContent=idea.title;cu
   function startTries(){let got=0,asked=0;const P=$('#tryPrompt'),ST=$('#tryStage'),M=$('#tryMsg'),C=$('#tryControls');
   function nextTry(){if(asked>=3){P.textContent=got===3?`Three out of three. ${KID()} gets it!`:`${got} out of 3. ${KID()} is getting it.`;ST.innerHTML='';M.textContent='';C.innerHTML='';
       S.counts['idea_'+idea.id]=(S.counts['idea_'+idea.id]||0)+1;addPage(`${KID()} ${idea.book}${got===3?' and got every try-it right':''}.`,got===3);save();
-      const r=el('div','row');const g=el('button','btn',`Play ${DOORS[idea.door][0]}`);g.onclick=()=>startTrail(idea.door);const a=el('button','btn quiet','Try again');a.onclick=()=>{got=0;asked=0;nextTry()};const o=el('button','btn quiet','Other ideas');o.onclick=()=>{renderIdeas();show('ideas')};r.append(g,a,o);C.appendChild(r);if(got===3){confetti();bugs('happy')}return}
+      const r=el('div','row');const g=el('button','btn',learnFromGame?'Back to my puzzle':`Play ${DOORS[idea.door][0]}`);g.onclick=()=>{if(learnFromGame&&S.trail){show('play');play(S.trail.steps[S.trail.i])}else startTrail(idea.door)};const a=el('button','btn quiet','Try again');a.onclick=()=>{got=0;asked=0;nextTry()};const o=el('button','btn quiet','Other ideas');o.onclick=()=>{renderIdeas();show('ideas')};r.append(g,a,o);C.appendChild(r);if(got===3){confetti();bugs('happy')}return}
     let t=null;for(let i=0;i<10&&!t;i++)t=idea.tries();asked++;P.textContent=`Try it (${asked} of 3): ${t.q}`;ST.innerHTML='';M.textContent='';M.className='msg';C.innerHTML='';t.draw(ST);let first=true;
     const finish=(ok)=>{if(ok&&first)got++;M.textContent=(ok?'Yes! ':'')+t.explain;M.className='msg'+(ok?' good':'');bugs(ok?'happy':'think');if(t.show)try{t.show(ST)}catch(e){}C.querySelectorAll('button').forEach(b=>b.disabled=true);const r=el('div','row');const n=el('button','btn','Next');n.onclick=nextTry;r.appendChild(n);C.appendChild(r)};
     if(t.kind==='choice'){const c=choices(t.opts,(o,b)=>{if(o===t.ans){b.classList.add('hit');finish(true)}else{b.classList.add('miss');b.disabled=true;if(first){first=false;M.textContent='Not that one. Look again and try the other.'}else finish(false)}});c.classList.add('bigpick');C.appendChild(c)}
@@ -1293,7 +1297,7 @@ skill({id:'fit',room:'space',title:'Fit the hole',levels:2,mount(lv){
   const c=choices(opts,(o,b)=>{if(sameGrid(o.g,hole)){b.classList.add('hit');lock(c);drop();win(`${cheer()} It fits exactly.`)}else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?'Count the squares in the hole and in your piece.':lv===2?'Careful: some pieces are the right shape but turned or flipped.':'Look at where the hole bends.')}});controls.appendChild(c)}});
 
 /* ================= ZOE MAKES IT ================= */
-skill({id:'hide',room:'make',title:'You hide the number',levels:1,mount(){
+skill({id:'hide',room:'make',title:'You hide the number',idea:'compare',levels:1,mount(){
   prompt.textContent=`Pick a secret number from 1 to 20. Don't say it out loud!`;
   const p=pad(20,(v,b)=>{if(v<1)return;lock(p);p.remove();start(v)});controls.appendChild(p);
   let secret,lo=1,hi=20,asked=0,right=0,wrongs=[];
@@ -1340,7 +1344,7 @@ skill({id:'rulemaker',room:'make',title:'You make the rule',levels:1,mount(){
       win(right===3?`${cheer()} Your machine worked perfectly and I cracked the rule.`:`I cracked it! ${3-right} output${3-right>1?'s':''} needed a second look.`)});c2.classList.add('bigpick');controls.appendChild(c2)}
   help({clues:['Pick a rule, then do that rule to each number I give you.','If you forget, the rule is shown only to you at the top: look at the choice you made.'],why:'You choose the rule; I give inputs and guess it.'})}});
 
-skill({id:'writestory',room:'make',title:'You write the story',levels:1,mount(){
+skill({id:'writestory',room:'make',title:'You write the story',idea:'counton',levels:1,mount(){
   /* she picks a thing and two numbers; the ladybug solves it out loud, and now and then gets it wrong so she has to check */
   const k=KID(),max=12;const acts=[{t:'got',v:1,q:'now'},{t:'found',v:1,q:'now'},{t:'ate',v:-1,q:'left'},{t:'gave away',v:-1,q:'left'}];
   const st={thing:null,a:null,act:null,b:null};
@@ -1371,7 +1375,7 @@ skill({id:'writestory',room:'make',title:'You write the story',levels:1,mount(){
       r.classList.add('bigpick');controls.insertBefore(r,controls.querySelector('#helpRow'))},900)}
   build()}});
 
-skill({id:'patmaker',room:'make',title:'You make the pattern',levels:1,mount(){
+skill({id:'patmaker',room:'make',title:'You make the pattern',idea:'skip',levels:1,mount(){
   /* she builds a repeating pattern from four shapes; the ladybug says the rule and continues it, now and then wrongly, so she checks */
   const cols=['var(--accent)','var(--leaf)','var(--sky)','var(--plum)'],sh=shuffle(Object.keys(shapes));const units=sh.map((s,i)=>({s,c:cols[i],i}));
   prompt.textContent='Make a pattern that repeats. Tap shapes to add them.';
@@ -1438,7 +1442,7 @@ function fracSvg(kind,f,shadeParts){const parts=f.d,col='var(--accent)';let h=''
   if(kind==='circle'){for(let i=0;i<parts;i++){const a0=(i/parts)*2*Math.PI-Math.PI/2,a1=((i+1)/parts)*2*Math.PI-Math.PI/2;const x0=100+80*Math.cos(a0),y0=100+80*Math.sin(a0),x1=100+80*Math.cos(a1),y1=100+80*Math.sin(a1);h+=parts===1?`<circle cx="100" cy="100" r="80" fill="${i<shadeParts?col:'var(--card)'}" stroke="var(--fg)" stroke-width="3"/>`:`<path d="M100 100L${x0} ${y0}A80 80 0 ${parts===2?0:0} 1 ${x1} ${y1}z" fill="${i<shadeParts?col:'var(--card)'}" stroke="var(--fg)" stroke-width="3"/>`}}
   else{const w=180/parts;for(let i=0;i<parts;i++)h+=`<rect x="${10+i*w}" y="55" width="${w}" height="90" fill="${i<shadeParts?col:'var(--card)'}" stroke="var(--fg)" stroke-width="3"/>`}
   return `<svg viewBox="0 0 200 200" style="width:180px;max-width:100%">${h}</svg>`}
-skill({id:'parts',room:'meas',title:'Parts of a whole',levels:3,mount(lv){
+skill({id:'parts',room:'meas',title:'Parts of a whole',idea:'double',levels:3,mount(lv){
   if(lv===1){const key=pick(['half','quarter','three','whole']),f=FRAC[key],kind=pick(['circle','bar']);prompt.textContent='How much is orange?';const d=el('div');d.innerHTML=fracSvg(kind,f,f.n);stage.appendChild(d);
     help({book:`saw that ${f.t} was colored in`,clues:[`Count the equal pieces first. Then count the orange ones.`,`${f.d===1?'Nothing is left white: it is all colored.':`${f.d} equal pieces, ${f.n} orange: ${f.n} out of ${f.d}.`}`],answer:f.t,why:`${f.d===1?'All of it is orange.':`It is cut into ${f.d} equal pieces and ${f.n} ${f.n>1?'are':'is'} orange: ${f.t}.`}`});
     const ch=choices(Object.values(FRAC).map(x=>x.t),(o,b)=>{if(o===f.t){b.classList.add('hit');lock(ch);win(`${cheer()} ${ctx.help.why}`)}else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?'How many equal pieces is it cut into? How many are orange?':`${f.d} pieces, ${f.n} orange.`)}});controls.appendChild(ch)}
@@ -1456,7 +1460,7 @@ skill({id:'measure',room:'meas',title:'How long?',levels:3,mount(lv){
   help({book:lv===2?`measured two things and found the difference, ${ans}`:`measured a ${thing[0]}: ${ans} ${lv===3?'small blocks':'paperclips'}`,clues:[lv===3?`Every big block is 2 small blocks. Count by twos: ${Array.from({length:n},(_,i)=>(i+1)*2).join(', ')}.`:`The ${unit}s are lined up under it with no gaps. Count them.`,lv===2?`Count the paperclips under each one. Then find the difference.`:`Start at the left end and touch each ${unit} as you count.`],answer:ans,why:lv===2?`${n} and ${m2}: the difference is ${ans}.`:lv===3?`${n} big blocks is ${n} twos: ${ans} small blocks.`:`${ans} ${unit}s fit under it exactly.`});
   controls.appendChild(numpad((v,nm)=>{if(v===ans){lock(nm);win(`${cheer()} ${ctx.help.why}`)}else miss(ctx.hints===0?(lv===2?`Measure each one first. Then how many more?`:`Count the ${unit}s under it, one at a time, no gaps.`):ctx.help.clues[0])},2))}});
 
-skill({id:'estimate',room:'meas',title:'About how many?',levels:3,mount(lv){
+skill({id:'estimate',room:'meas',title:'About how many?',idea:'tens',levels:3,mount(lv){
   const n=lv===1?rnd(8,32):lv===2?rnd(15,55):rnd(25,75);const step=lv===3?20:10;const ans=Math.round(n/step)*step;currentThing=pick(THINGS);
   prompt.textContent='Don\'t count! About how many?';const wrap=el('div','ta');const ref=el('div','hint','This box holds 10:');const rb=row('');rb.style.border='3px dashed var(--line)';rb.style.borderRadius='12px';rb.style.padding='4px';for(let i=0;i<10;i++)rb.appendChild(dot(''));
   const field=el('div');field.style.cssText='position:relative;width:300px;max-width:100%;height:200px';for(let i=0;i<n;i++){const d=dot('');d.style.cssText=`position:absolute;left:${rnd(0,88)}%;top:${rnd(0,82)}%;width:30px;height:30px`;field.appendChild(d)}
@@ -1466,7 +1470,7 @@ skill({id:'estimate',room:'meas',title:'About how many?',levels:3,mount(lv){
   const ch=choices(opts.map(v=>`about ${v}`),(o,b)=>{const v=+o.split(' ')[1];if(v===ans){b.classList.add('hit');lock(ch);win(`${cheer()} There are exactly ${n}. About ${ans} is a great guess.`)}else{b.classList.add('miss');b.disabled=true;miss(v<ans?`More than that. Would ${v/10} boxes of 10 cover them all?`:`Fewer than that. ${v/10} boxes of 10 would be too many.`)}});controls.appendChild(ch)}});
 
 /* ================= more PUZZLES ================= */
-skill({id:'sort2',room:'puz',title:'Sort by two things',levels:3,mount(lv){
+skill({id:'sort2',room:'puz',title:'Sort by two things',idea:'evenodd',levels:3,mount(lv){
   /* a two-way grid. The ladybug sorts the first one out loud as the example; then she sorts four, and every miss names the question she skipped */
   const cols=[['var(--accent)','red'],['var(--sky)','blue']];let rowsA,colsA,items,drawIt,describe;
   if(lv===1){rowsA=['big','small'];colsA=['red','blue'];items=shuffle([[0,0],[0,1],[1,0],[1,1]]);drawIt=([r,c],big)=>{const e=svgShape('circle',cols[c][0]);e.style.width=e.style.height=(r===0?44:24)*(big?1.6:1)+'px';return e};describe=([r,c])=>`It is <b>${rowsA[r]}</b> and it is <b>${colsA[c]}</b>.`}
@@ -1515,7 +1519,7 @@ const tWords=(h,m)=>m===0?`${h} o'clock`:m===30?`half past ${h}`:m===15?`quarter
 function clockBox(h,m,marks){const d=el('div');d.innerHTML=clockSvg(h,m,marks);return d}
 const minWords=m=>m===30?'half an hour':m===60?'1 hour':m===90?'1 hour and a half':m===120?'2 hours':m%60===0?`${m/60} hours`:`${m} minutes`;
 
-skill({id:'minutes',room:'time',title:'What time is it?',levels:3,async teach(lv,L){const c=el('div');L.scene.appendChild(c);const big=el('div','bigword','');L.scene.appendChild(big);const show=(h,m)=>{c.innerHTML=clockSvg(h,m,lv===3)};
+skill({id:'minutes',room:'time',title:'What time is it?',idea:'clock',levels:3,async teach(lv,L){const c=el('div');L.scene.appendChild(c);const big=el('div','bigword','');L.scene.appendChild(big);const show=(h,m)=>{c.innerHTML=clockSvg(h,m,lv===3)};
   if(lv===1){L.say('A clock has two hands. The <em>short</em> one points to the hour. It is on the 3.');show(3,0);await L.wait(1800);L.say('The <em>long orange</em> hand counts minutes. Straight up at the 12 means <em>o\'clock</em>.');big.innerHTML='3 o\'clock · <em>3:00</em>';await L.wait(2200);
     L.say('Watch the long hand go half way round, down to the 6. That is <em>half past</em>.');for(let m=0;m<=30;m+=2){show(3,m);await L.wait(60)}big.innerHTML='half past 3 · <em>3:30</em>';await L.wait(1800);L.say('See how the short hand crept half way to the 4? Now you try.')}
   else if(lv===2){L.say('Quarter past: the long hand goes a <em>quarter</em> of the way round, to the 3.');for(let m=0;m<=15;m+=1){show(5,m);await L.wait(50)}big.innerHTML='quarter past 5 · <em>5:15</em>';await L.wait(2000);
@@ -1532,7 +1536,7 @@ skill({id:'minutes',room:'time',title:'What time is it?',levels:3,async teach(lv
   const opts=shuffle([tStr(h,m)].concat([...wrongs])).map(label);
   const ch=choices(opts,(o,b)=>{o=o.t;if(o===tStr(h,m)){b.classList.add('hit');lock(ch);win(`${cheer()} ${tWords(h,m)}: ${tStr(h,m)}.`)}else{b.classList.add('miss');b.disabled=true;const [oh,om]=o.split(':').map(Number);miss(oh!==h?`The short hand is the hour. Is it pointing near the ${oh}?`:`Look at the long hand. It is on the ${m/5||12}, and each number is 5 minutes.`)}});controls.appendChild(ch)}});
 
-skill({id:'elapsed',room:'time',title:'How long until…?',levels:3,async teach(lv,L){const c=el('div');const blocks=el('div','blocks');const big=el('div','bigword','');L.scene.append(c,blocks,big);const show=(t)=>{c.innerHTML=clockSvg(Math.floor(t/60)%12||12,t%60,lv===3)};
+skill({id:'elapsed',room:'time',title:'How long until…?',idea:'clock',levels:3,async teach(lv,L){const c=el('div');const blocks=el('div','blocks');const big=el('div','bigword','');L.scene.append(c,blocks,big);const show=(t)=>{c.innerHTML=clockSvg(Math.floor(t/60)%12||12,t%60,lv===3)};
   if(lv===1){L.say('It is 2 o\'clock. Lunch is at 4 o\'clock. How long until lunch? Watch the <em>short</em> hand.');show(120);await L.wait(1800);for(let h=1;h<=2;h++){for(let t=120+(h-1)*60;t<=120+h*60;t+=5){show(t);await L.wait(35)}blocks.appendChild(el('span','blk hour',`${h} h`));big.innerHTML=`${h} hour${h>1?'s':''}`;await L.wait(900)}L.say('The short hand moved <em>two</em> numbers: 2 hours until lunch. Now you try.')}
   else if(lv===2){L.say('It is 3 o\'clock. The park is at half past 4. Count on by <em>half hours</em>.');show(180);await L.wait(1600);const names=['30','60','90'];for(let k=1;k<=3;k++){for(let t=180+(k-1)*30;t<=180+k*30;t+=5){show(t);await L.wait(40)}const bk=el('span','blk'+(k===2?' hour':''),names[k-1]);blocks.appendChild(bk);big.innerHTML=k===2?'60 = <em>1 hour</em>':k===3?'90 = <em>1 hour and a half</em>':'30 = half an hour';await L.wait(1000)}L.say('Three half hours: 30, 60, 90 minutes. That is <em>1 hour and a half</em>. Now you try.')}
   else{L.say('It is 10 past 7. Bedtime is at 25 past 7. Count the long hand on by <em>fives</em>.');show(430);await L.wait(1500);for(let k=1;k<=3;k++){for(let t=430+(k-1)*5;t<=430+k*5;t+=1){show(t);await L.wait(40)}big.textContent=String(k*5);await L.wait(700)}L.say('Three fives: 5, 10, <em>15 minutes</em> until bedtime. Now you try.')}},mount(lv){
@@ -1553,7 +1557,7 @@ skill({id:'elapsed',room:'time',title:'How long until…?',levels:3,async teach(
     const opts=vals.map(v=>{const d=el('div','tchoice');d.innerHTML=`${v} ${unit}${v===1?'':'s'}`+(lv===2?`<small>${minWords(v)}</small>`:'');return{node:d,v}});
     const ch=choices(opts,(o,b)=>onPick(o.v,b,ch));controls.appendChild(ch)}}});
 
-skill({id:'calendar',room:'time',title:'Days and months',levels:3,async teach(lv,L){const list=lv<3?DAYS:MONTHS;const strip=el('div','ways strip');list.forEach(d=>strip.appendChild(el('span','way',d.slice(0,3))));const big=el('div','bigword','');L.scene.append(strip,big);const lite=(j,col)=>{strip.children[j].style.background=col;strip.children[j].style.color=col==='var(--leaf)'?'#fff':''};
+skill({id:'calendar',room:'time',title:'Days and months',idea:'mars',levels:3,async teach(lv,L){const list=lv<3?DAYS:MONTHS;const strip=el('div','ways strip');list.forEach(d=>strip.appendChild(el('span','way',d.slice(0,3))));const big=el('div','bigword','');L.scene.append(strip,big);const lite=(j,col)=>{strip.children[j].style.background=col;strip.children[j].style.color=col==='var(--leaf)'?'#fff':''};
   if(lv<3){L.say(`The week has <em>7</em> days, always in the same order. Say them with me.`);for(let j=0;j<7;j++){lite(j,'var(--sun)');big.textContent=list[j];await L.wait(520);lite(j,'')}L.say('After <em>Sunday</em> it goes round again to Monday, like a wheel.');lite(6,'var(--sun)');await L.wait(900);lite(6,'');lite(0,'var(--leaf)');big.innerHTML='Sunday → <em>Monday</em>';await L.wait(1600);lite(0,'');
     if(lv===1){L.say('Today is Wednesday. The day <em>after</em> is one step to the right: Thursday.');lite(2,'var(--sun)');await L.wait(900);lite(3,'var(--leaf)');big.innerHTML='Wed → <em>Thu</em>';await L.wait(1500);L.say('The day <em>before</em> is one step to the left: Tuesday. Now you try.');lite(3,'');lite(1,'var(--leaf)');big.innerHTML='<em>Tue</em> ← Wed'}
     else{L.say('Today is Friday. In <em>3</em> days? Hop three times: Saturday, Sunday… and round to Monday.');lite(4,'var(--sun)');await L.wait(800);for(const [j,n] of [[5,'Sat'],[6,'Sun'],[0,'Mon']]){lite(j,j===0?'var(--leaf)':'rgba(76,174,124,.35)');big.textContent=n;await L.wait(800)}L.say('Three hops from Friday lands on <em>Monday</em>. Now you try.')}}
@@ -1624,7 +1628,7 @@ $('#bookBack').onclick=()=>{show('home')};
 $('#ideasBack').onclick=()=>{renderHome();show('home')};
 $('#pgBack').onclick=()=>{renderHome();show('home')};
 bugs('idle');
-$('#learnBack').onclick=()=>{renderIdeas();show('ideas')};
+$('#learnBack').onclick=()=>{if(learnFromGame&&S.trail){learnFromGame=false;show('play');play(S.trail.steps[S.trail.i])}else{renderIdeas();show('ideas')}};
 $('#name').value=S.name;$('#name').oninput=e=>{S.name=e.target.value.trim();save()};
 $('#duo').checked=S.duo;$('#duo').onchange=e=>{S.duo=e.target.checked;save()};
 $('#note').value=S.note||'';$('#note').oninput=e=>{S.note=e.target.value;save()};
