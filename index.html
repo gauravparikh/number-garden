@@ -1461,7 +1461,7 @@ skill({id:'sort2',room:'puz',title:'Sort by two things',levels:3,mount(lv){
   if(lv===1){rowsA=['big','small'];colsA=['red','blue'];items=shuffle([[0,0],[0,1],[1,0],[1,1]]);drawIt=([r,c],big)=>{const e=svgShape('circle',cols[c][0]);e.style.width=e.style.height=(r===0?44:24)*(big?1.6:1)+'px';return e};describe=([r,c])=>`It is <b>${rowsA[r]}</b> and it is <b>${colsA[c]}</b>.`}
   else if(lv===2){rowsA=['circle','square'];colsA=['red','blue'];items=shuffle([[0,0],[0,1],[1,0],[1,1]]);drawIt=([r,c],big)=>{const e=svgShape(r===0?'circle':'square',cols[c][0]);if(big)e.style.width=e.style.height='64px';return e};describe=([r,c])=>`It is a <b>${rowsA[r]}</b> and it is <b>${colsA[c]}</b>.`}
   else{rowsA=['odd','even'];colsA=['less than 10','10 or more'];const nums=shuffle([rnd(1,9)|1,rnd(1,4)*2,rnd(5,9)*2+1,rnd(5,9)*2]).slice(0,4);items=nums.map(v=>[v%2?0:1,v<10?0:1,v]);drawIt=(it,big)=>{const e=el('b','',it[2]);e.style.fontSize=big?'2.4rem':'1.4rem';return e};describe=it=>`${it[2]} is <b>${rowsA[it[0]]}</b> and it is <b>${colsA[it[1]]}</b>.`}
-  const example=[(items[0][0]+1)%2,(items[0][1]+1)%2,lv===3?(items[0][0]?rnd(1,4)*2:rnd(1,4)*2+1):0];if(lv===3){const v=example[2];example[0]=v%2?0:1;example[1]=v<10?0:1}
+  const example=items.pop(); // Pip takes one of the four combinations as her example; she sorts the other three, so every box ends with exactly one
   prompt.textContent='Sort them into the boxes.';
   const card=el('div','story');card.style.cssText='display:flex;align-items:center;gap:14px;max-width:none';const pic=el('div'),txt=el('div');card.append(pic,txt);
   const grid=el('div','sud');grid.style.cssText='grid-template-columns:auto 1fr 1fr;background:var(--card);border:3px solid var(--fg)';
@@ -1478,7 +1478,7 @@ skill({id:'sort2',room:'puz',title:'Sort by two things',levels:3,mount(lv){
     const r=el('div','row');const b=el('button','btn','My turn');b.onclick=()=>{r.remove();ez.style.outline='';next()};r.appendChild(b);controls.insertBefore(r,controls.firstChild)},1200); // the example stays until she taps, so she can look as long as she likes
   help({book:`sorted things by two rules at once`,clues:[`Ask two questions about it: ${rowsA[0]} or ${rowsA[1]}? That picks the row. ${colsA[0]} or ${colsA[1]}? That picks the column.`,i>=0&&i<items.length?describe(items[i]).replace(/<\/?b>/g,''):`Find the row first, then slide along to the column.`],why:`Each box answers two questions at once: the row and the column.`,show:()=>{items.slice(Math.max(i,0)).forEach(it=>{const e=drawIt(it);e.classList.add('shown');zoneOf(it).appendChild(e)});pic.innerHTML='';txt.innerHTML='Here is where each one goes. The dashed ones are the ones Pip placed.';i=items.length}});
   zones.forEach(z=>z.onclick=()=>{if(ctx.done||i<0||i>=items.length)return;const it=items[i];
-    if(z.r===it[0]&&z.c===it[1]){z.appendChild(drawIt(it));if(i>=items.length-1){i++;txt.innerHTML='All sorted!';win(`${cheer()} All four sorted by both rules.`)}else{say('Yes!',true);next()}}
+    if(z.r===it[0]&&z.c===it[1]){z.appendChild(drawIt(it));if(i>=items.length-1){i++;txt.innerHTML='All sorted!';win(`${cheer()} All sorted, every one by both rules.`)}else{say('Yes!',true);next()}}
     else miss(z.r!==it[0]?`Look at the row. Is it ${rowsA[it[0]]} or ${rowsA[(it[0]+1)%2]}?`:`Right row! Now the column: is it ${colsA[it[1]]} or ${colsA[(it[1]+1)%2]}?`)})}});
 
 skill({id:'ifthen',room:'puz',title:'If this, then that',levels:3,mount(lv){
