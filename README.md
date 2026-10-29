@@ -60,9 +60,13 @@ Sudoku and Who-has-what are generators with parameters (grid size, box shape, sy
 
 Each idea is an entry in `IDEAS`: `title`, one-line `line`, `thing` (which object icon to draw), `pages` (each `{say, draw(scene)}`: the ladybug's line and an async function that animates the scene with `dot`, `row`, `appear`, `flyTo`, `tenFrame`, `walkSvg`), one page built with the drag engine (`trayOf`, `zones`, `makeDraggable`, `fullCount`), `tries()` returning `{q, kind:'choice'|'num', opts?, ans, draw, explain, show?}`, the `door` to play afterwards, and the `book` sentence.
 
+## Teach first
+
+A game can carry a `teach(lv, lesson)` function. The first time she meets that level, Pip runs it before any question: `lesson.say(html)` fills her bubble, `lesson.scene` is the stage to draw in, and `await lesson.wait(ms)` paces the animation (it stops cleanly if she taps **My turn** early). A **Watch** button beside Clue and Show me replays it any time. The three Time games have lessons; add one to any game where asking first would be unfair.
+
 ## Adding a game
 
-Each game is a `skill({...})` call in `index.html` with an `id`, a `room`, a `title`, a number of `levels`, and a `mount(level)` function that draws into `stage` and `controls` and calls `win(message)` or `miss(hint)`. Each game calls `help({book, clues, answer, why, show})`: `book` is the sentence written in her book, `clues` feed the Clue button, `show` draws the answer. Shared helpers: `pad`, `numpad`, `choices`, `tenFrame`, `numberLine`. Mastery, stars, turns and the garden are handled for you.
+Each game is a `skill({...})` call in `index.html` with an `id`, a `room`, a `title`, a number of `levels`, an optional `teach(level, lesson)`, and a `mount(level)` function that draws into `stage` and `controls` and calls `win(message)` or `miss(hint)`. Each game calls `help({book, clues, answer, why, show})`: `book` is the sentence written in her book, `clues` feed the Clue button, `show` draws the answer. Shared helpers: `pad`, `numpad`, `choices`, `tenFrame`, `numberLine`. Mastery, stars, turns and the garden are handled for you.
 
 ## Wrapping as a desktop app
 
