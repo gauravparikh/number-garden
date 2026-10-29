@@ -24,7 +24,7 @@ Open `index.html` in any browser. On a phone or tablet, use "Add to Home Screen"
 
 ## How a session works
 
-The home screen is the garden with nine doors. A ladybug mascot bobs on the home screen and in the corner of the play card, jumps on a right answer and tilts her head on a miss. Tapping a door starts a **trail** of five stepping stones (two warm-ups, games from that door, one puzzle). Each solved stone lights up; the fifth plants a flower in the garden. Levels adapt silently and are never shown to the child.
+The home screen is the garden with nine doors. A ladybug mascot bobs on the home screen and in the corner of the play card, jumps on a right answer and tilts her head on a miss. Tapping a door starts a **trail** of five stepping stones, all from that door (a door with fewer than five games cycles through them, never the same problem twice). Each solved stone lights up; the fifth plants a flower in the garden. Levels adapt silently and are never shown to the child.
 
 **Zoe's Book** writes one sentence she can read for every problem she solves ("Zoe took 9 away from 23 and got 14"), a bigger entry for each level-up and finished trail, and holds the badge shelf (First Flower, Ten-Breaker, Riddle Solver, Many Ways, Balance Master, Pattern Spotter, Story Reader, Gardener).
 
@@ -33,8 +33,6 @@ The grown-up settings are behind the faint "for grown-ups" link at the bottom of
 In Stories and the dots warm-up she can touch each object to count it herself; the touch adds a green number.
 
 **Tell Papa.** Every fourth clean win, a card asks her to explain out loud how she knew before the next stone; tapping "I told Papa" writes it in her book.
-
-**Remember this?** Each trail swaps its puzzle stone for whichever game she hasn't played in three or more days, so older skills come back before they fade.
 
 **Read it to me.** Stories, riddles, how-many-ways and Big Ideas have a speaker button that reads the text aloud (browser speech, where available).
 

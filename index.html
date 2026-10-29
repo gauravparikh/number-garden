@@ -527,15 +527,10 @@ function drawGarden(){const svg=$('#gardenSvg');const fl=S.flowers.slice(-40);le
   svg.innerHTML=h;const n=S.flowers.length;$('#sign').textContent=n===0?`${KID()}'s garden is ready for its first flower.`:n===1?`${KID()} has grown one flower.`:`${KID()} has grown ${inWords(n)} flowers.`}
 
 /* ---------- trails ---------- */
-function makeTrail(door){const room=r=>shuffle(Object.values(SK).filter(k=>k.room===r).map(k=>k.id));const w=room('warm'),d=room(door),z=room('puz');
-  const day=Math.floor(Date.now()/864e5);S.last=S.last||{};const stale=Object.values(SK).filter(k=>k.room!=='make'&&S.counts[k.id]&&day-(S.last[k.id]||0)>=3).sort((a,b)=>(S.last[a.id]||0)-(S.last[b.id]||0))[0];if(stale)z[0]=stale.id;
+function makeTrail(door){ /* pure doors: all five stones come from the door she picked, cycling through its games with no two alike in a row */
+  const d=shuffle(Object.values(SK).filter(k=>k.room===door).map(k=>k.id));
   let steps;if(door==='make')steps=shuffle(['hide','rulemaker','writestory','patmaker']).concat(shuffle(['hide','rulemaker','writestory','patmaker'])).slice(0,5);
-  else if(door==='warm')steps=[w[0],room('pat')[0],w[1],z[0],w[0]];
-  else if(door==='puz')steps=[d[0],w[0],d[1],d[2],d[3]||room('pat')[0]];
-  else steps=[d[0],w[0],d[1%d.length],z[0],d[2%d.length]];
-  if(door==='warm')steps[4]=w[2]||room('add')[0]; // the third warm-up game, or a borrowed Add & take stone
-  if(d.length<3&&door!=='warm'&&door!=='make')steps[4]=room(door==='pat'?'space':'pat')[0]; // a room with only two games borrows its last stone // the second warm-up game already sits at stone 3, so the last stone borrows from Add & take instead of repeating
-  if(door!=='make'&&z[0]===steps[0])z[0]=z[1]||z[0];
+  else{steps=[];for(let i=0;i<5;i++)steps.push(d[i%d.length]);if(d.length>=5)steps=d.slice(0,5)}
   S.trail={door,steps,i:0,lit:[false,false,false,false,false]};save()}
 function renderStreak(){const c=$('#streakChip');if(!c)return;c.hidden=S.streakNow<2;c.textContent=`${S.streakNow} in a row`}
 function renderTrail(){const t=$('#trail');t.innerHTML='';if(!S.trail)return;S.trail.steps.forEach((_,i)=>{const st=el('div','stone'+(S.trail.lit[i]?' lit':'')+(i===S.trail.i?' now':''));t.appendChild(st)})}
