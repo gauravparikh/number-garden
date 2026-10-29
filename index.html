@@ -529,8 +529,7 @@ function drawGarden(){const svg=$('#gardenSvg');const fl=S.flowers.slice(-40);le
 /* ---------- trails ---------- */
 function makeTrail(door){ /* pure doors: all five stones come from the door she picked, cycling through its games with no two alike in a row */
   const d=shuffle(Object.values(SK).filter(k=>k.room===door).map(k=>k.id));
-  let steps;if(door==='make')steps=shuffle(['hide','rulemaker','writestory','patmaker']).concat(shuffle(['hide','rulemaker','writestory','patmaker'])).slice(0,5);
-  else{steps=[];for(let i=0;i<5;i++)steps.push(d[i%d.length]);if(d.length>=5)steps=d.slice(0,5)}
+  const steps=[];for(let i=0;i<5;i++)steps.push(d[i%d.length]);
   S.trail={door,steps,i:0,lit:[false,false,false,false,false]};save()}
 function renderStreak(){const c=$('#streakChip');if(!c)return;c.hidden=S.streakNow<2;c.textContent=`${S.streakNow} in a row`}
 function renderTrail(){const t=$('#trail');t.innerHTML='';if(!S.trail)return;S.trail.steps.forEach((_,i)=>{const st=el('div','stone'+(S.trail.lit[i]?' lit':'')+(i===S.trail.i?' now':''));t.appendChild(st)})}
