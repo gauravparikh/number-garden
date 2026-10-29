@@ -33,6 +33,8 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .way{background:var(--bg);border-radius:12px;padding:6px 12px;font-family:var(--display);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:3px}
 .way i{width:14px;height:14px;border-radius:50%;display:inline-block}.way b{margin-left:6px;font-weight:600;color:var(--muted);font-size:.9rem}
 .beads{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.ways.strip{gap:5px}.ways.strip .way{padding:5px 7px;font-size:.9rem}
+.tchoice{display:flex;flex-direction:column;align-items:center;line-height:1.15}.tchoice small{font-family:var(--body);font-size:.75rem;color:var(--muted);font-weight:600}
 .pots{display:flex;gap:14px;justify-content:center}
 .pot{width:64px;height:54px;border-radius:12px 12px 18px 18px;border:4px solid transparent;color:#fff;font-family:var(--display);font-size:.85rem;display:grid;place-items:end center;padding-bottom:4px;box-shadow:inset 0 10px 0 rgba(255,255,255,.25)}
 .pot.sel{border-color:var(--fg);transform:translateY(-4px)}
@@ -1501,15 +1503,17 @@ function clockBox(h,m,marks){const d=el('div');d.innerHTML=clockSvg(h,m,marks);r
 
 skill({id:'minutes',room:'time',title:'What time is it?',levels:3,mount(lv){
   const h=rnd(1,12),m=lv===1?pick([0,30]):lv===2?pick([0,15,30,45]):rnd(0,11)*5;prompt.textContent='What time is it?';
-  const c=clockBox(h,m,lv===3);stage.appendChild(c);
-  const near=m===0?h:m<30?h:h;const mins=m;
+  const c=clockBox(h,m,lv===3);const col=el('div','ta');col.style.gap='6px';col.append(c,el('div','hint','Short hand: the hour. Long orange hand: the minutes.'));stage.appendChild(col);
   help({book:`read the clock at ${tWords(h,m)}`,clues:[`The short hand is the hour. It points ${m===0?'right at':'just past'} the ${h}.`,lv===1?`The long hand on the 12 is o'clock; on the 6 is half past.`:`The long hand counts by fives: the ${m/5||12} means ${m===0?'0':m} minutes.`],answer:tStr(h,m),why:`The short hand is ${m===0?'on':'past'} the ${h}, the long hand says ${m} minutes: ${tWords(h,m)}.`,show:()=>c.innerHTML=clockSvg(h,m,true)});
-  const wrongs=new Set();while(wrongs.size<3){const o=pick([[h%12+1,m],[(h+10)%12+1,m],[h,(m+30)%60],[h,(m+15)%60],[h,(m+5)%60],[m/5||12,h*5%60]]);if(o[0]!==h||o[1]!==m)wrongs.add(tStr(o[0],o[1]))}
-  const opts=shuffle([tStr(h,m)].concat([...wrongs]));
-  const ch=choices(opts,(o,b)=>{if(o===tStr(h,m)){b.classList.add('hit');lock(ch);win(`${cheer()} ${tWords(h,m)}: ${tStr(h,m)}.`)}else{b.classList.add('miss');b.disabled=true;const [oh,om]=o.split(':').map(Number);miss(oh!==h?`The short hand is the hour. Is it pointing near the ${oh}?`:`Look at the long hand. It is on the ${m/5||12}, and each number is 5 minutes.`)}});controls.appendChild(ch)}});
+  /* wrong answers stay inside what this level teaches: o'clock and half past, then quarters, then any five minutes */
+  const pool=lv===1?[[h%12+1,m],[(h+10)%12+1,m],[h,(m+30)%60],[h%12+1,(m+30)%60]]:lv===2?[[h%12+1,m],[(h+10)%12+1,m],[h,(m+30)%60],[h,(m+15)%60],[h,(m+45)%60]]:[[h%12+1,m],[(h+10)%12+1,m],[h,(m+30)%60],[h,(m+15)%60],[h,(m+5)%60],[m/5||12,h*5%60]];
+  const wrongs=new Set();while(wrongs.size<3){const o=pick(pool);if(o[0]!==h||o[1]!==m)wrongs.add(tStr(o[0],o[1]))}
+  const label=t=>{const [oh,om]=t.split(':').map(Number);const d=el('div');d.innerHTML=lv<3?`${t}<small>${tWords(oh,om)}</small>`:t;d.className='tchoice';return{node:d,t}};
+  const opts=shuffle([tStr(h,m)].concat([...wrongs])).map(label);
+  const ch=choices(opts,(o,b)=>{o=o.t;if(o===tStr(h,m)){b.classList.add('hit');lock(ch);win(`${cheer()} ${tWords(h,m)}: ${tStr(h,m)}.`)}else{b.classList.add('miss');b.disabled=true;const [oh,om]=o.split(':').map(Number);miss(oh!==h?`The short hand is the hour. Is it pointing near the ${oh}?`:`Look at the long hand. It is on the ${m/5||12}, and each number is 5 minutes.`)}});controls.appendChild(ch)}});
 
 skill({id:'elapsed',room:'time',title:'How long until…?',levels:3,mount(lv){
-  const acts=['lunch','the park','bedtime','swimming','Grandma comes','the movie'];const what=pick(acts);
+  const acts=['lunch','the park','bedtime','swimming','Grandma\'s visit','the movie'];const what=pick(acts);
   let h1,m1,gap;if(lv===1){h1=rnd(1,9);m1=0;gap=rnd(1,3)*60}else if(lv===2){h1=rnd(1,9);m1=pick([0,30]);gap=pick([30,60,90])}else{h1=rnd(1,11);m1=rnd(0,5)*5;gap=rnd(1,8)*5}
   const t2=h1*60+m1+gap,h2=Math.floor(t2/60)%12||12,m2=t2%60;const inHours=lv===1;const ans=inHours?gap/60:gap;
   prompt.textContent=`It is ${tWords(h1,m1)}. ${what[0].toUpperCase()+what.slice(1)} is at ${tWords(h2,m2)}. How long until ${what}?`;
@@ -1529,10 +1533,11 @@ skill({id:'calendar',room:'time',title:'Days and months',levels:3,mount(lv){
   else{k=pick([1,-1,2]);q=k===1?`It is <b>${list[i]}</b>. What month comes next?`:k===-1?`It is <b>${list[i]}</b>. What month was before?`:`It is <b>${list[i]}</b>. What month is it in 2 months?`;why=`The months go ${list.slice(Math.max(0,i-1),i+3).join(', ')}… and after December comes January again.`}
   ans=list[((i+k)%list.length+list.length)%list.length];
   prompt.textContent=wk?'Days of the week':'Months of the year';const box=el('div','story',q);stage.appendChild(box);
-  const strip=el('div','ways');list.forEach((d,j)=>{const s=el('span','way',wk?d.slice(0,3):d.slice(0,3));if(j===i)s.style.background='var(--sun)';s.dataset.i=j;strip.appendChild(s)});stage.appendChild(strip);
-  help({book:wk?`knew that ${k>0?`${k} day${k>1?'s':''} after`:'the day before'} ${list[i]} is ${ans}`:`knew the month ${k>0?'after':'before'} ${list[i]}`,clues:[`Find ${list[i]} in the yellow box on the strip. Then ${k>0?`move ${k} to the right`:'move one to the left'}.`,`The ${wk?'week':'year'} goes round: after ${list[list.length-1]} comes ${list[0]} again.`],answer:ans,why,show:()=>{const n=((i+k)%list.length+list.length)%list.length;strip.children[n].style.background='var(--leaf)';strip.children[n].style.color='#fff'}});
+  const strip=el('div','ways strip');list.forEach((d,j)=>{const s=el('span','way',d.slice(0,3));if(j===i)s.style.background='var(--sun)';s.dataset.i=j;strip.appendChild(s)});stage.appendChild(strip);
+  const hops=()=>{const L=list.length;for(let j=1;j<=Math.abs(k);j++){const n=((i+Math.sign(k)*j)%L+L)%L;const c=strip.children[n];c.style.background=j===Math.abs(k)?'var(--leaf)':'rgba(76,174,124,.35)';if(j===Math.abs(k))c.style.color='#fff'}};
+  help({book:wk?`knew that ${k>0?`${k} day${k>1?'s':''} after`:'the day before'} ${list[i]} is ${ans}`:`knew the month ${k>0?'after':'before'} ${list[i]}`,clues:[`Find ${list[i]} in the yellow box on the strip. Then ${k>0?`move ${k} to the right`:'move one to the left'}.`,`The ${wk?'week':'year'} goes round: after ${list[list.length-1]} comes ${list[0]} again.`],answer:ans,why,show:hops});
   const opts=shuffle([ans].concat(shuffle(list.filter(d=>d!==ans)).slice(0,3)));
-  const ch=choices(opts,(o,b)=>{if(o===ans){b.classList.add('hit');lock(ch);win(`${cheer()} ${why}`)}else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?`Say the ${wk?'days':'months'} out loud from ${list[i]}, and point along the strip.`:`${k>0?'Forward':'Back'} ${Math.abs(k)} from ${list[i]} on the strip.`)}});controls.appendChild(ch)}});
+  const ch=choices(opts,(o,b)=>{if(o===ans){b.classList.add('hit');lock(ch);hops();win(`${cheer()} ${why}`)}else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?`Say the ${wk?'days':'months'} out loud from ${list[i]}, and point along the strip.`:`${k>0?'Forward':'Back'} ${Math.abs(k)} from ${list[i]} on the strip.`)}});controls.appendChild(ch)}});
 
 /* ---------- play loop ---------- */
 function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');$('#where').textContent=`${DOORS[SK[id].room][0]} · ${SK[id].title}`;
