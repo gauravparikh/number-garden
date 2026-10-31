@@ -353,7 +353,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 </style>
 
 <div id="home" class="view">
-  <div class="hometop"><h1 id="homeTitle">Number Garden</h1><button class="pill" id="bookBtn">Zoe's Book</button></div>
+  <div class="hometop"><h1 id="homeTitle">Number Garden</h1><button class="pill" id="bookBtn">My Book</button></div>
   <div class="homebug"><svg class="bug idle" id="homeBug" viewBox="0 0 60 60"></svg><div class="greet" id="greet"></div></div>
   <div class="note" id="noteCard" hidden></div>
   <div class="garden big"><svg id="gardenSvg" viewBox="0 0 400 150" aria-label="your garden"></svg><div class="sign" id="sign"></div></div>
@@ -384,7 +384,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 </div>
 
 <div id="book" class="view" hidden>
-  <div class="playtop"><button class="back" id="bookBack" aria-label="back to garden">‹</button><h2 id="bookTitle">Zoe's Book</h2></div>
+  <div class="playtop"><button class="back" id="bookBack" aria-label="back to garden">‹</button><h2 id="bookTitle">My Book</h2></div>
   <div class="shelf" id="shelf"></div>
   <div class="pages" id="pages"></div>
 </div>
@@ -427,7 +427,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 <div class="sheet view" id="sheet" hidden>
   <div class="playtop"><button class="back" id="closeSheet" aria-label="back">‹</button><h2 style="font-size:1.2rem">For grown-ups</h2></div>
   <div class="papa" id="papa"></div>
-  <label>Her name <input id="name" placeholder="Zoe" maxlength="20"></label>
+  <label>Child's name <input id="name" placeholder="e.g. Mia" maxlength="20"></label>
   <label>Me &amp; Dad mode (take turns) <input type="checkbox" id="duo"></label>
   <label style="flex-direction:column;align-items:stretch;gap:6px">A note for her (shows on her home screen)<input id="note" placeholder="e.g. I loved watching you count the acorns. Papa" maxlength="120"></label>
   <p id="cloud" class="cloud"></p>
@@ -462,7 +462,7 @@ const ROOMS=[
  {id:'space',title:'Shapes & space',icon:'<rect x="3" y="11" width="8" height="8" fill="var(--sky)"/><path d="M14 19l4-8 4 8z" fill="var(--accent)"/><circle cx="8" cy="6" r="3" fill="var(--leaf)"/>'},
  {id:'time',title:'Time',icon:'<circle cx="12" cy="12" r="9" fill="var(--card)" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" fill="none"/>'},
  {id:'meas',title:'Measure',icon:'<path d="M3 15h18v5H3z" fill="var(--sun)"/><path d="M6 15v3M9 15v2M12 15v3M15 15v2M18 15v3" stroke="#1a1a1a" stroke-width="1.5"/><path d="M4 11a8 8 0 0116 0" fill="var(--accent)"/>'},
- {id:'make',title:'Zoe makes it',icon:'<rect x="3" y="8" width="18" height="10" rx="3" fill="var(--plum)"/><circle cx="8" cy="13" r="2" fill="#fff"/><circle cx="16" cy="13" r="2" fill="#fff"/><path d="M12 3v5" stroke="var(--plum)" stroke-width="2"/><circle cx="12" cy="3" r="2" fill="var(--sun)"/>'}
+ {id:'make',title:'Makes it',icon:'<rect x="3" y="8" width="18" height="10" rx="3" fill="var(--plum)"/><circle cx="8" cy="13" r="2" fill="#fff"/><circle cx="16" cy="13" r="2" fill="#fff"/><path d="M12 3v5" stroke="var(--plum)" stroke-width="2"/><circle cx="12" cy="3" r="2" fill="var(--sun)"/>'}
 ];
 const SK={};
 function skill(def){SK[def.id]=def}
@@ -474,7 +474,8 @@ function speak(text){try{if(!window.speechSynthesis)return false;speechSynthesis
 function readBtn(getText){if(!window.speechSynthesis)return el('span');const b=el('button','readbtn','🔊 Read it to me');b.onclick=()=>speak(getText());return b}
 /* ---------- shared UI ---------- */
 const prompt=$('#prompt'),stage=$('#stage'),msg=$('#msg'),controls=$('#controls'),turnEl=$('#turn');
-const DOORS={sand:['Playground','Just play'],warm:['Warm-ups','Count the dots'],add:['Add & take','Sticks of ten'],pat:['Patterns','What comes next?'],puz:['Puzzles','Think hard'],story:['Stories','Read and solve'],space:['Shapes & space','Look closely'],time:['Time','Clocks and days'],meas:['Measure','Halves, lengths, guesses'],make:['Zoe makes it','You hide, I guess']};
+const DOORS={sand:['Playground','Just play'],warm:['Warm-ups','Count the dots'],add:['Add & take','Sticks of ten'],pat:['Patterns','What comes next?'],puz:['Puzzles','Think hard'],story:['Stories','Read and solve'],space:['Shapes & space','Look closely'],time:['Time','Clocks and days'],meas:['Measure','Halves, lengths, guesses'],make:['Makes it','You hide, I guess']};
+const doorName=room=>room==='make'?`${KID()} makes it`:DOORS[room][0];
 function show(id){document.querySelectorAll('.view').forEach(v=>v.hidden=v.id!==id);window.scrollTo(0,0);const c=document.getElementById('confetti');if(c&&id!=='done'){cancelAnimationFrame(window.__cf);c.getContext('2d').clearRect(0,0,c.width,c.height)}}
 let ctx=null; // current problem context
 function say(t,good){msg.textContent=t;msg.className='msg'+(good?' good':'')}
@@ -519,7 +520,7 @@ function win(text,noMastery){
   S.turn=1-S.turn;save();ding();renderTrail();const hr=controls.querySelector('#helpRow');if(hr)hr.remove();controls.appendChild(nextBtn());if(mine)tellPapa();
 }
 function addPage(text,big){S.book.unshift({t:text,d:Date.now(),big:!!big});if(S.book.length>200)S.book.length=200}
-const KID=()=>S.name||'Zoe';
+const KID=()=>S.name||'Sprout'; // a garden nickname until a name is typed in the grown-ups screen
 function miss(hint){ctx.hints++;say(hint,false);bugs('think');
   if(ctx.hints===2&&SK[S.skill]&&SK[S.skill].idea){const l=controls.querySelector('.learn');if(l){l.classList.add('glow');setTimeout(()=>say(hint+' Want Pip to show you the idea? Tap Learn.',false),1200)}}if(S.streakNow){S.streakNow=0;renderStreak()}const t=controls.querySelector('.typed');if(t){t.classList.remove('shake');void t.offsetWidth;t.classList.add('shake')}}
 /* every game declares help({clues:[...], answer, why, show}) so the Clue / Show me buttons work the same everywhere */
@@ -559,8 +560,8 @@ function stepTrail(){const tr=S.trail;if(!tr)return show('home');if(tr.i>=tr.ste
 function finishTrail(){const tr=S.trail;const day=Math.floor(Date.now()/864e5);S.flowers.push({room:tr.door,day});const lit=tr.lit.filter(Boolean).length;S.trail=null;checkBadges();save();
   $('#bigflower').innerHTML=`<svg viewBox="0 0 60 70">${flowerSvg(30,66,40,FLOWER[tr.door],2.2)}</svg>`;
   $('#doneTitle').textContent=`A new flower for ${KID()}!`;const n=S.flowers.length;
-  $('#doneText').textContent=`${KID()} walked the whole ${DOORS[tr.door][0]} trail${lit?` and solved ${inWords(lit)} problem${lit===1?'':'s'} herself`:' and looked carefully at every problem'}. The garden now has ${inWords(n)} flower${n===1?'':'s'}.`;
-  addPage(`${KID()} finished the ${DOORS[tr.door][0]} trail and planted flower number ${n}.`,true);
+  $('#doneText').textContent=`${KID()} walked the whole ${doorName(tr.door)} trail${lit?` and solved ${inWords(lit)} problem${lit===1?'':'s'} herself`:' and looked carefully at every problem'}. The garden now has ${inWords(n)} flower${n===1?'':'s'}.`;
+  addPage(`${KID()} finished the ${doorName(tr.door)} trail and planted flower number ${n}.`,true);
   show('done');drawGarden();confetti();ding();$('#againBtn').onclick=()=>startTrail(tr.door);$('#homeBtn').onclick=()=>{show('home')}}
 
 /* ---------- badges ---------- */
@@ -575,7 +576,7 @@ const BADGES=[
  {id:'garden',name:'Gardener',text:'grew ten flowers',test:()=>S.flowers.length>=10}
 ];
 function checkBadges(){BADGES.forEach(b=>{if(!S.badges[b.id]&&b.test()){S.badges[b.id]=Date.now();addPage(`${KID()} earned the ${b.name} badge: she ${b.text}.`,true)}})}
-function renderBook(){$('#bookTitle').textContent=`${KID()}'s Book`;const sh=$('#shelf');sh.innerHTML='';BADGES.forEach(b=>{const e=el('div','badge'+(S.badges[b.id]?'':' locked'),`<span>${S.badges[b.id]?'🏅':'○'}</span>${b.name}`);e.title=b.text;sh.appendChild(e)});
+function renderBook(){$('#bookTitle').textContent=S.name?`${S.name}'s Book`:'My Book';const sh=$('#shelf');sh.innerHTML='';BADGES.forEach(b=>{const e=el('div','badge'+(S.badges[b.id]?'':' locked'),`<span>${S.badges[b.id]?'🏅':'○'}</span>${b.name}`);e.title=b.text;sh.appendChild(e)});
   const pg=$('#pages');pg.innerHTML='';if(!S.book.length)pg.appendChild(el('div','page',`This book is empty. Every problem ${KID()} solves writes a line here.`));
   S.book.forEach(e=>{const d=new Date(e.d);pg.appendChild(el('div','page'+(e.big?' big':''),`${e.t}<small>${d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</small>`))})}
 
@@ -974,16 +975,16 @@ const IDEAS=[
 
  {id:'diff',strand:'Adding and taking',title:'How far apart',line:'The difference between two numbers',door:'add',thing:'acorns',book:'learned what the difference between two numbers is',
   pages:[
-   {say:`Here is the idea. "How many <em>more</em>?" and "how far <em>apart</em>?" are the same question. The answer is called the <em>difference</em>. Zoe has 9 acorns, Max has 6. How many more does Zoe have?`,draw:async(sc)=>{const a=row('Zoe'),b=row('Max');[a,b].forEach(r=>{r.style.justifyContent='flex-start';r.classList.add('wide')});sc.append(a,b);const A=[],B=[];for(let i=0;i<9;i++){const d=dot('in');A.push(d);a.appendChild(d)}for(let i=0;i<6;i++){const d=dot('in');B.push(d);b.appendChild(d)}await appear(A,'',90);await appear(B,'',90)}},
-   {say:`Line them up, one under the other. The ones that <em>stick out</em> past the shorter row are the difference. Count them: <em>3</em>.`,draw:async(sc)=>{const a=row('Zoe'),b=row('Max');[a,b].forEach(r=>{r.style.justifyContent='flex-start';r.classList.add('wide')});sc.append(a,b);const A=[];for(let i=0;i<9;i++){const d=dot('');A.push(d);a.appendChild(d)}for(let i=0;i<6;i++)b.appendChild(dot(''));await wait(500);for(let i=6;i<9;i++){A[i].classList.add('glow');A[i].appendChild(el('b','',i-5));playNote(i);await wait(300)}sc.appendChild(el('div','bigword','<em>3</em> apart'))}},
+   {say:`Here is the idea. "How many <em>more</em>?" and "how far <em>apart</em>?" are the same question. The answer is called the <em>difference</em>. ${KID()} has 9 acorns, Max has 6. How many more does ${KID()} have?`,draw:async(sc)=>{const a=row(KID()),b=row('Max');[a,b].forEach(r=>{r.style.justifyContent='flex-start';r.classList.add('wide')});sc.append(a,b);const A=[],B=[];for(let i=0;i<9;i++){const d=dot('in');A.push(d);a.appendChild(d)}for(let i=0;i<6;i++){const d=dot('in');B.push(d);b.appendChild(d)}await appear(A,'',90);await appear(B,'',90)}},
+   {say:`Line them up, one under the other. The ones that <em>stick out</em> past the shorter row are the difference. Count them: <em>3</em>.`,draw:async(sc)=>{const a=row(KID()),b=row('Max');[a,b].forEach(r=>{r.style.justifyContent='flex-start';r.classList.add('wide')});sc.append(a,b);const A=[];for(let i=0;i<9;i++){const d=dot('');A.push(d);a.appendChild(d)}for(let i=0;i<6;i++)b.appendChild(dot(''));await wait(500);for(let i=6;i<9;i++){A[i].classList.add('glow');A[i].appendChild(el('b','',i-5));playNote(i);await wait(300)}sc.appendChild(el('div','bigword','<em>3</em> apart'))}},
    {say:`A second way: <em>hop</em>. Start at the small number, 6, and hop up to 9. Count the hops: <em>1, 2, 3</em>.`,draw:async(sc)=>{const w=el('div','walk');sc.appendChild(w);let pos=6;w.innerHTML=walkSvg(pos);const b=el('div','bigword','6');sc.appendChild(b);for(let i=0;i<3;i++){await wait(650);pos++;w.innerHTML=walkSvg(pos);b.textContent=String(pos);playNote(pos)}b.innerHTML='3 hops: 9 − 6 = <em>3</em>'}},
-   {say:`A third way: <em>take away</em>. Cover Max's 6 inside Zoe's 9. What is left uncovered is the difference. 9 take away 6 leaves 3.`,draw:async(sc)=>{const a=row('');a.classList.add('wide');a.style.justifyContent='flex-start';sc.appendChild(a);const A=[];for(let i=0;i<9;i++){const d=dot('');A.push(d);a.appendChild(d)}await wait(600);for(let i=0;i<6;i++){A[i].classList.add('gone');await wait(180)}sc.appendChild(el('div','bigword','9 − 6 = <em>3</em>'))}},
+   {say:`A third way: <em>take away</em>. Cover Max's 6 inside ${KID()}'s 9. What is left uncovered is the difference. 9 take away 6 leaves 3.`,draw:async(sc)=>{const a=row('');a.classList.add('wide');a.style.justifyContent='flex-start';sc.appendChild(a);const A=[];for(let i=0;i<9;i++){const d=dot('');A.push(d);a.appendChild(d)}await wait(600);for(let i=0;i<6;i++){A[i].classList.add('gone');await wait(180)}sc.appendChild(el('div','bigword','9 − 6 = <em>3</em>'))}},
    {say:`So "how far apart" and "take away" are the <em>same question</em> from two sides. 6 + 3 = 9, and 9 − 6 = 3. Three facts, one picture.`,draw:async(sc)=>{sc.appendChild(el('div','bigword','6 + <em>3</em> = 9'));await wait(600);sc.appendChild(el('div','bigword','9 − 6 = <em>3</em>'));await wait(600);sc.appendChild(el('div','bigword','9 − 3 = <em>6</em>'))}},
    {say:`<em>Why</em> hopping up works: the hops from 6 to 9 are exactly the acorns that stick out. Counting up and taking away are measuring the same gap.`,draw:async(sc)=>{const a=row('');a.classList.add('wide');a.style.justifyContent='flex-start';sc.appendChild(a);for(let i=0;i<9;i++){const d=dot(i<6?'':'new');if(i>=6)d.appendChild(el('b','',i+1));a.appendChild(d)}sc.appendChild(el('div','bigword','7, 8, 9: the <em>gap</em> is 3'))}},
    {say:`The rule: to find the difference, start at the <em>smaller</em> number and count up to the bigger one. Or take the smaller away from the bigger. Never the other way round.`,draw:async(sc)=>{sc.appendChild(el('div','bigword','small → up to big'));sc.appendChild(el('div','bigword','big − small'))}},
-   {say:`The trap: "how many more" does <em>not</em> mean add them together. Zoe 9 and Max 6 is not 15 more. It is the gap between them, 3. Watch for the word "more" after a number.`,draw:async(sc)=>{sc.appendChild(el('div','bigword','9 + 6 = 15 ✗'));await wait(700);sc.appendChild(el('div','bigword','9 − 6 = <em>3</em> more ✓'))}},
+   {say:`The trap: "how many more" does <em>not</em> mean add them together. ${KID()} 9 and Max 6 is not 15 more. It is the gap between them, 3. Watch for the word "more" after a number.`,draw:async(sc)=>{sc.appendChild(el('div','bigword','9 + 6 = 15 ✗'));await wait(700);sc.appendChild(el('div','bigword','9 − 6 = <em>3</em> more ✓'))}},
    {say:`Where you meet it: <em>ages</em> (your cousin is 8, you are 5: 3 years apart), <em>scores</em> (7 to 4: winning by 3), and <em>how many more</em> are needed: you have 6 beads and need 10, so 4 more.`,draw:async(sc)=>{sc.appendChild(el('div','bigword','8 and 5: <em>3</em> years apart'));sc.appendChild(el('div','bigword','have 6, need 10: <em>4</em> more'))}},
-   {say:`Your turn! Drag Max's acorns into the boxes under Zoe's. The ones with <em>no acorn underneath</em> are the difference.`,draw:async(sc)=>{const a=rnd(6,9),b=rnd(2,a-2);sc.appendChild(el('div','instr',`Zoe has ${a}. Max has ${b}. How many more does Zoe have?`));const top=row('Zoe');top.classList.add('wide');top.style.justifyContent='flex-start';const A=[];for(let i=0;i<a;i++){const d=dot('');A.push(d);top.appendChild(d)}
+   {say:`Your turn! Drag Max's acorns into the boxes under ${KID()}'s. The ones with <em>no acorn underneath</em> are the difference.`,draw:async(sc)=>{const a=rnd(6,9),b=rnd(2,a-2);sc.appendChild(el('div','instr',`${KID()} has ${a}. Max has ${b}. How many more does ${KID()} have?`));const top=row(KID());top.classList.add('wide');top.style.justifyContent='flex-start';const A=[];for(let i=0;i<a;i++){const d=dot('');A.push(d);top.appendChild(d)}
      const under=row('Max');under.classList.add('wide');under.style.justifyContent='flex-start';const zs=zones(a);zs.forEach(z=>under.appendChild(z));const {t,items}=trayOf(b);sc.append(top,under,t);const out=el('div','bigword','');sc.appendChild(out);
      items.forEach(d=>makeDraggable(d,{onDrop:()=>{if(fullCount(zs)===b){zs.forEach((z,i)=>{if(!z.classList.contains('full'))A[i].classList.add('glow')});out.innerHTML=`<em>${a-b}</em> more. ${a} − ${b} = ${a-b}`;bugs('happy');confetti()}}}))}},
    {say:`Your turn again, no acorns. Two numbers. Tap how far apart they are. Three in a row and you have it.`,draw:async(sc)=>{let got=0;const big=el('div','bigword','');const r=el('div','row');r.style.gap='8px';sc.append(big,r);const next=()=>{const a=rnd(4,12),b=rnd(1,a-1);const ans=a-b;big.innerHTML=`${a} and ${b}: how far apart?`;const opts=shuffle([ans,ans+1,a+b,Math.max(1,ans-1)].filter((v,i,x)=>x.indexOf(v)===i)).slice(0,4);if(!opts.includes(ans))opts[0]=ans;r.innerHTML='';opts.forEach(v=>{const btn=el('button','choice',v);btn.onclick=()=>{if(v===ans){btn.classList.add('hit');got++;playNote(got*4);big.innerHTML=got>=3?`${a} − ${b} = <em>${ans}</em>. You have it!`:`${a} − ${b} = <em>${ans}</em>`;if(got>=3){bugs('happy');confetti()}else setTimeout(next,800)}else{btn.classList.add('miss');btn.disabled=true;big.innerHTML=v===a+b?'Not together. The gap between them.':`Count up from ${b} to ${a}.`;bugs('think')}};r.appendChild(btn)})};next()}},
@@ -991,8 +992,8 @@ const IDEAS=[
   ],
   tries:()=>{const kind=pick(['apart','apart','more','trap','missing']);const a=rnd(5,15),b=rnd(1,a-1);
    if(kind==='apart')return{q:`How far apart are ${a} and ${b}?`,kind:'num',ans:a-b,draw:st=>{currentThing='acorns';const r1=dotsRow2(a),r2=dotsRow2(b);r1.style.justifyContent=r2.style.justifyContent='flex-start';st.append(r1,r2)},explain:`${b} + ${a-b} = ${a}, so they are ${a-b} apart.`,show:st=>{st.querySelector('.srow').items.slice(b).forEach(d=>d.classList.add('glow'))}};
-   if(kind==='more')return{q:`Zoe has ${a}. Max has ${b}. How many more does Zoe have?`,kind:'num',ans:a-b,draw:st=>st.appendChild(el('div','bigword',`${a} and ${b}`)),explain:`Count up from ${b} to ${a}: ${a-b} more.`};
-   if(kind==='trap')return{q:`Zoe has ${a} and Max has ${b}. "How many more" means…`,kind:'choice',opts:[`${a} − ${b}`,`${a} + ${b}`],ans:`${a} − ${b}`,draw:()=>{},explain:`"More" after a number means the gap between them: ${a} − ${b} = ${a-b}.`};
+   if(kind==='more')return{q:`${KID()} has ${a}. Max has ${b}. How many more does ${KID()} have?`,kind:'num',ans:a-b,draw:st=>st.appendChild(el('div','bigword',`${a} and ${b}`)),explain:`Count up from ${b} to ${a}: ${a-b} more.`};
+   if(kind==='trap')return{q:`${KID()} has ${a} and Max has ${b}. "How many more" means…`,kind:'choice',opts:[`${a} − ${b}`,`${a} + ${b}`],ans:`${a} − ${b}`,draw:()=>{},explain:`"More" after a number means the gap between them: ${a} − ${b} = ${a-b}.`};
    return{q:`${b} + ? = ${a}`,kind:'num',ans:a-b,draw:st=>st.appendChild(el('div','bigword',`${b} + <span class="ones">?</span> = ${a}`)),explain:`The missing number is the gap: ${a-b}.`}}},
  {id:'tens',strand:'Numbers',title:'Tens and ones',line:'Why 23 is 2 sticks and 3 dots',door:'add',thing:'blueberries',book:'learned how tens and ones make a number',
   pages:[
@@ -1485,9 +1486,9 @@ function openToy(toy){show('toy');$('#toyTitle').textContent=toy.title;const st=
   const line=toy.mount(st,ct,tg,m);$('#toyBack').onclick=()=>{addPage(`${KID()} ${line()}.`,false);S.counts['toy_'+toy.id]=(S.counts['toy_'+toy.id]||0)+1;save();renderToys();show('playground')}}
 
 /* ================= LOGIC: who has what ================= */
-const KIDS=['Zoe','Max','Lily','Sam'],PETS=[['cat','🐱'],['dog','🐶'],['fish','🐟'],['bird','🐦']];
+const KIDS=[null,'Max','Lily','Sam'],PETS=[['cat','🐱'],['dog','🐶'],['fish','🐟'],['bird','🐦']];
 skill({id:'logic',room:'puz',title:'Who has what?',levels:2,mount(lv){
-  const n=lv===1?3:4;const kids=KIDS.slice(0,n).map(k=>k==='Zoe'?KID():k),pets=PETS.slice(0,n);
+  const n=lv===1?3:4;const kids=KIDS.slice(0,n).map(k=>k||KID()),pets=PETS.slice(0,n);
   const perms=a=>a.length<=1?[a]:a.flatMap((x,i)=>perms(a.filter((_,j)=>j!==i)).map(p=>[x].concat(p)));const all=perms([...Array(n).keys()]);
   let sol,clues;for(let tries=0;tries<60;tries++){sol=pick(all);clues=[];let cands=all.slice();
     const pool=shuffle([...Array(n).keys()].flatMap(k=>[...Array(n).keys()].map(q=>({k,q}))));
@@ -1824,7 +1825,7 @@ skill({id:'calendar',room:'time',title:'Days and months',idea:'mars',levels:3,as
   const ch=choices(opts,(o,b)=>{if(o===ans){b.classList.add('hit');lock(ch);hops();win(`${cheer()} ${why}`)}else{b.classList.add('miss');b.disabled=true;miss(ctx.hints===0?`Say the ${wk?'days':'months'} out loud from ${list[i]}, and point along the strip.`:`${k>0?'Forward':'Back'} ${Math.abs(k)} from ${list[i]} on the strip.`)}});controls.appendChild(ch)}});
 
 /* ---------- play loop ---------- */
-function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');$('#where').textContent=`${DOORS[SK[id].room][0]} · ${SK[id].title}`;
+function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';controls.innerHTML='';say('');$('#where').textContent=`${doorName(SK[id].room)} · ${SK[id].title}`;
   ctx={hints:0,done:false,turn:S.duo?S.turn:0};
   turnEl.textContent=S.duo?(ctx.turn===1?"Dad's turn":`${KID()}'s turn`):'';
   const m=S.m[id]||(S.m[id]={lv:1,streak:0,low:0});
@@ -1866,7 +1867,7 @@ function greeting(){const h=new Date().getHours();const hi=h<12?'Good morning':h
   else if(last===today)line=`${hi}, <em>${k}</em>! Last thing you did: ${big.t.replace(k,'you').replace(/\bshe\b/g,'you')}`;
   else{const n=S.days.length;line=`${hi}, <em>${k}</em>! Pip here. Welcome back. ${big?big.t.replace(k,'You').replace(/\bshe\b/g,'you')+' ':''}You have played on ${inWords(n)} different day${n===1?'':'s'}.`}
   return line+' <br><span style="color:var(--muted)">'+MOTTOS[today%MOTTOS.length]+'</span>'}
-function renderHome(){$('#homeTitle').textContent='Number Garden';$('#bookBtn').textContent=`${KID()}'s Book`;$('#greet').innerHTML=greeting();const gb=$('#greetRead');if(gb)gb.remove();const rb=readBtn(()=>$('#greet').textContent+(S.note?' A note from Papa: '+S.note:''));rb.id='greetRead';document.querySelector('.homebug').after(rb);const nc=$('#noteCard');nc.hidden=!S.note;if(S.note)nc.innerHTML=`<small>A note from Papa</small>${S.note.replace(/</g,'&lt;')}`;drawGarden();renderDoors()}
+function renderHome(){$('#homeTitle').textContent='Number Garden';$('#bookBtn').textContent=S.name?`${S.name}'s Book`:'My Book';$('#greet').innerHTML=greeting();const gb=$('#greetRead');if(gb)gb.remove();const rb=readBtn(()=>$('#greet').textContent+(S.note?' A note from Papa: '+S.note:''));rb.id='greetRead';document.querySelector('.homebug').after(rb);const nc=$('#noteCard');nc.hidden=!S.note;if(S.note)nc.innerHTML=`<small>A note from Papa</small>${S.note.replace(/</g,'&lt;')}`;drawGarden();renderDoors()}
 
 /* ---------- wiring ---------- */
 $('#gearBtn').onclick=()=>{renderLevels();show('sheet')};

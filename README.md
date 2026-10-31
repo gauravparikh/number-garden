@@ -19,14 +19,14 @@ Open `index.html` in any browser, or visit the GitHub Pages site. On a phone or 
 | Playground | Counters and sticks · Number line walk · Balance scale | Free play with no questions: feel ten snapping into a stick, hop a sum along the line, load a scale and watch it tip |
 | Time | What time is it? · How long until…? · Days and months | Reading the clock to five minutes, elapsed time by counting on, the week and the year going round |
 | Measure | Parts of a whole · How long? · About how many? | Halves and quarters of shapes and of groups, measuring with units laid end to end, estimating against a box of 10 |
-| Zoe makes it | You hide the number · You make the rule · You write the story · You make the pattern | She sets the puzzle and the app solves it, checking her answers and teaching when one is off |
+| (Name) makes it | You hide the number · You make the rule · You write the story · You make the pattern | She sets the puzzle and the app solves it, checking her answers and teaching when one is off |
 | Big Ideas | **Numbers:** Counting on · Skip counting · Tens and ones · Bigger and smaller · Number neighbors **Adding and taking:** Making ten · How far apart · What = really means **Groups:** Even and odd · Double and half · Equal groups · Fair sharing **Patterns:** Rules and machines **Shapes:** Shapes and mirrors **Measure:** Money · Measuring **Time:** Reading the clock · Day and night · Why 24, 60 and 60? · A day on Mars · Before there were clocks · Why time is precious · What is time for? | Six-page picture books narrated by the ladybug (see it, the rule, where you meet it, the trap, your turn by drag-and-drop, it's the same as…), then three try-its and a link to the game |
 
 ## How a session works
 
 The home screen is the garden with nine doors. A ladybug mascot bobs on the home screen and in the corner of the play card, jumps on a right answer and tilts her head on a miss. Tapping a door starts a **trail** of five stepping stones, all from that door (a door with fewer than five games cycles through them, never the same problem twice). Each solved stone lights up; the fifth plants a flower in the garden. Levels adapt silently and are never shown to the child.
 
-**Zoe's Book** writes one sentence she can read for every problem she solves ("Zoe took 9 away from 23 and got 14"), a bigger entry for each level-up and finished trail, and holds the badge shelf (First Flower, Ten-Breaker, Riddle Solver, Many Ways, Balance Master, Pattern Spotter, Story Reader, Gardener).
+**My Book** (or "(Name)'s Book" once a name is set in the grown-ups screen) writes one sentence she can read for every problem she solves ("Sprout took 9 away from 23 and got 14"), a bigger entry for each level-up and finished trail, and holds the badge shelf (First Flower, Ten-Breaker, Riddle Solver, Many Ways, Balance Master, Pattern Spotter, Story Reader, Gardener).
 
 The grown-up settings are behind the faint "for grown-ups" link at the bottom of the home screen, with a short Papa page: ideas she has read, strongest games, what needs a second look, her last five book lines.
 
