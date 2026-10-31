@@ -1,0 +1,16 @@
+{
+  "name": "Number Garden",
+  "short_name": "Garden",
+  "description": "A math garden for a five-year-old: games, picture books and flowers.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eaf4ee",
+  "theme_color": "#eaf4ee",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
