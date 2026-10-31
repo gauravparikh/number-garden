@@ -2,7 +2,7 @@
 
 A single-file math game for a five-year-old who already does Kumon arithmetic and needs the other half: number sense, strategy, patterns, and puzzles with no procedure.
 
-Open `index.html` in any browser, or visit the GitHub Pages site. On a phone or tablet, use "Add to Home Screen": the manifest and service worker (`manifest.webmanifest`, `sw.js`, `icons/`) make it a real installed app with its own icon that works offline. Progress lives in the browser's local storage; the claude.ai copy also saves to the cloud.
+Open `index.html` in any browser, or play it at https://playmaths.github.io/number-garden/. On a phone or tablet, use "Add to Home Screen": the manifest and service worker (`manifest.webmanifest`, `sw.js`, `icons/`) make it a real installed app with its own icon that works offline. Progress lives in the browser's local storage; the claude.ai copy also saves to the cloud.
 
 **Saving.** Progress is written to the browser's local storage immediately, and, on the published claude.ai page, to the page's cloud database (`db` capability) a moment later. On load the newer of the two wins, so a cleared browser or a second device picks up where she left off. Outside claude.ai (a plain local file) only the browser copy exists.
 
