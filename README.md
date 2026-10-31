@@ -19,7 +19,7 @@ Open `index.html` in any browser, or play it at https://playmaths.github.io/numb
 | Playground | Counters and sticks · Number line walk · Balance scale | Free play with no questions: feel ten snapping into a stick, hop a sum along the line, load a scale and watch it tip |
 | Time | What time is it? · How long until…? · Days and months | Reading the clock to five minutes, elapsed time by counting on, the week and the year going round |
 | Measure | Parts of a whole · How long? · About how many? | Halves and quarters of shapes and of groups, measuring with units laid end to end, estimating against a box of 10 |
-| (Name) makes it | You hide the number · You make the rule · You write the story · You make the pattern | She sets the puzzle and the app solves it, checking her answers and teaching when one is off |
+| (Name) makes it | You hide the number · You make the rule · You write the story · You make the pattern | The child sets the puzzle and the app solves it, checking her answers and teaching when one is off |
 | Big Ideas | **Numbers:** Counting on · Skip counting · Tens and ones · Bigger and smaller · Number neighbors **Adding and taking:** Making ten · How far apart · What = really means **Groups:** Even and odd · Double and half · Equal groups · Fair sharing **Patterns:** Rules and machines **Shapes:** Shapes and mirrors **Measure:** Money · Measuring **Time:** Reading the clock · Day and night · Why 24, 60 and 60? · A day on Mars · Before there were clocks · Why time is precious · What is time for? | Six-page picture books narrated by the ladybug (see it, the rule, where you meet it, the trap, your turn by drag-and-drop, it's the same as…), then three try-its and a link to the game |
 
 ## How a session works
@@ -44,6 +44,7 @@ In Stories and the dots warm-up she can touch each object to count it herself; t
 - Wrong answers get a hint that points at the structure, never an X.
 - Levels adapt on their own: three clean problems in a row moves up, two hint-heavy problems moves down. The gear menu lets a grown-up nudge any level.
 - "Me & Dad" mode alternates turns on the same games so the child watches an adult think out loud.
+- The grown-ups screen takes the child's name and pronouns (she, he or they); every story, hint and book line uses them, with the verbs agreeing.
 - Every finished trail plants a flower. Confetti is reserved for flowers, level-ups, and 5- and 10-in-a-row streaks.
 - Streaks count first-try answers in a row within a session; they are celebrated, never punished, and there is no daily streak to break.
 - The home screen greets her by name with what she did last time and a rotating one-line motto; Papa can leave a note from the grown-up screen.
