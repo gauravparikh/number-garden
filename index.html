@@ -431,6 +431,8 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
   <label>Pronouns <select id="pro"><option value="she">she / her</option><option value="he">he / him</option><option value="they">they / them</option></select></label>
   <label>Me &amp; Dad mode (take turns) <input type="checkbox" id="duo"></label>
   <label style="flex-direction:column;align-items:stretch;gap:6px">A note for the child (shows on the home screen)<input id="note" placeholder="e.g. I loved watching you count the acorns. Papa" maxlength="120"></label>
+  <label style="flex-direction:column;align-items:stretch;gap:6px">Family code (type the same code on every device, and the garden follows)<div class="row" style="justify-content:flex-start"><input id="family" placeholder="e.g. K7PM-3QX2" maxlength="9" style="text-transform:uppercase;width:150px"><button class="btn quiet" id="newFamily" type="button">New family</button></div></label>
+  <p id="famState" class="cloud"></p>
   <p id="cloud" class="cloud"></p>
   <p>Levels move by themselves: three problems in a row with no hints goes up a level, two problems that needed hints goes down. Nudge a level here if the child is bored or stuck. Levels are never shown; the child sees flowers, the book, and badges.</p>
   <table id="levels"></table>
@@ -446,12 +448,30 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.
 const S=Object.assign({stars:0,dad:0,name:'',duo:false,m:{},room:'add',skill:null,turn:0,book:[],flowers:[],badges:{},counts:{},trail:null,streakNow:0,bestStreak:0,note:'',days:[],savedAt:0},store.get('ng2',{}));
 /* save: browser storage right away, cloud (db capability) a moment later; the cloud copy wins on load when it is newer */
 let cloud=null,cloudTimer=null,cloudWriting=null,cloudState='';
-function save(){S.savedAt=Date.now();store.set('ng2',S);if(cloud){clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1500)}}
+function save(){S.savedAt=Date.now();store.set('ng2',S);if(cloud){clearTimeout(cloudTimer);cloudTimer=setTimeout(pushCloud,1500)}if(famOK()){clearTimeout(famTimer);famTimer=setTimeout(famPush,1500)}}
 async function pushCloud(){if(!cloud)return;if(cloudWriting){cloudTimer=setTimeout(pushCloud,1500);return}const body=JSON.parse(JSON.stringify(S));cloudWriting=cloud.doc('progress/main').set(body).then(()=>{cloudState='saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}).catch(e=>{cloudState='could not save ('+(e&&e.code||'error')+')'}).finally(()=>{cloudWriting=null;const c=document.getElementById('cloud');if(c)c.textContent=cloudLine()})}
 function cloudLine(){return cloud?`Progress is saved to the cloud for this page (${cloudState||'connected'}), so it carries over between devices and survives a cleared browser.`:'Progress is saved in this browser only. Sign in to Claude on this device for cloud saving across devices.'}
 async function connectCloud(){try{if(!window.claude||!claude.use)return;const db=await claude.use('db');if(!db)return;cloud=db;const snap=await db.doc('progress/main').get();
   if(snap.exists){const d=snap.data();if(d&&(d.savedAt||0)>(S.savedAt||0)){Object.assign(S,d);store.set('ng2',S);renderHome();if(!$('#home').hidden)show('home');else if(!$('#play').hidden&&S.trail)play(S.trail.steps[S.trail.i])}else pushCloud()}
   else pushCloud();cloudState='connected';const c=document.getElementById('cloud');if(c)c.textContent=cloudLine()}catch(e){cloud=null}}
+
+/* ---------- family code: one garden on every device, through Firestore's plain web API; the browser copy stays as the offline fallback ---------- */
+const FIREBASE={apiKey:'AIzaSyCgG83-cqWqDuzOWrIQwqLBMF7sTwOkbWA',projectId:'playmaths-6a181'};
+const famUrl=code=>`https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/families/${encodeURIComponent(code)}?key=${FIREBASE.apiKey}`;
+let famTimer=null,famBusy=false,famState='';
+const famOK=()=>/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(S.family||'');
+function newFamilyCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const pick4=()=>Array.from({length:4},()=>A[Math.floor(Math.random()*A.length)]).join('');return pick4()+'-'+pick4()}
+function famLine(){const f=$('#famState');if(!f)return;f.textContent=famOK()?`Family ${S.family}: ${famState||'connecting…'}`:'No family code yet. Tap New family on the first device, then type that code on the others.'}
+async function famPush(){if(!famOK()||!navigator.onLine)return;if(famBusy){famTimer=setTimeout(famPush,1500);return}famBusy=true;
+  try{const body={fields:{data:{stringValue:JSON.stringify(S)},savedAt:{integerValue:String(S.savedAt||0)}}};const r=await fetch(famUrl(S.family),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});famState=r.ok?'saved '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'could not save ('+r.status+')'}catch(e){famState='offline, saved on this device'}
+  famBusy=false;famLine()}
+async function famPull(){if(!famOK()||!navigator.onLine)return;try{const r=await fetch(famUrl(S.family));
+    if(r.status===404){famPush();return}if(!r.ok){famState='could not read ('+r.status+')';famLine();return}
+    const doc=await r.json();const d=JSON.parse(doc.fields.data.stringValue);
+    const fresh=!S.stars&&!(S.book||[]).length&&!(S.flowers||[]).length,remoteHas=!!(d.stars||(d.book||[]).length||(d.flowers||[]).length); // a device with no progress takes the family's garden, if the family has one
+    if((fresh&&remoteHas)||(d.savedAt||0)>(S.savedAt||0)){const code=S.family;Object.assign(S,d);S.family=code;if(S.skill&&!S.m[S.skill])S.m[S.skill]={lv:1,streak:0,low:0};store.set('ng2',S);famState='up to date';renderHome();$('#name').value=S.name||'';$('#pro').value=S.pro||'she';if(!$('#sheet').hidden)renderLevels();else if(!$('#home').hidden)show('home');else if(!$('#play').hidden&&S.trail)play(S.trail.steps[S.trail.i])}
+    else{famState='up to date';if((d.savedAt||0)<(S.savedAt||0))famPush()}}catch(e){famState='offline, saved on this device'}famLine()}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')famPull()});
 
 /* ---------- rooms & skills ---------- */
 const ROOMS=[
@@ -504,7 +524,7 @@ function tellPapa(){S.tellCount=(S.tellCount||0)+1;if(S.tellCount%4!==0||!ctx||c
 /* mastery + reward */
 function win(text,noMastery){
   if(ctx.done)return;ctx.done=true;say(text,true);bugs('happy');
-  const m=S.m[S.skill];let levelUp=false;
+  const m=S.m[S.skill]||(S.m[S.skill]={lv:1,streak:0,low:0});let levelUp=false;
   if(!noMastery){if(ctx.hints===0){m.streak++;m.low=0;if(m.streak>=3&&m.lv<MAX(S.skill)){m.lv++;m.streak=0;levelUp=true}}
     else{m.streak=0;if(ctx.hints>=2){m.low++;if(m.low>=2&&m.lv>1){m.lv--;m.low=0}}else m.low=0}}
   const mine=!(S.duo&&ctx.turn===1);
@@ -537,7 +557,7 @@ function helpRow(){const r=el('div','row');r.id='helpRow';const c=el('button','b
 function reveal(){const h=ctx.help;ctx.done=true;S.streakNow=0;renderStreak();controls.querySelectorAll('button').forEach(b=>{if(b.closest('#helpRow'))return;b.disabled=true});
   if(h.show)try{h.show()}catch(e){}
   say((h.answer!=null?`It's ${h.answer}. `:'')+(h.why||''),true);
-  const m=S.m[S.skill];m.streak=0;m.low++;if(m.low>=2&&m.lv>1){m.lv--;m.low=0}S.turn=1-S.turn;save();
+  const m=S.m[S.skill]||(S.m[S.skill]={lv:1,streak:0,low:0});m.streak=0;m.low++;if(m.low>=2&&m.lv>1){m.lv--;m.low=0}S.turn=1-S.turn;save();
   const r=controls.querySelector('#helpRow');if(r)r.remove();controls.appendChild(nextBtn())}
 function renderStars(){}
 
@@ -1887,9 +1907,11 @@ $('#name').value=S.name;$('#name').oninput=e=>{S.name=e.target.value.trim();save
 $('#pro').value=S.pro||'she';$('#pro').onchange=e=>{S.pro=e.target.value;save();renderLevels()};
 $('#duo').checked=S.duo;$('#duo').onchange=e=>{S.duo=e.target.checked;save()};
 $('#note').value=S.note||'';$('#note').oninput=e=>{S.note=e.target.value;save()};
-$('#gearBtn').addEventListener('click',()=>{$('#cloud').textContent=cloudLine()});
+$('#gearBtn').addEventListener('click',()=>{$('#cloud').textContent=cloudLine();$('#family').value=S.family||'';famLine()});
+$('#family').oninput=e=>{const v=e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');e.target.value=v;S.family=v;store.set('ng2',S);/* no save(): typing a code is not new progress, so the family's copy stays newer */if(famOK()){famState='';famLine();famPull()}else famLine()};
+$('#newFamily').onclick=()=>{S.family=newFamilyCode();$('#family').value=S.family;famState='';save();famLine();famPush()};
 $('#resetAll').onclick=()=>{S.stars=0;S.dad=0;S.m={};S.turn=0;S.book=[];S.flowers=[];S.badges={};S.counts={};S.trail=null;S.streakNow=0;S.bestStreak=0;S.days=[];S.last={};S.tellCount=0;save();renderLevels()};
-renderHome();connectCloud();
+renderHome();connectCloud();famPull();
 /* installable: register the service worker when served from a real site (not from the claude.ai page, which has no sw.js) */
 if('serviceWorker' in navigator&&location.protocol==='https:'&&!location.hostname.endsWith('claude.ai')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 if(S.trail&&S.trail.steps&&S.trail.steps.every(id=>SK[id])){show('play');play(S.trail.steps[S.trail.i])}else{S.trail=null;show('home')}
