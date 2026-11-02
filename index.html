@@ -263,6 +263,9 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .btn{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:13px 24px;font-family:var(--display);font-size:1.15rem;font-weight:600}
 .btn.quiet{background:var(--bg);color:var(--fg)}
+.tell{background:var(--card);border-radius:999px;padding:6px 12px;font-family:var(--display);font-size:.9rem;display:flex;align-items:center;gap:4px;color:var(--muted);flex:none}
+.tellgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tellgrid .choice{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 8px;font-size:1.05rem}.tellgrid .choice b{font-size:2.2rem;line-height:1}
 .btn.learn.glow{background:var(--sun);color:#1a1a1a;animation:pop .6s ease 3}
 .choice{background:var(--bg);border-radius:16px;padding:12px 18px;font-family:var(--display);font-size:1.3rem;font-weight:600;min-width:64px}
 .choice.hit{background:var(--sun);color:#1a1a1a}.choice.miss{background:var(--line)}
@@ -363,7 +366,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 </div>
 
 <div id="play" class="view" hidden>
-  <div class="playtop"><button class="back" id="backBtn" aria-label="back to garden">‹</button><div class="trail" id="trail"></div><div class="streak" id="streakChip" hidden></div><div class="turn" id="turn"></div></div>
+  <div class="playtop"><button class="back" id="backBtn" aria-label="back to garden">‹</button><div class="trail" id="trail"></div><button class="tell" id="tellBtn" aria-label="tell Pip something">🐞<span>Tell Pip</span></button><div class="streak" id="streakChip" hidden></div><div class="turn" id="turn"></div></div>
   <div class="card" id="card">
     <svg class="bug idle" id="cardBug" viewBox="0 0 60 60"></svg>
     <div class="where" id="where"></div>
@@ -410,7 +413,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 </div>
 
 <div id="learn" class="view" hidden>
-  <div class="playtop"><button class="back" id="learnBack" aria-label="back to ideas">‹</button><h2 id="learnTitle"></h2></div>
+  <div class="playtop"><button class="back" id="learnBack" aria-label="back to ideas">‹</button><h2 id="learnTitle" style="flex:1"></h2><button class="tell" id="tellBtn2" aria-label="tell Pip something">🐞<span>Tell Pip</span></button></div>
   <div class="book">
     <div class="scenebox" id="sceneBox"><div class="sky"></div><div class="ground"></div><div class="sceneInner" id="sceneInner"></div></div>
     <div class="narr"><svg class="bug idle" id="narrBug" viewBox="0 0 60 60"></svg><div class="bubble" id="bubble"></div></div>
@@ -424,6 +427,15 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
   </div>
 </div>
 
+<div id="tell" class="view" hidden>
+  <div class="playtop"><button class="back" id="tellBack" aria-label="back">‹</button><h2>Tell Pip</h2></div>
+  <div class="card">
+    <div class="narr"><svg class="bug idle" id="tellBug" viewBox="0 0 60 60"></svg><div class="bubble" id="tellBubble">Something silly? Tap what happened and I'll tell the gardeners.</div></div>
+    <div class="tellgrid" id="tellGrid"></div>
+    <div class="row" id="tellDone" hidden><button class="btn" id="tellReturn">Back to my puzzle</button></div>
+  </div>
+</div>
+
 <div class="sheet view" id="sheet" hidden>
   <div class="playtop"><button class="back" id="closeSheet" aria-label="back">‹</button><h2 style="font-size:1.2rem">For grown-ups</h2></div>
   <div class="papa" id="papa"></div>
@@ -433,6 +445,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
   <label style="flex-direction:column;align-items:stretch;gap:6px">A note for the child (shows on the home screen)<input id="note" placeholder="e.g. I loved watching you count the acorns. Papa" maxlength="120"></label>
   <label style="flex-direction:column;align-items:stretch;gap:6px">Family code (type the same code on every device, and the garden follows)<div class="row" style="justify-content:flex-start"><input id="family" placeholder="e.g. K7PM-3QX2" maxlength="9" style="text-transform:uppercase;width:150px"><button class="btn quiet" id="newFamily" type="button">New family</button></div></label>
   <p id="famState" class="cloud"></p>
+  <div class="papa" id="reportsBox"><h3>Tell Pip reports from this device</h3><div id="reportsList">None yet.</div></div>
   <p id="cloud" class="cloud"></p>
   <p>Levels move by themselves: three problems in a row with no hints goes up a level, two problems that needed hints goes down. Nudge a level here if the child is bored or stuck. Levels are never shown; the child sees flowers, the book, and badges.</p>
   <table id="levels"></table>
@@ -472,6 +485,22 @@ async function famPull(){if(!famOK()||!navigator.onLine)return;try{const r=await
     if((fresh&&remoteHas)||(d.savedAt||0)>(S.savedAt||0)){const code=S.family;Object.assign(S,d);S.family=code;if(S.skill&&!S.m[S.skill])S.m[S.skill]={lv:1,streak:0,low:0};store.set('ng2',S);famState='up to date';renderHome();$('#name').value=S.name||'';$('#pro').value=S.pro||'she';if(!$('#sheet').hidden)renderLevels();else if(!$('#home').hidden)show('home');else if(!$('#play').hidden&&S.trail)play(S.trail.steps[S.trail.i])}
     else{famState='up to date';if((d.savedAt||0)<(S.savedAt||0))famPush()}}catch(e){famState='offline, saved on this device'}famLine()}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')famPull()});
+
+/* ---------- Tell Pip: a child's bug report. Six big choices, no typing. Each report is saved on the device and sent to the reports collection; failed sends retry later. Nothing personal goes in: no name, just the game, the level, the words on screen, the time, the app version, the family code and the device type ---------- */
+const APP_VERSION='2026-11-02';
+const TELLS=[['🧱','It got stuck','stuck'],['❌','The answer is wrong','wrong'],['🤔','I don\'t get it','confused'],['😵','Too hard','hard'],['😴','Too easy','easy'],['💛','I love this one','love']];
+let tellFrom='play';
+function openTell(from){tellFrom=from;const g=$('#tellGrid');g.innerHTML='';$('#tellDone').hidden=true;$('#tellBubble').textContent='Something silly? Tap what happened and I\'ll tell the gardeners.';$('#tellBug').innerHTML=BUG;
+  TELLS.forEach(([ico,label,kind])=>{const b=el('button','choice',`<b>${ico}</b>${label}`);b.onclick=()=>{fileReport(kind,label);g.querySelectorAll('.choice').forEach(x=>x.disabled=true);b.classList.add('hit');$('#tellBubble').innerHTML=kind==='love'?`Me too! I'll tell the gardeners you love it.`:`Thank you! I'll tell the gardeners: <em>${label}</em>. They'll have a look.`;bugs('happy');$('#tellDone').hidden=false};g.appendChild(b)});show('tell')}
+function fileReport(kind,label){const inPlay=tellFrom==='play';const r={kind,label,game:inPlay?(S.skill||''):('idea:'+($('#learnTitle').textContent||'')),level:inPlay&&S.skill&&S.m[S.skill]?S.m[S.skill].lv:0,prompt:(inPlay?$('#prompt').textContent:$('#bubble').textContent).slice(0,380),stage:(inPlay?$('#stage').innerText:$('#sceneInner').innerText).replace(/\s+/g,' ').slice(0,380),controls:(inPlay?$('#controls').innerText:'').replace(/\s+/g,' ').slice(0,280),when:new Date().toISOString(),ver:APP_VERSION,family:S.family||'',device:`${navigator.platform||''} ${innerWidth}x${innerHeight} ${/iPad|iPhone/.test(navigator.userAgent)?'iOS':/Android/.test(navigator.userAgent)?'Android':'other'}`.trim(),lang:navigator.language||'',sent:false};
+  S.reports=(S.reports||[]).concat(r).slice(-20);store.set('ng2',S);sendReports()}
+let sendingReports=false;
+async function sendReports(){if(sendingReports||!navigator.onLine)return;const todo=(S.reports||[]).filter(r=>!r.sent);if(!todo.length)return;sendingReports=true;
+  for(const r of todo){try{const fields={};for(const k of ['kind','label','game','prompt','stage','controls','when','ver','family','device','lang'])fields[k]={stringValue:String(r[k]||'')};fields.level={integerValue:String(r.level||0)};
+      const res=await fetch(`https://firestore.googleapis.com/v1/projects/${FIREBASE.projectId}/databases/(default)/documents/reports?key=${FIREBASE.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields})});if(res.ok)r.sent=true}catch(e){}}
+  store.set('ng2',S);sendingReports=false;renderReports()}
+function renderReports(){const l=$('#reportsList');if(!l)return;const rs=(S.reports||[]).slice().reverse();l.innerHTML=rs.length?rs.map(r=>`<div>${r.label} · ${r.game}${r.level?' level '+r.level:''} · ${new Date(r.when).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${r.sent?'sent':'waiting to send'}</div>`).join(''):'None yet.'}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sendReports()});
 
 /* ---------- rooms & skills ---------- */
 const ROOMS=[
@@ -1902,16 +1931,17 @@ $('#bookBack').onclick=()=>{show('home')};
 $('#ideasBack').onclick=()=>{renderHome();show('home')};
 $('#pgBack').onclick=()=>{renderHome();show('home')};
 bugs('idle');
+$('#tellBtn').onclick=()=>openTell('play');$('#tellBtn2').onclick=()=>openTell('learn');$('#tellBack').onclick=$('#tellReturn').onclick=()=>{show(tellFrom)};
 $('#learnBack').onclick=()=>{if(learnFromGame&&S.trail){learnFromGame=false;show('play');play(S.trail.steps[S.trail.i])}else{renderIdeas();show('ideas')}};
 $('#name').value=S.name;$('#name').oninput=e=>{S.name=e.target.value.trim();save()};
 $('#pro').value=S.pro||'she';$('#pro').onchange=e=>{S.pro=e.target.value;save();renderLevels()};
 $('#duo').checked=S.duo;$('#duo').onchange=e=>{S.duo=e.target.checked;save()};
 $('#note').value=S.note||'';$('#note').oninput=e=>{S.note=e.target.value;save()};
-$('#gearBtn').addEventListener('click',()=>{$('#cloud').textContent=cloudLine();$('#family').value=S.family||'';famLine()});
+$('#gearBtn').addEventListener('click',()=>{$('#cloud').textContent=cloudLine();$('#family').value=S.family||'';famLine();renderReports()});
 $('#family').oninput=e=>{const v=e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');e.target.value=v;S.family=v;store.set('ng2',S);/* no save(): typing a code is not new progress, so the family's copy stays newer */if(famOK()){famState='';famLine();famPull()}else famLine()};
 $('#newFamily').onclick=()=>{S.family=newFamilyCode();$('#family').value=S.family;famState='';save();famLine();famPush()};
 $('#resetAll').onclick=()=>{S.stars=0;S.dad=0;S.m={};S.turn=0;S.book=[];S.flowers=[];S.badges={};S.counts={};S.trail=null;S.streakNow=0;S.bestStreak=0;S.days=[];S.last={};S.tellCount=0;save();renderLevels()};
-renderHome();connectCloud();famPull();
+renderHome();connectCloud();famPull();sendReports();
 /* installable: register the service worker when served from a real site (not from the claude.ai page, which has no sw.js) */
 if('serviceWorker' in navigator&&location.protocol==='https:'&&!location.hostname.endsWith('claude.ai')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 if(S.trail&&S.trail.steps&&S.trail.steps.every(id=>SK[id])){show('play');play(S.trail.steps[S.trail.i])}else{S.trail=null;show('home')}

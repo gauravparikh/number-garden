@@ -63,6 +63,10 @@ Help is layered, cheapest first, and the child chooses:
 
 Pip the ladybug is the single narrator everywhere: home greeting, lessons, picture books, the maker games. The child learns one voice.
 
+## 5a. Tell Pip: bug reports a child can make
+
+A **Tell Pip** button sits on the play card and in every picture book. It opens six big choices with no typing: *It got stuck*, *The answer is wrong*, *I don't get it*, *Too hard*, *Too easy*, *I love this one*. Pip thanks the child and says she will tell the gardeners; *Back to my puzzle* returns to the same problem. Each report is kept on the device (last twenty, listed in the grown-ups screen with sent / waiting) and posted to the `reports` collection with the plain REST API; a failed send is retried when the app comes back to the foreground. `tools/reports.sh` lists the reports, newest first. The "love" choice exists so the button is also a way to say something nice, which keeps a child willing to tap it.
+
 ## 6. Big Ideas
 
 A Big Idea is a concept taught, not a game dressed up. Every book follows the same order, and *Even and odd* is the model:
@@ -103,6 +107,7 @@ GitHub Pages serves `master` as-is; every push deploys. The repository lives und
 - The Firebase web `apiKey` and `projectId` are in the source on purpose. The web key is a public identifier, present in the page source of every site that uses Firebase; it grants nothing by itself. Access is controlled by the Firestore rules: a client may read or write one `families/{code}` document whose nine-character code it knows, with only the two expected fields, and may not list or delete. Codes have about a trillion combinations and cannot be enumerated.
 - The remaining exposure is junk writes under made-up codes. The project runs on the free plan with no payment method, so that cannot cost money, only pause syncing for a day at the quota. Two optional hardenings: restrict the key to the site's domain in the Google Cloud console, and cap the document size in the rules.
 - What is stored per family: a child's first name (if entered), pronouns, game levels and counts, book lines, flowers and badges. Nothing else.
+- **Tell Pip** reports (section 5a) carry the game, level, the words on screen, the time, the app version, the family code and the device type. No name.
 - The repository contains no child's name, no family's name, no account handles. The default child name is a neutral nickname, "Sprout", until one is typed on the device; pronouns are a setting with a neutral option.
 - Anyone forking the project uses their own Firebase project; the rules above are in the README.
 
@@ -136,7 +141,7 @@ Nothing is published until it passes a headless run. The checks, all Playwright 
 - two simulated devices against a mocked Firestore (join, win on each side, foreground refresh, offline), asserting the garden moves both ways and that joining never overwrites;
 - screenshots at phone width for layout checks (rows that must not wrap, clocks side by side).
 
-The scripts currently live outside the repository; a `tests/` folder is the obvious next step.
+The scripts live in `tests/` (`tests/run.sh` runs them all; `tests/README.md` lists them).
 
 ## 12. Conventions
 

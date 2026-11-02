@@ -32,6 +32,8 @@ On every problem the child has **Clue**, **Show me**, and, where the game has on
 
 The grown-up settings are behind the faint *for grown-ups* link at the bottom of the home screen: the child's name and pronouns, the family code, a note for the home screen, a take-turns mode, a level nudge for every game, and a short summary page: ideas read, strongest games, what needs a second look, the last five book lines.
 
+**Tell Pip.** A button on every problem and every picture book lets the child report a bug with one tap: it got stuck, the answer is wrong, I don't get it, too hard, too easy, I love this one. Reports go to the family's database for the grown-ups to read (`tools/reports.sh`); the grown-ups screen lists the ones sent from the device.
+
 In Stories, the dots warm-up and Count the shapes, the child can touch each object to count it; the touch adds a numbered badge. Stories, riddles, how-many-ways and every Big Idea have a *Read it to me* button (browser speech, where available). Every fourth clean win, a card asks the child to explain out loud how they knew before the next stone.
 
 ## Design rules
@@ -64,6 +66,18 @@ service cloud.firestore {
     }
   }
 }
+```
+
+For the Tell Pip reports, add this block inside the same `match /databases/{database}/documents {` before its closing brace:
+
+```
+    match /reports/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['kind','label','game','level','prompt','stage','controls','when','ver','family','device','lang'])
+                    && request.resource.data.prompt.size() < 400
+                    && request.resource.data.stage.size() < 400
+                    && request.resource.data.controls.size() < 300;
+    }
 ```
 
 The Firebase web key is a public identifier, not a secret; these rules are the access control (see [ARCHITECTURE.md](ARCHITECTURE.md#security-and-privacy)).
