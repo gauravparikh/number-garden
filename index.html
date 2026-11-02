@@ -289,7 +289,7 @@ button:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
 .rod .u{width:16px;height:16px;border-radius:50%;background:var(--dot)}
 .rod.empty .u{background:transparent;border:2px solid var(--line);box-sizing:border-box}
 .rod.new{background:rgba(255,200,61,.35)}
-.rods.small{gap:4px}.rods.small .rod{padding:2px;gap:2px}.rods.small .rod .u{width:9px;height:9px}
+.rods.small{gap:4px}.rods.small .rod{padding:2px;gap:2px}.rods.small .rod .u{width:8px;height:8px}
 .dots.dice .dot{width:44px;height:44px}
 .sides{display:flex;gap:18px;justify-content:center;align-items:stretch}
 .side{background:var(--bg);border-radius:20px;padding:14px 18px;border:4px solid transparent;display:grid;place-items:center;min-width:110px}
@@ -482,17 +482,17 @@ async function famPull(){if(!famOK()||!navigator.onLine)return;try{const r=await
     if(r.status===404){famPush();return}if(!r.ok){famState='could not read ('+r.status+')';famLine();return}
     const doc=await r.json();const d=JSON.parse(doc.fields.data.stringValue);
     const fresh=!S.stars&&!(S.book||[]).length&&!(S.flowers||[]).length,remoteHas=!!(d.stars||(d.book||[]).length||(d.flowers||[]).length); // a device with no progress takes the family's garden, if the family has one
-    if((fresh&&remoteHas)||(d.savedAt||0)>(S.savedAt||0)){const code=S.family;Object.assign(S,d);S.family=code;if(S.skill&&!S.m[S.skill])S.m[S.skill]={lv:1,streak:0,low:0};store.set('ng2',S);famState='up to date';renderHome();$('#name').value=S.name||'';$('#pro').value=S.pro||'she';if(!$('#sheet').hidden)renderLevels();else if(!$('#home').hidden)show('home');else if(!$('#play').hidden&&S.trail)play(S.trail.steps[S.trail.i])}
+    if((fresh&&remoteHas)||(d.savedAt||0)>(S.savedAt||0)){const code=S.family,localTrail=S.trail,localSkill=S.skill,localM=localSkill&&S.m[localSkill],inPlay=!$('#play').hidden,keepLocal=inPlay&&!d.trail;Object.assign(S,d);S.family=code;if(keepLocal){S.trail=localTrail;S.skill=localSkill;if(localM)S.m[localSkill]=localM}if(S.skill&&!S.m[S.skill])S.m[S.skill]={lv:1,streak:0,low:0};store.set('ng2',S);famState='up to date';renderHome();$('#name').value=S.name||'';$('#pro').value=S.pro||'she';if(!$('#sheet').hidden)renderLevels();else if(!$('#home').hidden)show('home');else if(!$('#play').hidden&&S.trail&&!keepLocal)play(S.trail.steps[S.trail.i])}
     else{famState='up to date';if((d.savedAt||0)<(S.savedAt||0))famPush()}}catch(e){famState='offline, saved on this device'}famLine()}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')famPull()});
 
 /* ---------- Tell Pip: a child's bug report. Six big choices, no typing. Each report is saved on the device and sent to the reports collection; failed sends retry later. Nothing personal goes in: no name, just the game, the level, the words on screen, the time, the app version, the family code and the device type ---------- */
-const APP_VERSION='2026-11-02';
+const APP_VERSION='2026-11-02b';
 const TELLS=[['🧱','It got stuck','stuck'],['❌','The answer is wrong','wrong'],['🤔','I don\'t get it','confused'],['😵','Too hard','hard'],['😴','Too easy','easy'],['💛','I love this one','love']];
 let tellFrom='play';
 function openTell(from){tellFrom=from;const g=$('#tellGrid');g.innerHTML='';$('#tellDone').hidden=true;$('#tellBubble').textContent='Something silly? Tap what happened and I\'ll tell the gardeners.';$('#tellBug').innerHTML=BUG;
   TELLS.forEach(([ico,label,kind])=>{const b=el('button','choice',`<b>${ico}</b>${label}`);b.onclick=()=>{fileReport(kind,label);g.querySelectorAll('.choice').forEach(x=>x.disabled=true);b.classList.add('hit');$('#tellBubble').innerHTML=kind==='love'?`Me too! I'll tell the gardeners you love it.`:`Thank you! I'll tell the gardeners: <em>${label}</em>. They'll have a look.`;bugs('happy');$('#tellDone').hidden=false};g.appendChild(b)});show('tell')}
-function fileReport(kind,label){const inPlay=tellFrom==='play';const r={kind,label,game:inPlay?(S.skill||''):('idea:'+($('#learnTitle').textContent||'')),level:inPlay&&S.skill&&S.m[S.skill]?S.m[S.skill].lv:0,prompt:(inPlay?$('#prompt').textContent:$('#bubble').textContent).slice(0,380),stage:(inPlay?$('#stage').innerText:$('#sceneInner').innerText).replace(/\s+/g,' ').slice(0,380),controls:(inPlay?$('#controls').innerText:'').replace(/\s+/g,' ').slice(0,280),when:new Date().toISOString(),ver:APP_VERSION,family:S.family||'',device:`${navigator.platform||''} ${innerWidth}x${innerHeight} ${/iPad|iPhone/.test(navigator.userAgent)?'iOS':/Android/.test(navigator.userAgent)?'Android':'other'}`.trim(),lang:navigator.language||'',sent:false};
+function fileReport(kind,label){const inPlay=tellFrom==='play';const r={kind,label,game:inPlay?((ctx&&ctx.id)||S.skill||''):('idea:'+($('#learnTitle').textContent||'')),level:inPlay?((ctx&&ctx.lv)||0):0,prompt:(inPlay?$('#prompt').textContent:$('#bubble').textContent).slice(0,380),stage:(inPlay?$('#stage').innerText:$('#sceneInner').innerText).replace(/\s+/g,' ').slice(0,380),controls:(inPlay?$('#controls').innerText:'').replace(/\s+/g,' ').slice(0,280),when:new Date().toISOString(),ver:APP_VERSION,family:S.family||'',device:`${navigator.platform||''} ${innerWidth}x${innerHeight} ${/iPad|iPhone/.test(navigator.userAgent)?'iOS':/Android/.test(navigator.userAgent)?'Android':'other'}`.trim(),lang:navigator.language||'',sent:false};
   S.reports=(S.reports||[]).concat(r).slice(-20);store.set('ng2',S);sendReports()}
 let sendingReports=false;
 async function sendReports(){if(sendingReports||!navigator.onLine)return;const todo=(S.reports||[]).filter(r=>!r.sent);if(!todo.length)return;sendingReports=true;
@@ -1885,7 +1885,7 @@ function play(id){S.skill=id;save();prompt.textContent='';stage.innerHTML='';con
   const mountProblem=()=>{
     /* no repeats: a problem's signature is its prompt plus what is on the stage; re-roll if she has seen it in the last few goes of this game */
     S.recent=S.recent||{};const seen=S.recent[id]||[];let sig='';
-    for(let t=0;t<6;t++){stage.innerHTML='';controls.innerHTML='';say('');ctx={hints:0,done:false,turn:S.duo?S.turn:0};SK[id].mount(m.lv);sig=prompt.textContent+'|'+stage.textContent+'|'+stage.innerHTML.length;if(!seen.includes(sig))break}
+    for(let t=0;t<6;t++){stage.innerHTML='';controls.innerHTML='';say('');ctx={hints:0,done:false,turn:S.duo?S.turn:0,id,lv:m.lv};SK[id].mount(m.lv);sig=prompt.textContent+'|'+stage.textContent+'|'+stage.innerHTML.length;if(!seen.includes(sig))break}
     S.recent[id]=seen.concat(sig).slice(-6);save();
     if(ctx.help)controls.appendChild(helpRow())};
   /* teach first: a game with a teach(lv) lesson shows it the first time she meets that level, before any question */

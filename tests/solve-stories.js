@@ -5,7 +5,7 @@ const errs=[];pg.on('pageerror',e=>errs.push(e.message));
 await pg.goto('file://'+require('path').resolve(__dirname,'..','index.html')+'');await pg.evaluate(()=>localStorage.clear());await pg.reload();
 const msg=()=>pg.locator('#msg').innerText();const stars=()=>pg.evaluate(()=>JSON.parse(localStorage.getItem('ng2')).stars);
 async function go(id,lv){await pg.evaluate(([id,lv])=>{const s=JSON.parse(localStorage.getItem('ng2'))||{stars:0,m:{},book:[],flowers:[],counts:{}};s.trail={door:'story',steps:[id,'dots','dots','dots','dots'],i:0,lit:[0,0,0,0,0]};s.skill=id;s.m[id]={lv,streak:0,low:0};s.taught={[id+':'+lv]:1};localStorage.setItem('ng2',JSON.stringify(s))},[id,lv]);await pg.reload();if(await pg.locator('#home').isVisible())await pg.locator('.door',{hasText:'Stories'}).click();await pg.waitForTimeout(60)}
-for(const lv of[1,2,3]){await go('ways',lv);const before=await stars();const n=await pg.locator('#stage .bead').count();const parts=lv===3?3:2;const need=lv===1?2:3;
+for(const lv of[1,2,3]){await go('ways',lv);const before=await stars();const n=await pg.locator('#stage .bead').count();const parts=2;const need=lv===1?2:lv===2?3:n-1;
   const beads=pg.locator('#stage .bead');const way=pg.getByRole('button',{name:"That's a way"});
   await way.click();console.log('  blank:',(await msg()).slice(0,50));
   for(let i=0;i<n;i++)await beads.nth(i).click();await way.click();console.log('  one color:',(await msg()).slice(0,60));
